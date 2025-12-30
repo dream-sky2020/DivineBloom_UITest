@@ -10,7 +10,10 @@
 
           <!-- Dynamic System Component -->
           <transition name="fade" mode="out-in">
-            <component :is="activeSystemComponent" />
+            <component 
+              :is="activeSystemComponent" 
+              @change-system="handleSystemChange"
+            />
           </transition>
 
           <!-- 网格辅助线 -->
@@ -27,6 +30,12 @@
           <div class="dev-card">
             <h3>System Switcher</h3>
             <div class="btn-group">
+              <button 
+                :class="{ active: currentSystem === 'main-menu' }" 
+                @click="currentSystem = 'main-menu'"
+              >
+                Main Menu (Start Screen)
+              </button>
               <button 
                 :class="{ active: currentSystem === 'list-menu' }" 
                 @click="currentSystem = 'list-menu'"
@@ -70,22 +79,29 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import MainMenuSystem from './systems/MainMenuSystem.vue';
 import ListMenuSystem from './systems/ListMenuSystem.vue';
 import ShopSystem from './systems/ShopSystem.vue';
 import EncyclopediaSystem from './systems/EncyclopediaSystem.vue';
 import WorldMapSystem from './systems/WorldMapSystem.vue';
 
-const currentSystem = ref('world-map'); // 默认改为地图方便测试，或保持 'list-menu'
+const currentSystem = ref('main-menu'); // Default to Main Menu
 
 const activeSystemComponent = computed(() => {
   switch (currentSystem.value) {
+    case 'main-menu': return MainMenuSystem;
     case 'list-menu': return ListMenuSystem;
     case 'shop': return ShopSystem;
     case 'encyclopedia': return EncyclopediaSystem;
     case 'world-map': return WorldMapSystem;
-    default: return ListMenuSystem;
+    default: return MainMenuSystem;
   }
 });
+
+const handleSystemChange = (systemId) => {
+  console.log('System change requested:', systemId);
+  currentSystem.value = systemId;
+};
 
 // Canvas Resizing Logic
 const resizeCanvas = () => {

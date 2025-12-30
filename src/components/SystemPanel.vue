@@ -11,20 +11,20 @@
           
           <div class="setting-row">
             <span class="setting-label">Master Volume</span>
-            <input type="range" class="setting-slider" v-model="settings.masterVolume" min="0" max="100">
-            <span class="setting-value">{{ settings.masterVolume }}%</span>
+            <input type="range" class="setting-slider" v-model.number="audioStore.masterVolume" min="0" max="100">
+            <span class="setting-value">{{ audioStore.masterVolume }}%</span>
           </div>
           
           <div class="setting-row">
             <span class="setting-label">Music</span>
-            <input type="range" class="setting-slider" v-model="settings.musicVolume" min="0" max="100">
-            <span class="setting-value">{{ settings.musicVolume }}%</span>
+            <input type="range" class="setting-slider" v-model.number="audioStore.bgmVolume" min="0" max="100">
+            <span class="setting-value">{{ audioStore.bgmVolume }}%</span>
           </div>
           
           <div class="setting-row">
             <span class="setting-label">Sound Effects</span>
-            <input type="range" class="setting-slider" v-model="settings.sfxVolume" min="0" max="100">
-            <span class="setting-value">{{ settings.sfxVolume }}%</span>
+            <input type="range" class="setting-slider" v-model.number="audioStore.sfxVolume" min="0" max="100">
+            <span class="setting-value">{{ audioStore.sfxVolume }}%</span>
           </div>
         </div>
 
@@ -61,12 +61,17 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import { reactive, onMounted } from 'vue';
+import { useAudioStore } from '../stores/audio';
+
+const audioStore = useAudioStore();
+
+// 初始化音频（确保音量设置生效）
+onMounted(() => {
+  audioStore.initAudio();
+});
 
 const settings = reactive({
-  masterVolume: 80,
-  musicVolume: 60,
-  sfxVolume: 100,
   textSpeed: 'normal',
   autoSave: true
 });
