@@ -1,6 +1,7 @@
 <template>
   <div class="panel-container">
     <div class="top-bar">
+      <!-- 过滤器 Tabs -->
       <div class="filter-tabs">
         <div 
           v-for="tab in tabs" 
@@ -12,94 +13,64 @@
           {{ tab }}
         </div>
       </div>
+
+      <!-- 视图切换器 -->
+      <div class="view-toggle">
+        <button 
+          class="toggle-btn" 
+          :class="{ active: viewMode === 'list' }" 
+          @click="viewMode = 'list'"
+          title="List View"
+        >
+          ☰
+        </button>
+        <button 
+          class="toggle-btn" 
+          :class="{ active: viewMode === 'simple' }" 
+          @click="viewMode = 'simple'"
+          title="Card View"
+        >
+          📄
+        </button>
+        <button 
+          class="toggle-btn" 
+          :class="{ active: viewMode === 'icon' }" 
+          @click="viewMode = 'icon'"
+          title="Grid View"
+        >
+          🧩
+        </button>
+      </div>
     </div>
 
     <div class="content-area">
-      <div class="item-grid custom-scrollbar">
-        <!-- 物品 1 (Potion) -->
-        <div class="item-card active-item">
-          <div class="item-header">
-            <span class="item-icon">🧪</span>
-            <span class="item-name">Potion</span>
-          </div>
-          <div class="item-footer">
-            <span class="item-desc-short">Restores HP</span>
-            <span class="item-count">x15</span>
-          </div>
-          <div class="selection-triangle"></div>
-        </div>
-
-        <!-- 物品 2 (High Potion) -->
-        <div class="item-card">
-          <div class="item-header">
-            <span class="item-icon">🧪</span>
-            <span class="item-name">High Potion</span>
-          </div>
-          <div class="item-footer">
-            <span class="item-desc-short">Restores HP++</span>
-            <span class="item-count">x3</span>
-          </div>
-        </div>
-
-        <!-- 物品 3 (Ether) -->
-        <div class="item-card">
-          <div class="item-header">
-            <span class="item-icon">🧪</span>
-            <span class="item-name">Ether</span>
-          </div>
-          <div class="item-footer">
-            <span class="item-desc-short">Restores MP</span>
-            <span class="item-count">x1</span>
-          </div>
-        </div>
-
-        <!-- 物品 4 (Antidote) -->
-        <div class="item-card">
-          <div class="item-header">
-            <span class="item-icon">🌱</span>
-            <span class="item-name">Antidote</span>
-          </div>
-          <div class="item-footer">
-            <span class="item-desc-short">Cures Poison</span>
-            <span class="item-count">x5</span>
-          </div>
-        </div>
-
-        <!-- 物品 5 (Tent) -->
-        <div class="item-card">
-          <div class="item-header">
-            <span class="item-icon">⛺</span>
-            <span class="item-name">Tent</span>
-          </div>
-          <div class="item-footer">
-            <span class="item-desc-short">Full Rest</span>
-            <span class="item-count">x1</span>
-          </div>
-        </div>
-
-        <!-- 空槽位 -->
-        <div v-for="i in 35" :key="i" class="item-card empty-slot">
-          <div class="item-header">
-            <span class="item-icon">📦</span>
-            <span class="item-name">Empty Slot</span>
-          </div>
-          <div class="item-footer">
-            <span class="item-desc-short">---</span>
-            <span class="item-count">--</span>
-          </div>
-        </div>
-      </div>
+      <!-- 使用通用组件 -->
+      <GameDataGrid 
+        :items="displayItems" 
+        :mode="viewMode" 
+        :columns="viewMode === 'icon' ? 8 : 4" 
+        v-model="selectedIndex"
+        @select="handleSelect"
+      />
 
       <div class="description-panel">
-        <div class="desc-icon-box">🧪</div>
+        <div class="desc-icon-box" v-if="selectedItem && !selectedItem.isEmpty">{{ selectedItem.icon }}</div>
+        <div class="desc-icon-box empty" v-else>📦</div>
+        
         <div class="desc-text-box">
-          <div class="desc-header">
-            <h3 class="desc-title">Potion</h3>
-            <span class="desc-sub">Restores 50 HP</span>
-          </div>
-          <p class="desc-body">
-            A basic medicinal brew made from herbs. Restores a small amount of health. Essential for any adventurer.
-          </p>
+          <template v-if="selectedItem && !selectedItem.isEmpty">
+            <div class="desc-header">
+              <h3 class="desc-title">{{ selectedItem.name }}</h3>
+              <span class="desc-sub">{{ selectedItem.subText }}</span>
+            </div>
+            <p class="desc-body">{{ selectedItem.description }}</p>
+          </template>
+          <template v-else>
+            <div class="desc-header">
+               <h3 class="desc-title text-muted">Empty Slot</h3>
+            </div>
+            <p class="desc-body text-muted">No item selected.</p>
+          </template>
         </div>
       </div>
     </div>
@@ -107,10 +78,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import GameDataGrid from './GameDataGrid.vue';
+import { useInventoryStore } from '../stores/inventory';
+
+const store = useInventoryStore();
 
 const tabs = ['All', 'Consumables', 'Weapons', 'Armor', 'Key Items'];
 const currentTab = ref('All');
+const viewMode = ref('simple'); // 'simple' or 'icon' or 'list'
+const selectedIndex = ref(0);
+
+// 从 Store 获取物品
+const rawItems = computed(() => {
+  return store.getItemsByCategory(currentTab.value);
+});
+
+// 生成填充网格的空槽位
+const displayItems = computed(() => {
+  const filled = [...rawItems.value];
+  const totalSlots = 40; // 总槽位
+  
+  // 仅在非 List 模式下填充空位，List 模式通常只显示持有的物品
+  if (viewMode.value !== 'list') {
+     for (let i = filled.length; i < totalSlots; i++) {
+       filled.push({ isEmpty: true });
+     }
+  }
+  
+  return filled;
+});
+
+const selectedItem = computed(() => displayItems.value[selectedIndex.value]);
+
+const handleSelect = (item) => {
+  // 可以在这里处理额外的选择逻辑
+};
 </script>
 
 <style scoped>
@@ -161,6 +164,42 @@ const currentTab = ref('All');
   font-weight: 700;
 }
 
+/* View Toggle */
+.view-toggle {
+  display: flex;
+  background-color: rgba(15, 23, 42, 0.9);
+  border: 2px solid #475569;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  gap: 0.25rem;
+}
+
+.toggle-btn {
+  width: 2.5rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  border-radius: 0.25rem;
+  color: var(--slate-500);
+  transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--slate-300);
+}
+
+.toggle-btn.active {
+  background-color: var(--slate-700);
+  color: var(--blue-400);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
 .content-area {
   flex: 1;
   background-color: rgba(15, 23, 42, 0.9);
@@ -170,127 +209,6 @@ const currentTab = ref('All');
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.item-grid {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-/* Item Card */
-.item-card {
-  position: relative;
-  background-color: rgba(30, 41, 59, 0.5);
-  border: 1px solid #475569;
-  padding: 0.75rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.item-card:hover {
-  background-color: var(--slate-700);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.item-card.active-item {
-  background-color: rgba(30, 58, 138, 0.6);
-  border: 2px solid var(--blue-400);
-  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
-}
-
-.item-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.item-icon {
-  font-size: 1.5rem;
-  opacity: 0.7;
-}
-
-.item-card:hover .item-icon {
-  opacity: 1;
-}
-
-.item-name {
-  font-weight: 500;
-  color: var(--slate-300);
-  font-size: 1.125rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.item-card:hover .item-name {
-  color: white;
-}
-
-.active-item .item-name {
-  color: var(--blue-100);
-  font-weight: 700;
-}
-
-.item-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-top: 0.5rem;
-}
-
-.item-desc-short {
-  font-size: 0.75rem;
-  color: var(--slate-500);
-}
-
-.item-card:hover .item-desc-short {
-  color: var(--slate-300);
-}
-
-.active-item .item-desc-short {
-  color: var(--blue-300);
-}
-
-.item-count {
-  font-family: monospace;
-  font-size: 1.25rem;
-  color: var(--slate-400);
-}
-
-.item-card:hover .item-count,
-.active-item .item-count {
-  color: white;
-}
-
-.selection-triangle {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 0.75rem;
-  height: 0.75rem;
-  background-color: var(--blue-400);
-  transform: rotate(45deg);
-}
-
-/* Empty Slot */
-.empty-slot .item-icon {
-  opacity: 0.3;
-}
-.empty-slot:hover .item-icon {
-  opacity: 1;
-}
-.empty-slot .item-name {
-  color: var(--slate-500);
-}
-.empty-slot:hover .item-name {
-  color: white;
 }
 
 /* Description Panel */
@@ -313,6 +231,10 @@ const currentTab = ref('All');
   align-items: center;
   justify-content: center;
   font-size: 2.25rem;
+}
+
+.desc-icon-box.empty {
+  opacity: 0.3;
 }
 
 .desc-text-box {
@@ -344,19 +266,7 @@ const currentTab = ref('All');
   margin: 0;
 }
 
-/* Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.2);
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.3);
+.text-muted {
+  color: var(--slate-500);
 }
 </style>
-

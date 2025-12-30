@@ -1,84 +1,78 @@
 <template>
-  <div id="game-canvas">
-      <!-- 背景层 -->
-      <div class="background-layer">
-          <h1 class="placeholder-text">Game Scene Placeholder</h1>
-      </div>
-
-      <!-- JRPG 菜单系统 -->
-      <div class="menu-overlay">
-          <div class="menu-container">
-              
-              <!-- 左侧：导航与队伍状态 -->
-              <div class="left-panel">
-                  
-                  <!-- 金币/时间 -->
-                  <div class="info-box">
-                      <div class="info-row border-bottom">
-                          <span class="info-label">Gold</span>
-                          <span class="info-value gold-text">54,300 G</span>
-                      </div>
-                      <div class="info-row">
-                          <span class="info-label">Time</span>
-                          <span class="info-value">12:45:03</span>
-                      </div>
-                  </div>
-
-                  <!-- 主导航菜单 -->
-                  <div class="nav-menu">
-                      <div 
-                        v-for="item in menuItems"
-                        :key="item.id"
-                        class="nav-item"
-                        :class="{ active: currentPanel === item.id }"
-                        @click="currentPanel = item.id"
-                      >
-                          <span>{{ item.label }}</span>
-                          <span v-if="currentPanel === item.id" class="arrow">▶</span>
-                      </div>
-                  </div>
-
-              </div>
-
-              <!-- 右侧：动态内容区域 -->
-              <div class="right-panel">
-                <component :is="activeComponent" />
-              </div>
+  <div class="page-scroller">
+    <!-- Viewport 1: Game Canvas (100vh) -->
+    <div class="viewport-section">
+      <div id="game-canvas">
+          <!-- 背景层 (Global Background) -->
+          <div class="background-layer">
+              <h1 class="placeholder-text">Game Scene Placeholder</h1>
           </div>
-      </div>
 
-      <!-- 网格辅助线 -->
-      <div class="grid-overlay"></div>
+          <!-- Dynamic System Component -->
+          <transition name="fade" mode="out-in">
+            <component :is="activeSystemComponent" />
+          </transition>
+
+          <!-- 网格辅助线 -->
+          <div class="grid-overlay"></div>
+      </div>
+    </div>
+
+    <!-- Viewport 2: Developer Dashboard -->
+    <div class="dev-panel-section">
+      <div class="dev-container">
+        <h2 class="dev-title">Developer Operations Panel</h2>
+        
+        <div class="dev-grid">
+          <div class="dev-card">
+            <h3>System Switcher</h3>
+            <div class="btn-group">
+              <button 
+                :class="{ active: currentSystem === 'list-menu' }" 
+                @click="currentSystem = 'list-menu'"
+              >
+                Menu System (ListMenu)
+              </button>
+              <button 
+                :class="{ active: currentSystem === 'shop' }" 
+                @click="currentSystem = 'shop'"
+              >
+                Shop System
+              </button>
+              <button disabled>Battle System (WIP)</button>
+              <button disabled>World Map (WIP)</button>
+            </div>
+          </div>
+
+          <div class="dev-card">
+            <h3>Debug Actions</h3>
+            <div class="btn-group">
+               <button @click="addGold">Add 1000 Gold</button>
+               <button @click="logState">Log State</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import InventoryPanel from './InventoryPanel.vue';
-import CharacterPanel from './CharacterPanel.vue';
-import EquipmentPanel from './EquipmentPanel.vue';
-import SkillsPanel from './SkillsPanel.vue';
-import ThankPanel from './ThankPanel.vue';
-import SystemPanel from './SystemPanel.vue';
-import SaveLoadPanel from './SaveLoadPanel.vue';
+import ListMenuSystem from './systems/ListMenuSystem.vue';
+import ShopSystem from './systems/ShopSystem.vue';
 
-const menuItems = [
-  { id: 'items', label: 'ITEMS', component: InventoryPanel },
-  { id: 'equip', label: 'EQUIP', component: EquipmentPanel },
-  { id: 'skills', label: 'SKILLS', component: SkillsPanel },
-  { id: 'status', label: 'STATUS', component: CharacterPanel },
-  { id: 'thank', label: 'THANK', component: ThankPanel },
-  { id: 'data', label: 'DATA', component: SaveLoadPanel },
-  { id: 'system', label: 'SYSTEM', component: SystemPanel },
-];
+const currentSystem = ref('list-menu');
 
-const currentPanel = ref('items');
-
-const activeComponent = computed(() => {
-  const item = menuItems.find(i => i.id === currentPanel.value);
-  return item ? item.component : null;
+const activeSystemComponent = computed(() => {
+  switch (currentSystem.value) {
+    case 'list-menu': return ListMenuSystem;
+    case 'shop': return ShopSystem;
+    default: return ListMenuSystem;
+  }
 });
 
+// Canvas Resizing Logic
 const resizeCanvas = () => {
   const canvas = document.getElementById('game-canvas');
   if (!canvas) return;
@@ -97,8 +91,9 @@ const resizeCanvas = () => {
   const scaleX = windowWidth / targetWidth;
   const scaleY = windowHeight / targetHeight;
   
+  // Scale to fit within the viewport
   let scale = Math.min(scaleX, scaleY);
-  scale = scale * 0.95; // 保持边距
+  scale = scale * 0.95; // Margin
 
   canvas.style.transform = `scale(${scale})`;
 }
@@ -112,10 +107,39 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', resizeCanvas);
 });
+
+// Debug Actions
+const addGold = () => {
+  console.log('Adding gold...');
+  // In real implementation, call store.addGold(1000)
+};
+
+const logState = () => {
+  console.log('Current System:', currentSystem.value);
+};
 </script>
 
 <style scoped>
-/* Reset & Base */
+/* Page Scroller Wrapper */
+.page-scroller {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #0f172a; /* matches body bg */
+  scroll-behavior: smooth;
+}
+
+/* Viewport 1 */
+.viewport-section {
+  height: 100vh; /* Takes full window height */
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* Ensure this section is the "stop" for scrolling initially */
+}
+
 #game-canvas {
   position: relative;
   width: 1920px;
@@ -129,7 +153,7 @@ onUnmounted(() => {
   color: #fff;
 }
 
-/* Background */
+/* Background Layer (reused) */
 .background-layer {
   position: absolute;
   inset: 0;
@@ -140,7 +164,6 @@ onUnmounted(() => {
   opacity: 0.5;
   z-index: 0;
 }
-
 .placeholder-text {
   font-size: 4rem;
   font-weight: 700;
@@ -149,120 +172,7 @@ onUnmounted(() => {
   text-transform: uppercase;
 }
 
-/* Menu Overlay */
-.menu-overlay {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(4px);
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  pointer-events: auto;
-}
-
-.menu-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  gap: 1.5rem;
-}
-
-/* Left Panel */
-.left-panel {
-  width: 25%;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.info-box, .nav-menu {
-  background-color: rgba(15, 23, 42, 0.9); /* slate-900/90 */
-  border: 2px solid #475569; /* slate-600 */
-  border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.info-box {
-  padding: 1rem;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.border-bottom {
-  border-bottom: 1px solid var(--slate-700);
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.info-label {
-  color: var(--slate-400);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.info-value {
-  font-family: monospace;
-}
-
-.gold-text {
-  color: var(--yellow-400);
-  font-size: 1.25rem;
-}
-
-/* Nav Menu */
-.nav-menu {
-  flex: 1;
-  padding: 0.5rem 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.nav-item {
-  padding: 1rem 1.5rem;
-  color: var(--slate-400);
-  cursor: pointer;
-  border-left: 4px solid transparent;
-  transition: all 0.2s;
-  font-size: 1.125rem;
-}
-
-.nav-item:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.nav-item.active {
-  background: linear-gradient(to right, var(--blue-900), transparent);
-  border-left-color: var(--blue-400);
-  color: var(--blue-100);
-  font-weight: 700;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.arrow {
-  color: var(--blue-400);
-}
-
-/* Right Panel */
-.right-panel {
-  flex: 1;
-  /* overflow: hidden; */ /* Removing overflow hidden to let children handle scrolling if needed, though they usually have fixed height containers */
-  display: flex;
-  flex-direction: column;
-}
-
-/* Grid Overlay */
+/* Grid Overlay (reused) */
 .grid-overlay {
   position: absolute;
   inset: 0;
@@ -271,5 +181,93 @@ onUnmounted(() => {
   opacity: 0.2;
   background-image: radial-gradient(circle, #fff 1px, transparent 1px);
   background-size: 50px 50px;
+}
+
+/* Viewport 2: Dev Panel */
+.dev-panel-section {
+  min-height: 100vh; /* Another full screen height */
+  background-color: #1e293b;
+  border-top: 4px solid #334155;
+  padding: 4rem;
+  color: white;
+}
+
+.dev-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dev-title {
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  border-bottom: 1px solid #475569;
+  padding-bottom: 1rem;
+}
+
+.dev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.dev-card {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+
+.dev-card h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-group button {
+  padding: 1rem;
+  background-color: #1e293b;
+  border: 1px solid #475569;
+  color: #e2e8f0;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  text-align: left;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.btn-group button:hover:not(:disabled) {
+  background-color: #334155;
+  border-color: #64748b;
+}
+
+.btn-group button.active {
+  background-color: #2563eb; /* blue-600 */
+  border-color: #3b82f6;
+  color: white;
+}
+
+.btn-group button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
