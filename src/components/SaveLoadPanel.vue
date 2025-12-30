@@ -184,10 +184,9 @@ const deleteSave = () => {
   border-radius: 0.25rem;
   cursor: pointer;
   transition: all 0.2s;
-  height: 100px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .save-card:hover {
@@ -230,7 +229,9 @@ const deleteSave = () => {
 .card-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding-top: 0.5rem;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .card-info {

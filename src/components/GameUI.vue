@@ -39,6 +39,12 @@
               >
                 Shop System
               </button>
+              <button 
+                :class="{ active: currentSystem === 'encyclopedia' }" 
+                @click="currentSystem = 'encyclopedia'"
+              >
+                Encyclopedia System
+              </button>
               <button disabled>Battle System (WIP)</button>
               <button disabled>World Map (WIP)</button>
             </div>
@@ -61,6 +67,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import ListMenuSystem from './systems/ListMenuSystem.vue';
 import ShopSystem from './systems/ShopSystem.vue';
+import EncyclopediaSystem from './systems/EncyclopediaSystem.vue';
 
 const currentSystem = ref('list-menu');
 
@@ -68,6 +75,7 @@ const activeSystemComponent = computed(() => {
   switch (currentSystem.value) {
     case 'list-menu': return ListMenuSystem;
     case 'shop': return ShopSystem;
+    case 'encyclopedia': return EncyclopediaSystem;
     default: return ListMenuSystem;
   }
 });
