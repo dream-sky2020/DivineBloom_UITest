@@ -24,10 +24,10 @@
         <!-- Hover Tooltip for Icon Mode -->
           <div v-if="hoveredIndex === index && item && !item.isEmpty" class="hover-tooltip">
           <div class="tooltip-header">
-            <span class="tooltip-title">{{ t(item.name) }}</span>
-            <span v-if="item.subText" class="tooltip-sub">{{ t(item.subText) }}</span>
+            <span class="tooltip-title">{{ getLocalizedText(item.name) }}</span>
+            <span v-if="item.subText" class="tooltip-sub">{{ getLocalizedText(item.subText) }}</span>
           </div>
-          <div class="tooltip-body">{{ t(item.description) }}</div>
+          <div class="tooltip-body">{{ getLocalizedText(item.description) }}</div>
         </div>
       </template>
 
@@ -37,8 +37,8 @@
           <div class="list-left">
             <span class="list-icon">{{ item?.icon || '📦' }}</span>
             <div class="list-info-group">
-              <span class="list-title">{{ item?.name ? t(item.name) : t('common.emptySlot') }}</span>
-              <span v-if="item?.subText" class="list-sub">{{ t(item.subText) }}</span>
+              <span class="list-title">{{ item?.name ? getLocalizedText(item.name) : t('common.emptySlot') }}</span>
+              <span v-if="item?.subText" class="list-sub">{{ getLocalizedText(item.subText) }}</span>
             </div>
           </div>
           <div class="list-right">
@@ -52,7 +52,7 @@
       <template v-else-if="mode === 'simple'">
         <div class="card-header">
           <span class="card-icon">{{ item?.icon || '📦' }}</span>
-          <span class="card-title">{{ item?.name ? t(item.name) : t('common.emptySlot') }}</span>
+          <span class="card-title">{{ item?.name ? getLocalizedText(item.name) : t('common.emptySlot') }}</span>
         </div>
         <div class="card-footer">
           <span class="footer-left">{{ item?.footerLeft ? t(item.footerLeft) : (item?.isEmpty ? '---' : '') }}</span>
@@ -69,9 +69,9 @@
           </div>
           <div class="card-info">
              <div class="card-title" :class="{ 'text-yellow': item?.highlight }">
-               {{ item?.name ? t(item.name) : t('common.unknown') }}
+               {{ item?.name ? getLocalizedText(item.name) : t('common.unknown') }}
              </div>
-             <div class="card-sub">{{ item?.subText ? t(item.subText) : '---' }}</div>
+             <div class="card-sub">{{ item?.subText ? getLocalizedText(item.subText) : '---' }}</div>
           </div>
         </div>
         <div class="card-footer">
@@ -91,7 +91,15 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+const getLocalizedText = (input) => {
+  if (!input) return '';
+  if (typeof input === 'object') {
+    return input[locale.value] || input['en'] || input['zh'] || Object.values(input)[0] || '';
+  }
+  return t(input);
+};
 
 const props = defineProps({
   items: {

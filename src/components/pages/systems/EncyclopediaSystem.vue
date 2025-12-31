@@ -37,7 +37,7 @@
                 {{ selectedItem.icon || '?' }}
               </div>
               <div class="detail-title-group">
-                <h3 class="detail-name">{{ selectedItem.name }}</h3>
+                <h3 class="detail-name">{{ getLocalizedText(selectedItem.name) }}</h3>
                 <span class="detail-subtitle">{{ getSubtitle(selectedItem) }}</span>
               </div>
             </div>
@@ -50,7 +50,7 @@
               
               <div class="description-box">
                 <h4 v-t="'encyclopedia.description'"></h4>
-                <p v-t="selectedItem.description"></p>
+                <p>{{ getLocalizedText(selectedItem.description) }}</p>
               </div>
 
               <!-- Character Specific Stats Preview -->
@@ -84,10 +84,18 @@ import { itemsDb } from '@/data/items.js';
 import { statusDb } from '@/data/status.js';
 import { skillsDb } from '@/data/skills.js';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+const getLocalizedText = (input) => {
+  if (!input) return '';
+  if (typeof input === 'object') {
+    return input[locale.value] || input['en'] || input['zh'] || Object.values(input)[0] || '';
+  }
+  return t(input);
+};
 
 const tabs = computed(() => [
-  { id: 'characters', label: 'Characters' }, // 保留英文或者添加 dedicated key
+  { id: 'characters', label: t('panels.characters') }, 
   { id: 'items', label: t('panels.inventory') },
   { id: 'skills', label: t('panels.skills') },
   { id: 'status', label: t('panels.status') }
@@ -179,7 +187,7 @@ const onItemSelect = (item) => {
 const getSubtitle = (item) => {
   if (!item) return '';
   if (currentTab.value === 'characters') return t(item.role);
-  return t(item.subText || item.type);
+  return getLocalizedText(item.subText) || t(item.type);
 };
 
 const detailProperties = computed(() => {
@@ -196,7 +204,7 @@ const detailProperties = computed(() => {
   if (currentTab.value === 'items') {
     return {
       [t('labels.type')]: t(i.type),
-      [t('labels.effect')]: t(i.subText)
+      [t('labels.effect')]: getLocalizedText(i.subText)
     };
   }
   if (currentTab.value === 'skills') {
@@ -209,7 +217,7 @@ const detailProperties = computed(() => {
   if (currentTab.value === 'status') {
     return {
       [t('labels.type')]: t(i.type),
-      [t('labels.effect')]: t(i.subText)
+      [t('labels.effect')]: getLocalizedText(i.subText)
     };
   }
   return {};

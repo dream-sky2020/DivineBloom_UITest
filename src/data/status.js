@@ -10,60 +10,186 @@ export const statusDb = {
   // Debuffs
   1: {
     id: 1,
-    name: "status.1.name",
+    name: {
+      zh: '中毒',
+      'zh-TW': '中毒',
+      en: 'Poison',
+      ja: '毒',
+      ko: '중독'
+    },
     type: "statusTypes.debuff",
     icon: "☠️",
-    subText: "status.1.subText",
-    description: "status.1.description"
+    subText: {
+      zh: '持续伤害',
+      'zh-TW': '持續傷害',
+      en: 'DoT',
+      ja: '継続ダメージ',
+      ko: '지속 피해'
+    },
+    description: {
+      zh: '每回合受到毒素伤害。',
+      'zh-TW': '每回合受到毒素傷害。',
+      en: 'Takes poison damage each turn.',
+      ja: '毎ターン毒ダメージを受ける。',
+      ko: '매 턴 독 피해를 입는다.'
+    }
   },
   2: {
     id: 2,
-    name: "status.2.name",
+    name: {
+      zh: '烧伤',
+      'zh-TW': '燒傷',
+      en: 'Burn',
+      ja: '火傷',
+      ko: '화상'
+    },
     type: "statusTypes.debuff",
     icon: "🔥",
-    subText: "status.2.subText",
-    description: "status.2.description"
+    subText: {
+      zh: '持续伤害',
+      'zh-TW': '持續傷害',
+      en: 'DoT',
+      ja: '継続ダメージ',
+      ko: '지속 피해'
+    },
+    description: {
+      zh: '被火焰灼烧，防御力降低并持续受到伤害。',
+      'zh-TW': '被火焰灼燒，防禦力降低並持續受到傷害。',
+      en: 'Burned by fire, lowers defense and takes DoT.',
+      ja: '炎に焼かれ、防御力が低下し継続ダメージを受ける。',
+      ko: '화염에 불타 방어력이 감소하고 지속 피해를 입는다.'
+    }
   },
   3: {
     id: 3,
-    name: "status.3.name",
+    name: {
+      zh: '冻结',
+      'zh-TW': '凍結',
+      en: 'Freeze',
+      ja: '凍結',
+      ko: '동결'
+    },
     type: "statusTypes.debuff",
     icon: "🧊",
-    subText: "status.3.subText",
-    description: "status.3.description"
+    subText: {
+      zh: '无法行动',
+      'zh-TW': '無法行動',
+      en: 'Stunned',
+      ja: '行動不能',
+      ko: '행동 불가'
+    },
+    description: {
+      zh: '身体被冻结，无法进行任何行动。',
+      'zh-TW': '身體被凍結，無法進行任何行動。',
+      en: 'Frozen solid, unable to act.',
+      ja: '体が凍りつき、一切の行動ができない。',
+      ko: '몸이 얼어붙어 아무런 행동도 할 수 없다.'
+    }
   },
   4: {
     id: 4,
-    name: "status.4.name",
+    name: {
+      zh: '麻痹',
+      'zh-TW': '麻痺',
+      en: 'Paralysis',
+      ja: '麻痺',
+      ko: '마비'
+    },
     type: "statusTypes.debuff",
     icon: "⚡",
-    subText: "status.4.subText",
-    description: "status.4.description"
+    subText: {
+      zh: '行动受阻',
+      'zh-TW': '行動受阻',
+      en: 'Stun Chance',
+      ja: '行動阻害',
+      ko: '행동 제한'
+    },
+    description: {
+      zh: '身体麻木，有几率无法行动。',
+      'zh-TW': '身體麻木，有機率無法行動。',
+      en: 'Body is numb, chance to skip turn.',
+      ja: '体が痺れ、行動できないことがある。',
+      ko: '몸이 마비되어 행동하지 못할 확률이 있다.'
+    }
   },
 
   // Buffs
   101: {
     id: 101,
-    name: "status.101.name",
+    name: {
+      zh: '再生',
+      'zh-TW': '再生',
+      en: 'Regen',
+      ja: 'リジェネ',
+      ko: '재생'
+    },
     type: "statusTypes.buff",
     icon: "✨",
-    subText: "status.101.subText",
-    description: "status.101.description"
+    subText: {
+      zh: '持续恢复',
+      'zh-TW': '持續恢復',
+      en: 'HoT',
+      ja: '継続回復',
+      ko: '지속 회복'
+    },
+    description: {
+      zh: '每回合恢复少量生命值。',
+      'zh-TW': '每回合恢復少量生命值。',
+      en: 'Restores a small amount of HP each turn.',
+      ja: '毎ターンHPを少量回復する。',
+      ko: '매 턴 HP를 소량 회복한다.'
+    }
   },
   102: {
     id: 102,
-    name: "status.102.name",
+    name: {
+      zh: '攻击提升',
+      'zh-TW': '攻擊提升',
+      en: 'Attack Up',
+      ja: '攻撃力アップ',
+      ko: '공격력 증가'
+    },
     type: "statusTypes.buff",
     icon: "⚔️",
-    subText: "status.102.subText",
-    description: "status.102.description"
+    subText: {
+      zh: 'ATK +20%',
+      'zh-TW': 'ATK +20%',
+      en: 'ATK +20%',
+      ja: '攻撃力 +20%',
+      ko: '공격력 +20%'
+    },
+    description: {
+      zh: '物理攻击力暂时提升。',
+      'zh-TW': '物理攻擊力暫時提升。',
+      en: 'Physical attack power is temporarily increased.',
+      ja: '物理攻撃力が一時的に上昇する。',
+      ko: '물리 공격력이 일시적으로 증가한다.'
+    }
   },
   103: {
     id: 103,
-    name: "status.103.name",
+    name: {
+      zh: '加速',
+      'zh-TW': '加速',
+      en: 'Haste',
+      ja: 'ヘイスト',
+      ko: '가속'
+    },
     type: "statusTypes.buff",
     icon: "⏩",
-    subText: "status.103.subText",
-    description: "status.103.description"
+    subText: {
+      zh: 'SPD +30%',
+      'zh-TW': 'SPD +30%',
+      en: 'SPD +30%',
+      ja: '速度 +30%',
+      ko: '속도 +30%'
+    },
+    description: {
+      zh: '行动速度大幅提升。',
+      'zh-TW': '行動速度大幅提升。',
+      en: 'Action speed is significantly increased.',
+      ja: '行動速度が大幅に上昇する。',
+      ko: '행동 속도가 크게 증가한다.'
+    }
   }
 };
