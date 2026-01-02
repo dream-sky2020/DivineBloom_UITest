@@ -25,7 +25,7 @@ export const itemsDb = {
     effects: [
       { type: "heal", value: 50 }
     ],
-    icon: "🧪",
+    icon: "icon_potion",
     subText: {
       zh: 'HP +50',
       'zh-TW': 'HP +50',
@@ -56,7 +56,7 @@ export const itemsDb = {
     effects: [
       { type: "heal", value: 200 }
     ],
-    icon: "🧪",
+    icon: "icon_potion",
     subText: {
       zh: 'HP +200',
       'zh-TW': 'HP +200',
@@ -87,7 +87,7 @@ export const itemsDb = {
     effects: [
       { type: "recoverMp", value: 50 }
     ],
-    icon: "🧪",
+    icon: "icon_potion",
     subText: {
       zh: 'MP +50',
       'zh-TW': 'MP +50',
@@ -118,7 +118,7 @@ export const itemsDb = {
     effects: [
       { type: "cureStatus", status: "poison" }
     ],
-    icon: "🌱",
+    icon: "icon_herb",
     subText: {
       zh: '治疗中毒',
       'zh-TW': '治療中毒',
@@ -149,7 +149,7 @@ export const itemsDb = {
     effects: [
       { type: "fullRestore" }
     ],
-    icon: "⛺",
+    icon: "icon_tent",
     subText: {
       zh: '完全恢复',
       'zh-TW': '完全恢復',
@@ -180,7 +180,7 @@ export const itemsDb = {
     effects: [
       { type: "revive", value: 0.2 }
     ],
-    icon: "🪶",
+    icon: "icon_feather",
     subText: {
       zh: '复活',
       'zh-TW': '復活',
@@ -211,7 +211,7 @@ export const itemsDb = {
     effects: [
       { type: "damage", element: "fire", value: 300 }
     ],
-    icon: "💣",
+    icon: "icon_bomb",
     subText: {
       zh: '火焰伤害',
       'zh-TW': '火焰傷害',
@@ -240,7 +240,7 @@ export const itemsDb = {
       ko: '철검'
     },
     type: "itemTypes.weapon",
-    icon: "⚔️",
+    icon: "icon_sword",
     subText: {
       zh: 'ATK +10',
       'zh-TW': 'ATK +10',
@@ -267,7 +267,7 @@ export const itemsDb = {
       ko: '미스릴 단검'
     },
     type: "itemTypes.weapon",
-    icon: "🗡️",
+    icon: "icon_dagger",
     subText: {
       zh: 'ATK +8, SPD +5',
       'zh-TW': 'ATK +8, SPD +5',
@@ -294,7 +294,7 @@ export const itemsDb = {
       ko: '용사의 검'
     },
     type: "itemTypes.weapon",
-    icon: "🗡️",
+    icon: "icon_dagger",
     subText: {
       zh: 'ATK +50',
       'zh-TW': 'ATK +50',
@@ -321,7 +321,7 @@ export const itemsDb = {
       ko: '고목의 지팡이'
     },
     type: "itemTypes.weapon",
-    icon: "🦯",
+    icon: "icon_staff",
     subText: {
       zh: 'MATK +15',
       'zh-TW': 'MATK +15',
@@ -350,7 +350,7 @@ export const itemsDb = {
       ko: '가죽 갑옷'
     },
     type: "itemTypes.armor",
-    icon: "👕",
+    icon: "icon_armor",
     subText: {
       zh: 'DEF +5',
       'zh-TW': 'DEF +5',
@@ -377,7 +377,7 @@ export const itemsDb = {
       ko: '철방패'
     },
     type: "itemTypes.armor",
-    icon: "🛡️",
+    icon: "icon_shield",
     subText: {
       zh: 'DEF +8',
       'zh-TW': 'DEF +8',
@@ -404,7 +404,7 @@ export const itemsDb = {
       ko: '실크 로브'
     },
     type: "itemTypes.armor",
-    icon: "👘",
+    icon: "icon_robe",
     subText: {
       zh: 'MDEF +10',
       'zh-TW': 'MDEF +10',
@@ -433,7 +433,7 @@ export const itemsDb = {
       ko: '파워 링'
     },
     type: "itemTypes.accessory",
-    icon: "💍",
+    icon: "icon_ring",
     subText: {
       zh: 'STR +5',
       'zh-TW': 'STR +5',
@@ -460,7 +460,7 @@ export const itemsDb = {
       ko: '수호의 부적'
     },
     type: "itemTypes.accessory",
-    icon: "💍",
+    icon: "icon_ring",
     subText: {
       zh: 'DEF +5',
       'zh-TW': 'DEF +5',
@@ -489,7 +489,7 @@ export const itemsDb = {
       ko: '세계 지도'
     },
     type: "itemTypes.keyItem",
-    icon: "🗺️",
+    icon: "icon_map",
     subText: {
       zh: '重要物品',
       'zh-TW': '重要物品',
@@ -516,7 +516,7 @@ export const itemsDb = {
       ko: '유적의 열쇠'
     },
     type: "itemTypes.keyItem",
-    icon: "🗝️",
+    icon: "icon_key",
     subText: {
       zh: '任务物品',
       'zh-TW': '任務物品',

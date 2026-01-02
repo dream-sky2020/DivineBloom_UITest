@@ -23,23 +23,24 @@ export const skillsDb = {
     category: "skillCategories.physical",
     targetType: "enemy",
     effects: [
-      { type: "damage", value: 1.5, scaling: "atk" }
+      { type: "damage", value: 1.5, scaling: "atk" },
+      { type: "applyStatus", status: 5, chance: 0.3, duration: 3 }
     ],
-    icon: "⚔️",
+    icon: "icon_sword",
     cost: "5 MP",
     subText: {
-      zh: '单体物理伤害',
-      'zh-TW': '單體物理傷害',
-      en: 'Single Target Phys Dmg',
-      ja: '単体物理ダメージ',
-      ko: '단일 물리 피해'
+      zh: '单体物理伤害/流血',
+      'zh-TW': '單體物理傷害/流血',
+      en: 'Phys Dmg/Bleed',
+      ja: '単体物理/出血',
+      ko: '단일 물리/출혈'
     },
     description: {
-      zh: '对一名敌人造成强力的物理伤害。',
-      'zh-TW': '對一名敵人造成強力的物理傷害。',
-      en: 'Deals powerful physical damage to one enemy.',
-      ja: '敵単体に強力な物理ダメージを与える。',
-      ko: '적 한 명에게 강력한 물리 피해를 준다.'
+      zh: '对一名敌人造成强力的物理伤害，有几率造成流血。',
+      'zh-TW': '對一名敵人造成強力的物理傷害，有機率造成流血。',
+      en: 'Deals powerful physical damage, chance to bleed.',
+      ja: '敵単体に強力な物理ダメージを与え、出血させることがある。',
+      ko: '적 한 명에게 강력한 물리 피해를 주고 출혈을 일으킬 수 있다.'
     }
   },
   102: {
@@ -55,23 +56,24 @@ export const skillsDb = {
     category: "skillCategories.physical",
     targetType: "allEnemies",
     effects: [
-      { type: "damage", value: 0.8, scaling: "atk" }
+      { type: "damage", value: 0.8, scaling: "atk" },
+      { type: "applyStatus", status: 5, chance: 0.2, duration: 2 }
     ],
-    icon: "💥",
+    icon: "icon_impact",
     cost: "15 MP",
     subText: {
-      zh: '群体物理伤害',
-      'zh-TW': '群體物理傷害',
-      en: 'AoE Phys Dmg',
-      ja: '全体物理ダメージ',
-      ko: '전체 물리 피해'
+      zh: '群体物理伤害/流血',
+      'zh-TW': '群體物理傷害/流血',
+      en: 'AoE Phys Dmg/Bleed',
+      ja: '全体物理/出血',
+      ko: '전체 물리/출혈'
     },
     description: {
-      zh: '挥舞武器攻击所有敌人。',
-      'zh-TW': '揮舞武器攻擊所有敵人。',
-      en: 'Attacks all enemies by swinging the weapon around.',
-      ja: '武器を振り回して敵全体を攻撃する。',
-      ko: '무기를 휘둘러 적 전체를 공격한다.'
+      zh: '挥舞武器攻击所有敌人，有低几率造成流血。',
+      'zh-TW': '揮舞武器攻擊所有敵人，有低機率造成流血。',
+      en: 'Attacks all enemies, small chance to bleed.',
+      ja: '武器を振り回して敵全体を攻撃する。低確率で出血させる。',
+      ko: '무기를 휘둘러 적 전체를 공격한다. 낮은 확률로 출혈을 일으킨다.'
     }
   },
 
@@ -92,7 +94,7 @@ export const skillsDb = {
     effects: [
       { type: "damage", value: 1.3, scaling: "mag", element: "elements.fire" }
     ],
-    icon: "🔥",
+    icon: "icon_fire",
     cost: "10 MP",
     subText: {
       zh: '单体火焰伤害',
@@ -123,23 +125,25 @@ export const skillsDb = {
     element: "elements.ice",
     targetType: "enemy",
     effects: [
-      { type: "damage", value: 1.2, scaling: "mag", element: "elements.ice" }
+      { type: "damage", value: 1.2, scaling: "mag", element: "elements.ice" },
+      { type: "applyStatus", status: 3, chance: 0.2, duration: 1 }, // Freeze
+      { type: "applyStatus", status: 6, chance: 0.3, duration: 3 }  // Slow
     ],
-    icon: "❄️",
+    icon: "icon_ice",
     cost: "12 MP",
     subText: {
-      zh: '单体冰冻伤害',
-      'zh-TW': '單體冰凍傷害',
-      en: 'Single Target Ice Dmg',
-      ja: '単体氷属性ダメージ',
-      ko: '단일 얼음 피해'
+      zh: '单体冰冻伤害/冻结/减速',
+      'zh-TW': '單體冰凍傷害/凍結/減速',
+      en: 'Ice Dmg/Freeze/Slow',
+      ja: '単体氷/凍結/スロウ',
+      ko: '단일 얼음/동결/감속'
     },
     description: {
-      zh: '召唤锋利的冰锥攻击敌人，可能降低其速度。',
-      'zh-TW': '召喚鋒利的冰錐攻擊敵人，可能降低其速度。',
-      en: 'Summons sharp ice shards to attack, may lower speed.',
-      ja: '鋭い氷の破片で攻撃する。速度低下の可能性あり。',
-      ko: '날카로운 얼음 조각을 소환하여 공격한다. 속도 저하 가능성 있음.'
+      zh: '召唤锋利的冰锥攻击敌人，有几率冻结敌人或降低其速度。',
+      'zh-TW': '召喚鋒利的冰錐攻擊敵人，有機率凍結敵人或降低其速度。',
+      en: 'Summons sharp ice shards, chance to freeze or lower speed.',
+      ja: '鋭い氷の破片で攻撃する。凍結または速度低下の効果がある。',
+      ko: '날카로운 얼음 조각을 소환하여 공격한다. 동결 또는 속도 감소 확률이 있다.'
     }
   },
   203: {
@@ -154,23 +158,27 @@ export const skillsDb = {
     type: "skillTypes.active",
     category: "skillCategories.magic",
     element: "elements.lightning",
-    targetType: "allEnemies",
+    // Changed to enemy to allow selecting the start of the chain
+    targetType: "enemy",
+    chain: 3, // Bounce 3 times
+    decay: 0.85, // 85% damage per bounce
     effects: [
-      { type: "damage", value: 1.1, scaling: "mag", element: "elements.lightning" }
+      { type: "damage", value: 1.1, scaling: "mag", element: "elements.lightning" },
+      { type: "applyStatus", status: 4, chance: 0.3, duration: 2 }
     ],
-    icon: "⚡",
+    icon: "icon_lightning",
     cost: "25 MP",
     subText: {
-      zh: '弹射雷电伤害',
-      'zh-TW': '彈射雷電傷害',
-      en: 'Bouncing Lightning Dmg',
+      zh: '弹射雷电/麻痹',
+      'zh-TW': '彈射雷電/麻痺',
+      en: 'Bounce Lightning/Paralysis',
       ja: '連鎖雷属性ダメージ',
       ko: '연쇄 번개 피해'
     },
     description: {
-      zh: '释放一道在敌人之间跳跃的闪电。',
-      'zh-TW': '釋放一道在敵人之間跳躍的閃電。',
-      en: 'Unleashes a bolt of lightning that jumps between enemies.',
+      zh: '释放一道在敌人之间跳跃的闪电，有几率造成麻痹。',
+      'zh-TW': '釋放一道在敵人之間跳躍的閃電，有機率造成麻痺。',
+      en: 'Unleashes a bolt of lightning that jumps between enemies, chance to paralyze.',
       ja: '敵の間を跳ね回る稲妻を放つ。',
       ko: '적들 사이를 튕겨 다니는 번개를 방출한다.'
     }
@@ -192,7 +200,7 @@ export const skillsDb = {
     effects: [
       { type: "heal", value: 500 }
     ],
-    icon: "💚",
+    icon: "icon_heal",
     cost: "20 MP",
     subText: {
       zh: '单体治疗',
@@ -224,7 +232,7 @@ export const skillsDb = {
     effects: [
       { type: "buff", stat: "def", value: 1.5, duration: 3 }
     ],
-    icon: "🛡️",
+    icon: "icon_shield",
     cost: "30 MP",
     subText: {
       zh: '增加防御',
@@ -238,7 +246,7 @@ export const skillsDb = {
       'zh-TW': '在短時間內提高己方全體的防禦力。',
       en: 'Temporarily increases defense for all allies.',
       ja: '短時間、味方全員の防御力を高める。',
-      ko: '짧은 시간 동안 아군 전체의 방어력을 높인다.'
+      ko: '短い時間、味方全員の防御力を高める。'
     }
   },
   303: {
@@ -256,7 +264,7 @@ export const skillsDb = {
     effects: [
       { type: "revive", value: 0.2 }
     ],
-    icon: "✨",
+    icon: "icon_revive",
     cost: "40 MP",
     subText: {
       zh: '复活队友',
@@ -286,7 +294,7 @@ export const skillsDb = {
     },
     type: "skillTypes.passive",
     category: "skillCategories.passive",
-    icon: "🦾",
+    icon: "icon_strength",
     cost: "--",
     subText: {
       zh: '被动效果',
@@ -314,13 +322,14 @@ export const skillsDb = {
     },
     type: "skillTypes.passive",
     category: "skillCategories.passive",
-    icon: "💧",
+    icon: "icon_mana",
     cost: "--",
     subText: {
       zh: '被动效果',
       'zh-TW': '被動效果',
       en: 'Passive Effect',
       ja: 'パッシブ効果',
+      ko: '패시브効果',
       ko: '패시브 효과'
     },
     description: {

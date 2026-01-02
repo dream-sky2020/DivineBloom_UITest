@@ -18,7 +18,7 @@ export const statusDb = {
       ko: '중독'
     },
     type: "statusTypes.debuff",
-    icon: "☠️",
+    icon: "icon_poison",
     subText: {
       zh: '持续伤害',
       'zh-TW': '持續傷害',
@@ -32,7 +32,10 @@ export const statusDb = {
       en: 'Takes poison damage each turn.',
       ja: '毎ターン毒ダメージを受ける。',
       ko: '매 턴 독 피해를 입는다.'
-    }
+    },
+    effects: [
+      { trigger: 'turnStart', type: 'damage', value: 0.05, scaling: 'maxHp' }
+    ]
   },
   2: {
     id: 2,
@@ -44,7 +47,7 @@ export const statusDb = {
       ko: '화상'
     },
     type: "statusTypes.debuff",
-    icon: "🔥",
+    icon: "icon_fire",
     subText: {
       zh: '持续伤害',
       'zh-TW': '持續傷害',
@@ -58,7 +61,11 @@ export const statusDb = {
       en: 'Burned by fire, lowers defense and takes DoT.',
       ja: '炎に焼かれ、防御力が低下し継続ダメージを受ける。',
       ko: '화염에 불타 방어력이 감소하고 지속 피해를 입는다.'
-    }
+    },
+    effects: [
+      { trigger: 'turnStart', type: 'damage', value: 0.08, scaling: 'maxHp' },
+      { trigger: 'passive', type: 'statMod', stat: 'def', value: 0.8 }
+    ]
   },
   3: {
     id: 3,
@@ -70,7 +77,7 @@ export const statusDb = {
       ko: '동결'
     },
     type: "statusTypes.debuff",
-    icon: "🧊",
+    icon: "icon_freeze",
     subText: {
       zh: '无法行动',
       'zh-TW': '無法行動',
@@ -84,7 +91,10 @@ export const statusDb = {
       en: 'Frozen solid, unable to act.',
       ja: '体が凍りつき、一切の行動ができない。',
       ko: '몸이 얼어붙어 아무런 행동도 할 수 없다.'
-    }
+    },
+    effects: [
+      { trigger: 'checkAction', type: 'stun', chance: 1.0 }
+    ]
   },
   4: {
     id: 4,
@@ -96,7 +106,7 @@ export const statusDb = {
       ko: '마비'
     },
     type: "statusTypes.debuff",
-    icon: "⚡",
+    icon: "icon_lightning",
     subText: {
       zh: '行动受阻',
       'zh-TW': '行動受阻',
@@ -110,7 +120,68 @@ export const statusDb = {
       en: 'Body is numb, chance to skip turn.',
       ja: '体が痺れ、行動できないことがある。',
       ko: '몸이 마비되어 행동하지 못할 확률이 있다.'
-    }
+    },
+    effects: [
+      { trigger: 'checkAction', type: 'stun', chance: 0.5 }
+    ]
+  },
+  5: {
+    id: 5,
+    name: {
+      zh: '流血',
+      'zh-TW': '流血',
+      en: 'Bleed',
+      ja: '出血',
+      ko: '출혈'
+    },
+    type: "statusTypes.debuff",
+    icon: "icon_bleed",
+    subText: {
+      zh: '持续伤害',
+      'zh-TW': '持續傷害',
+      en: 'DoT',
+      ja: '継続ダメージ',
+      ko: '지속 피해'
+    },
+    description: {
+      zh: '伤口裂开，每回合受到伤害。',
+      'zh-TW': '傷口裂開，每回合受到傷害。',
+      en: 'Wounds are open, taking damage each turn.',
+      ja: '傷口が開き、毎ターンダメージを受ける。',
+      ko: '상처가 벌어져 매 턴 피해를 입는다.'
+    },
+    effects: [
+      { trigger: 'turnStart', type: 'damage', value: 0.1, scaling: 'maxHp' }
+    ]
+  },
+  6: {
+    id: 6,
+    name: {
+      zh: '减速',
+      'zh-TW': '減速',
+      en: 'Slow',
+      ja: 'スロウ',
+      ko: '감속'
+    },
+    type: "statusTypes.debuff",
+    icon: "icon_slow",
+    subText: {
+      zh: '速度降低',
+      'zh-TW': '速度降低',
+      en: 'Speed Down',
+      ja: '速度低下',
+      ko: '속도 감소'
+    },
+    description: {
+      zh: '行动速度大幅降低。',
+      'zh-TW': '行動速度大幅降低。',
+      en: 'Action speed is significantly decreased.',
+      ja: '行動速度が大幅に低下する。',
+      ko: '행동 속도가 크게 감소한다.'
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'spd', value: 0.7 }
+    ]
   },
 
   // Buffs
@@ -124,7 +195,7 @@ export const statusDb = {
       ko: '재생'
     },
     type: "statusTypes.buff",
-    icon: "✨",
+    icon: "icon_regen",
     subText: {
       zh: '持续恢复',
       'zh-TW': '持續恢復',
@@ -138,7 +209,10 @@ export const statusDb = {
       en: 'Restores a small amount of HP each turn.',
       ja: '毎ターンHPを少量回復する。',
       ko: '매 턴 HP를 소량 회복한다.'
-    }
+    },
+    effects: [
+      { trigger: 'turnStart', type: 'heal', value: 0.1, scaling: 'maxHp' }
+    ]
   },
   102: {
     id: 102,
@@ -150,7 +224,7 @@ export const statusDb = {
       ko: '공격력 증가'
     },
     type: "statusTypes.buff",
-    icon: "⚔️",
+    icon: "icon_buff_atk",
     subText: {
       zh: 'ATK +20%',
       'zh-TW': 'ATK +20%',
@@ -164,7 +238,10 @@ export const statusDb = {
       en: 'Physical attack power is temporarily increased.',
       ja: '物理攻撃力が一時的に上昇する。',
       ko: '물리 공격력이 일시적으로 증가한다.'
-    }
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'atk', value: 1.2 }
+    ]
   },
   103: {
     id: 103,
@@ -176,7 +253,7 @@ export const statusDb = {
       ko: '가속'
     },
     type: "statusTypes.buff",
-    icon: "⏩",
+    icon: "icon_haste",
     subText: {
       zh: 'SPD +30%',
       'zh-TW': 'SPD +30%',
@@ -190,6 +267,38 @@ export const statusDb = {
       en: 'Action speed is significantly increased.',
       ja: '行動速度が大幅に上昇する。',
       ko: '행동 속도가 크게 증가한다.'
-    }
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'spd', value: 1.3 }
+    ]
+  },
+  104: {
+    id: 104,
+    name: {
+      zh: '防御提升',
+      'zh-TW': '防禦提升',
+      en: 'Defense Up',
+      ja: '防御力アップ',
+      ko: '방어력 증가'
+    },
+    type: "statusTypes.buff",
+    icon: "icon_buff_def",
+    subText: {
+      zh: 'DEF +50%',
+      'zh-TW': 'DEF +50%',
+      en: 'DEF +50%',
+      ja: '防御力 +50%',
+      ko: '방어력 +50%'
+    },
+    description: {
+      zh: '物理防御力暂时提升。',
+      'zh-TW': '物理防禦力暫時提升。',
+      en: 'Physical defense is temporarily increased.',
+      ja: '物理防御力が一時的に上昇する。',
+      ko: '물리 방어력이 일시적으로 증가한다.'
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'def', value: 1.5 }
+    ]
   }
 };

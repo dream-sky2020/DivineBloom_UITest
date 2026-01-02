@@ -54,6 +54,27 @@ export default {
     en: 'Luck',
     ja: '運',
     ko: '운'
+  },
+  str: {
+    zh: '力量',
+    'zh-TW': '力量',
+    en: 'Strength',
+    ja: '力',
+    ko: '힘'
+  },
+  mag: {
+    zh: '魔力',
+    'zh-TW': '魔力',
+    en: 'Magic',
+    ja: '魔力',
+    ko: '마력'
+  },
+  spd: {
+    zh: '速度',
+    'zh-TW': '速度',
+    en: 'Speed',
+    ja: '素早さ',
+    ko: '속도'
   }
 }
 

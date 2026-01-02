@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { charactersDb } from '@/data/characters';
 import { skillsDb } from '@/data/skills';
 import { itemsDb } from '@/data/items';
+import { statusDb } from '@/data/status';
 import { useInventoryStore } from './inventory';
 
 // --- Helper Functions ---
@@ -10,6 +11,32 @@ import { useInventoryStore } from './inventory';
 const calculateDamage = (attacker, defender, skill = null, effect = null) => {
     let atk = attacker.atk || 10;
     let def = defender.def || 5;
+
+    // Apply Status Modifiers
+    if (attacker.statusEffects) {
+        attacker.statusEffects.forEach(s => {
+            const statusDef = statusDb[s.id];
+            if (statusDef && statusDef.effects) {
+                statusDef.effects.forEach(eff => {
+                    if (eff.trigger === 'passive' && eff.type === 'statMod' && eff.stat === 'atk') {
+                        atk *= eff.value;
+                    }
+                });
+            }
+        });
+    }
+    if (defender.statusEffects) {
+        defender.statusEffects.forEach(s => {
+            const statusDef = statusDb[s.id];
+            if (statusDef && statusDef.effects) {
+                statusDef.effects.forEach(eff => {
+                    if (eff.trigger === 'passive' && eff.type === 'statMod' && eff.stat === 'def') {
+                        def *= eff.value;
+                    }
+                });
+            }
+        });
+    }
 
     // Skill modifiers
     let multiplier = 1.0;
@@ -51,18 +78,24 @@ export const useBattleStore = defineStore('battle', () => {
     // --- State ---
     const enemies = ref([]);
     const partySlots = ref([]);
-    const activeSlotIndex = ref(0);
     const turnCount = ref(1);
-    const battleState = ref('idle'); // idle, player_turn, enemy_turn, victory, defeat
+    const battleState = ref('idle'); // idle, active, victory, defeat
     const battleLog = ref([]);
+    const atbPaused = ref(false);
+    const activeUnit = ref(null); // The unit currently acting (Player or Enemy)
 
     // --- Getters ---
     const activeCharacter = computed(() => {
-        const slot = partySlots.value[activeSlotIndex.value];
-        return slot ? slot.front : null;
+        // Return activeUnit if it is a player character
+        if (activeUnit.value && activeUnit.value.isPlayer) {
+            return activeUnit.value;
+        }
+        return null;
     });
 
-    const isPlayerTurn = computed(() => battleState.value === 'player_turn');
+    const isPlayerTurn = computed(() => {
+        return !!activeCharacter.value && atbPaused.value;
+    });
 
     // Get Battle Items (Consumables only)
     const battleItems = computed(() => {
@@ -85,29 +118,47 @@ export const useBattleStore = defineStore('battle', () => {
         // Reset state
         turnCount.value = 1;
         battleLog.value = [];
-        activeSlotIndex.value = 0;
+        activeUnit.value = null;
+        atbPaused.value = false;
 
         // Setup Enemies
         if (enemyList) {
-            enemies.value = enemyList;
+            enemies.value = enemyList.map(e => ({ ...e, atb: 0, isPlayer: false, actionCount: 0 }));
         } else {
             // Default Mock Enemies
             enemies.value = [
                 {
-                    id: 1,
-                    name: { zh: '神武皇帝', en: 'Emperor Shenwu' },
+                    ...charactersDb[101],
                     hp: 50000, maxHp: 50000,
                     isBoss: true, color: '#fbbf24',
-                    atk: 8, def: 10,
-                    isDefending: false
+                    atk: 50, def: 40, spd: 20, mag: 40,
+                    isDefending: false,
+                    statusEffects: [],
+                    atb: 0,
+                    isPlayer: false,
+                    actionCount: 0
                 },
                 {
-                    id: 2,
-                    name: { zh: '山鲁亚尔', en: 'Shahryar' },
+                    ...charactersDb[102],
                     hp: 45000, maxHp: 45000,
                     isBoss: true, color: '#94a3b8',
-                    atk: 7, def: 8,
-                    isDefending: false
+                    atk: 45, def: 35, spd: 25, mag: 50,
+                    isDefending: false,
+                    statusEffects: [],
+                    atb: 0,
+                    isPlayer: false,
+                    actionCount: 0
+                },
+                {
+                    ...charactersDb[103],
+                    hp: 60000, maxHp: 60000,
+                    isBoss: true, color: '#ef4444',
+                    atk: 60, def: 45, spd: 30, mag: 55,
+                    isDefending: false,
+                    statusEffects: [],
+                    atb: 0,
+                    isPlayer: false,
+                    actionCount: 0
                 }
             ];
         }
@@ -115,18 +166,13 @@ export const useBattleStore = defineStore('battle', () => {
         // Setup Party (Load from global state or mock)
         partySlots.value = [
             { front: createBattleChar(5, [101, 401]), back: createBattleChar(1, [101]) },
-            { front: createBattleChar(6, [102]), back: createBattleChar(2, [102]) },
-            { front: createBattleChar(7, [201, 202, 301, 303]), back: createBattleChar(3, [203]) },
+            { front: createBattleChar(6, [102, 203]), back: createBattleChar(2, [102]) },
+            { front: createBattleChar(7, [201, 202, 301, 303, 203]), back: createBattleChar(3, [203]) },
             { front: createBattleChar(4, [101, 302]), back: null }
         ];
 
-        battleState.value = 'player_turn';
-        log('Battle Started!');
-
-        // Ensure first character is ready
-        if (activeCharacter.value) {
-            activeCharacter.value.isDefending = false;
-        }
+        battleState.value = 'active';
+        log('battle.started');
     };
 
     const createBattleChar = (dbId, skillIds = []) => {
@@ -140,18 +186,203 @@ export const useBattleStore = defineStore('battle', () => {
             maxMp: data.initialStats.mp,
             atk: data.initialStats.atk || 50,
             def: data.initialStats.def || 30,
+            spd: data.initialStats.spd || 10,
+            mag: data.initialStats.mag || 10,
             skills: skillIds, // Assign skills here
             statusEffects: [],
-            isDefending: false
+            isDefending: false,
+            atb: 0, // Start ATB 0 for consistency
+            isPlayer: true
         };
+    };
+
+    // ATB Tick
+    const updateATB = (dt) => {
+        if (battleState.value !== 'active' || atbPaused.value) return;
+
+        const ATB_SPEED_MULTIPLIER = 2.0; // Adjust for pacing
+        const MAX_ATB = 100;
+        const RESERVE_MAX_ATB = 500; // Allow reserve to overcharge
+
+        // Collect all active units with metadata to avoid repeated lookups
+        const unitEntries = [];
+        enemies.value.forEach(e => {
+            if (e.hp > 0) unitEntries.push({ unit: e, isBackRow: false });
+        });
+        partySlots.value.forEach(slot => {
+            if (slot.front && slot.front.currentHp > 0) unitEntries.push({ unit: slot.front, isBackRow: false });
+            if (slot.back && slot.back.currentHp > 0) unitEntries.push({ unit: slot.back, isBackRow: true });
+        });
+
+        // Increment ATB
+        for (const { unit, isBackRow } of unitEntries) {
+            const maxAtb = isBackRow ? RESERVE_MAX_ATB : MAX_ATB;
+
+            // Speed factor
+            let spd = unit.spd || 10;
+            // Apply status modifiers
+            if (unit.statusEffects) {
+                unit.statusEffects.forEach(s => {
+                    const statusDef = statusDb[s.id];
+                    if (statusDef && statusDef.effects) {
+                        statusDef.effects.forEach(eff => {
+                            if (eff.trigger === 'passive' && eff.type === 'statMod' && eff.stat === 'spd') {
+                                spd *= eff.value;
+                            }
+                        });
+                    }
+                });
+            }
+
+            unit.atb = Math.min(maxAtb, unit.atb + (spd * dt * ATB_SPEED_MULTIPLIER));
+
+            // Only trigger turn for non-back row units
+            if (!isBackRow && unit.atb >= MAX_ATB && !atbPaused.value) {
+                // Unit is ready
+                unit.atb = MAX_ATB;
+                startTurn(unit);
+                // Break to handle one unit at a time (could queue them, but for now strict pause)
+                return;
+            }
+        }
+    };
+
+    const startTurn = (unit) => {
+        atbPaused.value = true;
+        activeUnit.value = unit;
+        unit.isDefending = false; // Reset Defend at start of turn
+
+        // Process Turn Start Statuses (DoT, HoT)
+        processTurnStatuses(unit);
+
+        // Check if unit died from status
+        if ((unit.currentHp || unit.hp) <= 0) {
+            endTurn(unit);
+            return;
+        }
+
+        // Check Crowd Control (Stun/Freeze)
+        const cannotMove = checkCrowdControl(unit);
+        if (cannotMove) {
+            log('battle.cannotMove', { name: unit.name });
+            setTimeout(() => {
+                endTurn(unit);
+            }, 1000);
+            return;
+        }
+
+        if (!unit.isPlayer) {
+            // Enemy Logic
+            processEnemyTurn(unit);
+        } else {
+            // Player Logic: Waiting for UI input
+            // UI will see isPlayerTurn = true
+        }
+    };
+
+    const endTurn = (unit) => {
+        // Set to negative value to provide a visual "cooldown" where the bar stays empty for a bit
+        unit.atb = -25;
+        activeUnit.value = null;
+        atbPaused.value = false;
+        checkBattleStatus();
+    };
+
+    const processEnemyTurn = async (enemy) => {
+        // Delay for dramatic effect
+        // Use setTimeout but we are in a store action, ideally we don't block
+        // We can just set a timeout to call 'performEnemyAction'
+
+        // Since we want to stop time, we are paused.
+        // We can execute logic and then unpause after a delay.
+
+        setTimeout(() => {
+            if (enemy.hp <= 0) {
+                endTurn(enemy);
+                return;
+            }
+
+            // Increment Action Count
+            if (typeof enemy.actionCount === 'undefined') enemy.actionCount = 0;
+            enemy.actionCount++;
+
+            // Find valid targets
+            const aliveSlots = partySlots.value.filter(s => s.front && s.front.currentHp > 0);
+            if (aliveSlots.length === 0) {
+                endTurn(enemy);
+                return;
+            }
+            const allTargets = aliveSlots.map(s => s.front);
+            const randomTarget = allTargets[Math.floor(Math.random() * allTargets.length)];
+
+            // AI Logic
+            if (enemy.id === 103) { // Hefietian
+                if (enemy.actionCount % 2 === 0) {
+                    // Even: AOE Fire + Burn
+                    log('battle.bossAoeFire', { name: enemy.name });
+                    allTargets.forEach(target => {
+                        const dmg = calculateDamage(enemy, target, null, { value: 1.2, scaling: 'mag' });
+                        applyDamage(target, dmg);
+                        applyStatus(target, 2, 3); // Burn
+                    });
+                } else {
+                    // Odd: Single Strong Fire + Burn
+                    log('battle.bossSingleFire', { name: enemy.name, target: randomTarget.name });
+                    const dmg = calculateDamage(enemy, randomTarget, null, { value: 1.8, scaling: 'str' });
+                    applyDamage(randomTarget, dmg);
+                    applyStatus(randomTarget, 2, 3); // Burn
+                }
+            } else if (enemy.id === 102) { // Shahryar
+                if (enemy.actionCount % 2 === 0) {
+                    // Even: AOE Slash + Bleed
+                    log('battle.bossAoeSlash', { name: enemy.name });
+                    allTargets.forEach(target => {
+                        const dmg = calculateDamage(enemy, target, null, { value: 1.0, scaling: 'str' });
+                        applyDamage(target, dmg);
+                        applyStatus(target, 5, 3); // Bleed
+                    });
+                } else {
+                    // Odd: Single Slash + Bleed
+                    log('battle.bossSingleSlash', { name: enemy.name, target: randomTarget.name });
+                    const dmg = calculateDamage(enemy, randomTarget, null, { value: 1.5, scaling: 'str' });
+                    applyDamage(randomTarget, dmg);
+                    applyStatus(randomTarget, 5, 3); // Bleed
+                }
+            } else if (enemy.id === 101) { // Emperor Shenwu
+                if (enemy.actionCount % 2 !== 0) {
+                    // Odd: Single Lightning + Paralysis
+                    log('battle.bossSingleLightning', { name: enemy.name, target: randomTarget.name });
+                    const dmg = calculateDamage(enemy, randomTarget, null, { value: 1.6, scaling: 'mag' });
+                    applyDamage(randomTarget, dmg);
+                    applyStatus(randomTarget, 4, 2); // Paralysis
+                } else {
+                    // Even: AOE Blizzard + Chance Freeze + Chance Slow
+                    log('battle.bossAoeIce', { name: enemy.name });
+                    allTargets.forEach(target => {
+                        const dmg = calculateDamage(enemy, target, null, { value: 1.3, scaling: 'mag' });
+                        applyDamage(target, dmg);
+                        // Chance Freeze (30%)
+                        if (Math.random() < 0.3) applyStatus(target, 3, 1);
+                        // Chance Slow (50%)
+                        if (Math.random() < 0.5) applyStatus(target, 6, 3);
+                    });
+                }
+            } else {
+                // Default AI
+                log('battle.attacks', { attacker: enemy.name, target: randomTarget.name });
+                const dmg = calculateDamage(enemy, randomTarget);
+                applyDamage(randomTarget, dmg);
+            }
+
+            endTurn(enemy);
+        }, 1000);
     };
 
     // Player Actions
     const playerAction = async (actionType, payload = null) => {
-        if (battleState.value !== 'player_turn') return;
+        if (!activeUnit.value || !activeUnit.value.isPlayer) return;
 
-        const actor = activeCharacter.value;
-        if (!actor) return;
+        const actor = activeUnit.value;
 
         // Normalize payload
         let targetId = null;
@@ -166,13 +397,15 @@ export const useBattleStore = defineStore('battle', () => {
             skillId = payload; // Legacy support
         }
 
+        let actionDone = true;
+
         if (actionType === 'item') {
             if (!itemId) return;
 
             // Consume Item
             inventoryStore.removeItem(itemId, 1);
             const item = itemsDb[itemId];
-            log(`${actor.name.zh} uses ${item.name.zh}`);
+            log('battle.useItem', { user: actor.name, item: item.name });
 
             // Centralized Item Logic
             handleItemEffect(itemId, targetId, actor);
@@ -183,46 +416,75 @@ export const useBattleStore = defineStore('battle', () => {
                 // Deduct MP
                 const cost = parseInt(skill.cost) || 0;
                 if (actor.currentMp < cost) {
-                    log('Not enough MP!');
-                    return;
+                    log('battle.notEnoughMp');
+                    return; // Don't end turn
                 }
                 actor.currentMp -= cost;
-                log(`${actor.name.zh} uses ${skill.name.zh}`);
+                log('battle.useSkill', { user: actor.name, skill: skill.name });
 
                 // Skill Logic
                 if (skill.effects) {
-                    // Generic Effect Processing
-                    skill.effects.forEach(effect => {
-                        if (skill.targetType === 'allEnemies') {
-                            for (const enemy of enemies.value) {
-                                if (enemy.hp > 0) {
-                                    processEffect(effect, enemy, actor, skill);
+                    if (skill.chain) {
+                        // Chain Logic
+                        let currentTarget = enemies.value.find(e => e.id === targetId) || enemies.value.find(e => e.hp > 0);
+                        let bounceCount = skill.chain;
+                        let multiplier = 1.0;
+                        const hitIds = new Set();
+
+                        for (let i = 0; i < bounceCount; i++) {
+                            if (!currentTarget) break;
+                            hitIds.add(currentTarget.id);
+
+                            // Process effects and capture damage
+                            let damageDealt = 0;
+                            skill.effects.forEach(eff => {
+                                const finalEffect = { ...eff };
+                                if (finalEffect.type === 'damage') {
+                                    finalEffect.value *= multiplier;
                                 }
-                            }
-                        } else if (skill.targetType === 'allAllies') {
-                            partySlots.value.forEach(slot => {
-                                if (slot.front && slot.front.currentHp > 0) processEffect(effect, slot.front, actor, skill);
+                                // Use silent=true to suppress default logs, we log manually below
+                                const val = processEffect(finalEffect, currentTarget, actor, skill, true);
+                                if (finalEffect.type === 'damage') damageDealt += val;
                             });
-                        } else {
-                            // Single Target
-                            let target = null;
-                            if (skill.targetType === 'ally' || skill.targetType === 'deadAlly') {
-                                target = targetId ? findPartyMember(targetId) : actor;
-                            } else if (skill.targetType === 'enemy') {
-                                target = enemies.value.find(e => e.id === targetId) || enemies.value.find(e => e.hp > 0);
-                            }
-                            processEffect(effect, target, actor, skill);
+
+                            log('battle.chainHit', { count: i + 1, target: currentTarget.name, amount: damageDealt });
+
+                            multiplier *= (skill.decay || 0.85);
+
+                            // Find next target (random alive enemy not yet hit)
+                            const candidates = enemies.value.filter(e => e.hp > 0 && !hitIds.has(e.id));
+                            if (candidates.length === 0) break;
+                            currentTarget = candidates[Math.floor(Math.random() * candidates.length)];
                         }
-                    });
-                } else if (skill.category === 'skillCategories.support') {
-                    // Fallback for support skills without effects array (should be none now)
-                } else {
-                    // Fallback for legacy skills without effects (should be none now if data is updated)
-                    log(`${skill.name.zh} has no effects configured.`);
+                    } else {
+                        // Generic Effect Processing
+                        skill.effects.forEach(effect => {
+                            if (skill.targetType === 'allEnemies') {
+                                for (const enemy of enemies.value) {
+                                    if (enemy.hp > 0) {
+                                        processEffect(effect, enemy, actor, skill);
+                                    }
+                                }
+                            } else if (skill.targetType === 'allAllies') {
+                                partySlots.value.forEach(slot => {
+                                    if (slot.front && slot.front.currentHp > 0) processEffect(effect, slot.front, actor, skill);
+                                });
+                            } else {
+                                // Single Target
+                                let target = null;
+                                if (skill.targetType === 'ally' || skill.targetType === 'deadAlly') {
+                                    target = targetId ? findPartyMember(targetId) : actor;
+                                } else if (skill.targetType === 'enemy') {
+                                    target = enemies.value.find(e => e.id === targetId) || enemies.value.find(e => e.hp > 0);
+                                }
+                                processEffect(effect, target, actor, skill);
+                            }
+                        });
+                    }
                 }
             }
         } else if (actionType === 'attack') {
-            log(`${actor.name.zh} attacks`);
+            log('battle.attackStart', { attacker: actor.name });
 
             // Resolve Target
             let target = enemies.value.find(e => e.id === targetId);
@@ -236,43 +498,56 @@ export const useBattleStore = defineStore('battle', () => {
             }
         } else if (actionType === 'defend') {
             actor.isDefending = true;
-            log(`${actor.name.zh} is defending.`);
+            log('battle.defending', { name: actor.name });
         } else if (actionType === 'switch') {
-            const slot = partySlots.value[activeSlotIndex.value];
-            if (slot && slot.back && slot.back.currentHp > 0) {
-                performSwitch(activeSlotIndex.value);
-            } else {
-                log('Cannot switch!');
-                return; // Don't end turn if switch failed
+            // Find slot index for this actor
+            const slotIndex = partySlots.value.findIndex(s => s.front && s.front.id === actor.id);
+            if (slotIndex !== -1) {
+                const slot = partySlots.value[slotIndex];
+                if (slot && slot.back && slot.back.currentHp > 0) {
+                    performSwitch(slotIndex);
+                } else {
+                    log('battle.cannotSwitch');
+                    return; // Don't end turn
+                }
             }
-            return;
+        } else if (actionType === 'skip') {
+            log('battle.skipTurn', { name: actor.name });
         }
 
-        checkBattleStatus();
-        if (battleState.value === 'player_turn') {
-            nextTurn();
+        if (actionDone) {
+            endTurn(actor);
         }
     };
 
-    const processEffect = (effect, target, actor, skill = null) => {
-        if (!effect) return;
+    const processEffect = (effect, target, actor, skill = null, silent = false) => {
+        if (!effect) return 0;
 
         switch (effect.type) {
             case 'heal':
-                if (target) applyHeal(target, effect.value);
+                if (target) {
+                    let amount = effect.value;
+                    if (effect.scaling === 'maxHp') {
+                        amount = Math.floor(target.maxHp * effect.value);
+                    }
+                    return applyHeal(target, amount, silent);
+                }
                 break;
             case 'recoverMp':
                 if (target) {
                     target.currentMp = Math.min(target.maxMp, target.currentMp + effect.value);
-                    log(`${target.name.zh} recovered ${effect.value} MP`);
+                    if (!silent) log('battle.recoveredMp', { target: target.name, amount: effect.value });
+                    return effect.value;
                 }
                 break;
             case 'revive':
                 if (target && target.currentHp <= 0) {
                     target.currentHp = Math.floor(target.maxHp * effect.value);
-                    log(`${target.name.zh} revived!`);
+                    if (!silent) log('battle.revived', { target: target.name });
+                    return target.currentHp;
                 } else {
-                    log('But nothing happened...');
+                    if (!silent) log('battle.noEffect');
+                    return 0;
                 }
                 break;
             case 'damage':
@@ -281,21 +556,48 @@ export const useBattleStore = defineStore('battle', () => {
                     if (effect.scaling === 'atk' || effect.scaling === 'mag') {
                         // Use standard calculation
                         dmg = calculateDamage(actor, target, skill, effect);
+                    } else if (effect.scaling === 'maxHp') {
+                        // MaxHP scaling (e.g. for Poison/DoT)
+                        dmg = Math.floor(target.maxHp * effect.value);
                     } else {
                         // Fixed damage
                         dmg = effect.value;
                     }
-                    applyDamage(target, dmg);
+                    applyDamage(target, dmg, silent);
+                    return dmg;
+                }
+                break;
+            case 'applyStatus':
+                if (target) {
+                    // Check chance if present
+                    if (effect.chance && Math.random() > effect.chance) {
+                        return 0; // Failed chance
+                    }
+                    applyStatus(target, effect.status, effect.duration || 3, null, silent);
+                    return 1;
                 }
                 break;
             case 'buff':
-                // Placeholder for buff logic
-                log(`${actor.name.zh} casts buff on ${target ? target.name.zh : 'allies'}`);
+                // Attempt to map dynamic buff to statusDb
+                let statusId = null;
+                if (effect.stat === 'def') statusId = 104; // Defense Up
+                if (effect.stat === 'atk') statusId = 102; // Attack Up
+                if (effect.stat === 'spd') statusId = 103; // Haste
+
+                if (statusId) {
+                    applyStatus(target, statusId, effect.duration || 3, effect.value, silent);
+                } else {
+                    if (!silent) log('battle.buffCast', { user: actor.name, target: target ? target.name : { zh: '友方全体', en: 'allies' } });
+                }
                 break;
             case 'cureStatus':
                 if (target) {
-                    // Placeholder for cure status
-                    log(`${target.name.zh} cured of ${effect.status}`);
+                    // Map string "poison" to ID 1, etc.
+                    let sId = null;
+                    if (effect.status === 'poison') sId = 1;
+
+                    if (sId) removeStatus(target, sId, silent);
+                    else if (!silent) log('battle.statusCured', { target: target.name, status: effect.status });
                 }
                 break;
             case 'fullRestore':
@@ -304,18 +606,21 @@ export const useBattleStore = defineStore('battle', () => {
                         if (slot.front) {
                             slot.front.currentHp = slot.front.maxHp;
                             slot.front.currentMp = slot.front.maxMp;
+                            slot.front.statusEffects = [];
                         }
                         if (slot.back) {
                             slot.back.currentHp = slot.back.maxHp;
                             slot.back.currentMp = slot.back.maxMp;
+                            slot.back.statusEffects = [];
                         }
                     });
-                    log('Party fully restored!');
+                    if (!silent) log('battle.partyRestored');
                 }
                 break;
             default:
                 console.warn('Unknown effect type:', effect.type);
         }
+        return 0;
     };
 
     const handleItemEffect = (itemId, targetId, actor) => {
@@ -338,6 +643,92 @@ export const useBattleStore = defineStore('battle', () => {
         });
     };
 
+    // --- Status System ---
+
+    const applyStatus = (target, statusId, duration = 3, value = null, silent = false) => {
+        if (!target || !statusDb[statusId]) return;
+
+        // Initialize if not present
+        if (!target.statusEffects) target.statusEffects = [];
+
+        // Check if already exists
+        const existing = target.statusEffects.find(s => s.id === statusId);
+        const statusDef = statusDb[statusId];
+
+        if (existing) {
+            existing.duration = duration; // Refresh duration
+            if (!silent) log('battle.statusExtended', { target: target.name, status: statusDef.name });
+        } else {
+            target.statusEffects.push({
+                id: statusId,
+                duration: duration,
+                value: value
+            });
+            if (!silent) log('battle.statusApplied', { target: target.name, status: statusDef.name });
+        }
+    };
+
+    const removeStatus = (target, statusId, silent = false) => {
+        if (!target || !target.statusEffects) return;
+        const idx = target.statusEffects.findIndex(s => s.id === statusId);
+        if (idx !== -1) {
+            const statusDef = statusDb[statusId];
+            target.statusEffects.splice(idx, 1);
+            if (!silent) log('battle.statusCured', { target: target.name, status: statusDef.name });
+        }
+    };
+
+    const processTurnStatuses = (character) => {
+        if (!character || !character.statusEffects) return;
+
+        // Iterate backwards to allow removal
+        for (let i = character.statusEffects.length - 1; i >= 0; i--) {
+            const status = character.statusEffects[i];
+            const statusDef = statusDb[status.id];
+
+            if (statusDef && statusDef.effects) {
+                statusDef.effects.forEach(eff => {
+                    if (eff.trigger === 'turnStart') {
+                        // Pass actor as character itself for self-inflicted effects (DoT/HoT)
+                        const val = processEffect(eff, character, character, null, true);
+
+                        // Custom logs based on type
+                        if (eff.type === 'damage') {
+                            log('battle.statusDamage', { target: character.name, amount: val, status: statusDef.name });
+                        } else if (eff.type === 'heal') {
+                            log('battle.statusHeal', { target: character.name, amount: val, status: statusDef.name });
+                        }
+                    }
+                });
+            }
+
+            // Decrement Duration
+            status.duration--;
+            if (status.duration <= 0) {
+                character.statusEffects.splice(i, 1);
+                log('battle.statusWoreOff', { target: character.name, status: statusDef.name });
+            }
+        }
+    };
+
+    const checkCrowdControl = (character) => {
+        if (!character || !character.statusEffects) return false;
+
+        for (const status of character.statusEffects) {
+            const statusDef = statusDb[status.id];
+            if (statusDef && statusDef.effects) {
+                for (const eff of statusDef.effects) {
+                    if (eff.trigger === 'checkAction' && eff.type === 'stun') {
+                        if (Math.random() < (eff.chance || 1.0)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    };
+
     const performSwitch = (slotIndex) => {
         const slot = partySlots.value[slotIndex];
         if (slot && slot.back) {
@@ -347,80 +738,23 @@ export const useBattleStore = defineStore('battle', () => {
 
             // Switching in clears defense
             if (slot.front) slot.front.isDefending = false;
+            // Initialize ATB for new char (maybe partial?)
+            if (slot.front.atb === undefined) slot.front.atb = 0;
+            slot.front.isPlayer = true; // Ensure flag
 
-            log(`${slot.front.name.zh} switched in!`);
+            log('battle.switchIn', { name: slot.front.name });
         }
     };
 
-    const nextTurn = () => {
-        let nextIndex = activeSlotIndex.value + 1;
-
-        // Loop to find next valid party member
-        while (nextIndex < partySlots.value.length) {
-            const slot = partySlots.value[nextIndex];
-            if (slot && slot.front && slot.front.currentHp > 0) {
-                activeSlotIndex.value = nextIndex;
-
-                // New Turn for Character: Reset Defend
-                slot.front.isDefending = false;
-
-                return;
-            }
-            nextIndex++;
-        }
-
-        // If no one found in rest of list, Switch to Enemy Turn
-        startEnemyPhase();
-    };
-
-    const startEnemyPhase = async () => {
-        battleState.value = 'enemy_turn';
-        log('Enemy Phase Start');
-
-        // Check if battle already over
-        if (checkBattleStatus()) return;
-
-        // Simulate enemy thinking delay
-        for (const enemy of enemies.value) {
-            if (enemy.hp <= 0) continue;
-
-            // Re-check battle status (e.g. if all players died from previous enemy)
-            if (checkBattleStatus()) return;
-
-            await new Promise(r => setTimeout(r, 800)); // Delay
-
-            // Enemy Logic: Attack random party member
-            const aliveSlots = partySlots.value.filter(s => s.front && s.front.currentHp > 0);
-            if (aliveSlots.length > 0) {
-                const targetSlot = aliveSlots[Math.floor(Math.random() * aliveSlots.length)];
-                const target = targetSlot.front;
-
-                log(`${enemy.name.zh} attacks ${target.name.zh}!`);
-                const dmg = calculateDamage(enemy, target);
-                applyDamage(target, dmg);
-            }
-        }
-
-        // Re-check after all attacks
-        if (checkBattleStatus()) return;
-
-        // End Enemy Phase
-        battleState.value = 'player_turn';
-        turnCount.value++;
-        log(`Turn ${turnCount.value} Start`);
-
-        // Find first alive player for new turn
-        activeSlotIndex.value = -1;
-        nextTurn();
-    };
-
-    const applyDamage = (target, amount) => {
+    const applyDamage = (target, amount, silent = false) => {
         target.currentHp = Math.max(0, (target.currentHp || target.hp) - amount);
         if (target.hp !== undefined) target.hp = target.currentHp;
 
-        log(`${target.name.zh} took ${amount} damage!`);
-        if (target.isDefending) {
-            log('(Defended)');
+        if (!silent) {
+            log('battle.damage', { target: target.name, amount: amount });
+            if (target.isDefending) {
+                log('battle.defended');
+            }
         }
 
         // Check if a front-row party member died and needs switching
@@ -429,58 +763,74 @@ export const useBattleStore = defineStore('battle', () => {
             if (slotIndex !== -1) {
                 const slot = partySlots.value[slotIndex];
                 if (slot.back && slot.back.currentHp > 0) {
-                    log(`${target.name.zh} fell! ${slot.back.name.zh} takes the lead!`);
+                    if (!silent) log('battle.fell', { target: target.name, backup: slot.back.name });
                     performSwitch(slotIndex);
                 }
             }
         }
+        return amount;
     };
 
-    const applyHeal = (target, amount) => {
-        if (!target) return;
+    const applyHeal = (target, amount, silent = false) => {
+        if (!target) return 0;
         if (target.currentHp <= 0) {
-            log(`${target.name.zh} is incapacitated!`);
-            return;
+            if (!silent) log('battle.incapacitated', { target: target.name });
+            return 0;
         }
 
         const oldHp = target.currentHp;
         target.currentHp = Math.min(target.maxHp, target.currentHp + amount);
         const healed = target.currentHp - oldHp;
 
-        log(`${target.name.zh} recovered ${healed} HP`);
+        if (!silent) log('battle.recoveredHp', { target: target.name, amount: healed });
+        return healed;
     };
 
     const checkBattleStatus = () => {
         const allEnemiesDead = enemies.value.every(e => e.hp <= 0);
         if (allEnemiesDead) {
             battleState.value = 'victory';
-            log('Victory!');
+            log('battle.victory');
             return true;
         }
 
         const allPlayersDead = partySlots.value.every(s => !s.front || s.front.currentHp <= 0);
         if (allPlayersDead) {
             battleState.value = 'defeat';
-            log('Defeat...');
+            log('battle.defeat');
             return true;
         }
         return false;
     };
 
-    const log = (msg) => {
-        battleLog.value.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
-        // Keep log short
-        if (battleLog.value.length > 5) battleLog.value.shift();
+    const log = (keyOrMsg, params = {}) => {
+        if (typeof keyOrMsg === 'string') {
+            const hasParams = params && Object.keys(params).length > 0;
+            if (!hasParams && (keyOrMsg.includes(' ') || /[\u4e00-\u9fa5]/.test(keyOrMsg))) {
+                battleLog.value.push(`[${new Date().toLocaleTimeString()}] ${keyOrMsg}`);
+            } else {
+                battleLog.value.push({
+                    key: keyOrMsg,
+                    params: params || {},
+                    timestamp: new Date()
+                });
+            }
+        } else {
+            battleLog.value.push(`[${new Date().toLocaleTimeString()}] ${String(keyOrMsg)}`);
+        }
+
+        if (battleLog.value.length > 50) battleLog.value.shift();
     };
 
     return {
         // State
         enemies,
         partySlots,
-        activeSlotIndex,
         turnCount,
         battleState,
         battleLog,
+        atbPaused,
+        activeUnit,
 
         // Getters
         activeCharacter,
@@ -490,6 +840,6 @@ export const useBattleStore = defineStore('battle', () => {
         // Actions
         initBattle,
         playerAction,
-        nextTurn
+        updateATB
     };
 });

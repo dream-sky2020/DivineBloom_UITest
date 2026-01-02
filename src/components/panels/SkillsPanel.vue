@@ -29,12 +29,12 @@
         <div class="skills-row">
           <!-- Slot 1 -->
           <div class="skill-slot equipped-active group hover-effect">
-            <span class="skill-icon">🔥</span>
+            <span class="skill-icon"><GameIcon name="icon_fire" /></span>
             <div class="slot-badge">1</div>
           </div>
           <!-- Slot 2 -->
           <div class="skill-slot equipped-normal group hover-effect">
-            <span class="skill-icon">❄️</span>
+            <span class="skill-icon"><GameIcon name="icon_ice" /></span>
             <div class="slot-badge normal">2</div>
           </div>
           <!-- Slot 3 (Empty) -->
@@ -59,11 +59,11 @@
         <div class="skills-row">
           <!-- Slot 1 -->
           <div class="skill-slot passive-active rounded-circle group hover-effect">
-            <span class="skill-icon">🛡️</span>
+            <span class="skill-icon"><GameIcon name="icon_shield" /></span>
           </div>
           <!-- Slot 2 -->
           <div class="skill-slot passive-normal rounded-circle group hover-effect">
-            <span class="skill-icon">⚡</span>
+            <span class="skill-icon"><GameIcon name="icon_lightning" /></span>
           </div>
           <!-- Slot 3 (Empty) -->
           <div class="skill-slot passive-empty rounded-circle group hover-effect">
@@ -91,7 +91,7 @@
         <!-- Active: Fireball (Equipped) -->
         <div class="skill-card active-equipped">
           <div class="card-header">
-            <div class="card-icon-box">🔥</div>
+            <div class="card-icon-box"><GameIcon name="icon_fire" /></div>
             <div class="card-info">
               <div class="card-title text-yellow">Fireball</div>
               <div class="card-sub">Lv. 5</div>

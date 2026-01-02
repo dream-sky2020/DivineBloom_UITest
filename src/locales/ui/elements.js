@@ -68,6 +68,13 @@ export default {
     en: 'Nihility',
     ja: '虚無',
     ko: '허무'
+  },
+  chaos: {
+    zh: '混沌',
+    'zh-TW': '混沌',
+    en: 'Chaos',
+    ja: '混沌',
+    ko: '혼돈'
   }
 }
 

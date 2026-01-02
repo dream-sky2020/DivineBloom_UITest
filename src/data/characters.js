@@ -260,5 +260,35 @@ export const charactersDb = {
       ja: '輪廻の虚無を見抜いた王、願いの術の核を破壊し、衆生に完全な解脱を与えようとする。',
       ko: '윤회의 허무를 간파한 왕, 소원 주문의 핵심을 파괴하여 중생에게 완전한 해탈을 주려 한다.'
     }
+  },
+  103: {
+    id: 103,
+    name: {
+      zh: '赫绯天',
+      'zh-TW': '赫緋天',
+      en: 'Hefietian',
+      ja: 'ハー・フェイティアン',
+      ko: '헤페이티안'
+    },
+    role: "roles.god_slayer",
+    element: "elements.chaos",
+    weaponType: "weapons.scythe",
+    isBoss: true,
+    color: '#ef4444',
+    initialStats: {
+      hp: 60000,
+      mp: 9999,
+      str: 60,
+      def: 45,
+      mag: 55,
+      spd: 30
+    },
+    description: {
+      zh: '屠灭所有神明的非人神。',
+      'zh-TW': '屠滅所有神明的非人神。',
+      en: 'A non-human god who slaughters all deities.',
+      ja: 'すべての神を屠る非人の神。',
+      ko: '모든 신을 학살하는 비인간 신.'
+    }
   }
 };

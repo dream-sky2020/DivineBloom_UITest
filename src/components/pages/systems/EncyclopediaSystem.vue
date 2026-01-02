@@ -34,7 +34,7 @@
           <div v-if="selectedItem" class="detail-card">
             <div class="detail-header">
               <div class="detail-icon-large">
-                {{ selectedItem.icon || '?' }}
+                <GameIcon :name="selectedItem.icon || 'icon_unknown'" />
               </div>
               <div class="detail-title-group">
                 <h3 class="detail-name">{{ getLocalizedText(selectedItem.name) }}</h3>
@@ -79,6 +79,7 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import GameDataGrid from '@/components/ui/GameDataGrid.vue';
+import GameIcon from '@/components/ui/GameIcon.vue';
 import { charactersDb } from '@/data/characters.js';
 import { itemsDb } from '@/data/items.js';
 import { statusDb } from '@/data/status.js';
@@ -109,7 +110,7 @@ const selectedItem = ref(null);
 const charactersList = computed(() => {
   return Object.values(charactersDb).map(c => ({
     ...c,
-    icon: '👤', // Default icon for characters
+    icon: 'icon_user', // Default icon for characters
     subText: c.role,
     footerLeft: c.element,
     footerRight: c.weaponType,

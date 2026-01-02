@@ -17,7 +17,7 @@
       <!-- Mode: Icon Only -->
       <template v-if="mode === 'icon'">
         <div class="icon-wrapper">
-          <span class="main-icon">{{ item?.icon || (item?.isEmpty ? '📦' : '?') }}</span>
+          <GameIcon class="main-icon" :name="item?.icon || (item?.isEmpty ? 'icon_box' : 'icon_unknown')" />
           <div v-if="item && item.count && item.count > 1" class="icon-badge">{{ item.count }}</div>
         </div>
         
@@ -35,7 +35,7 @@
       <template v-else-if="mode === 'list'">
         <div class="list-content">
           <div class="list-left">
-            <span class="list-icon">{{ item?.icon || '📦' }}</span>
+            <GameIcon class="list-icon" :name="item?.icon || 'icon_box'" />
             <div class="list-info-group">
               <span class="list-title">{{ item?.name ? getLocalizedText(item.name) : t('common.emptySlot') }}</span>
               <span v-if="item?.subText" class="list-sub">{{ getLocalizedText(item.subText) }}</span>
@@ -51,7 +51,7 @@
       <!-- Mode: Simple (Inventory Card Style) -->
       <template v-else-if="mode === 'simple'">
         <div class="card-header">
-          <span class="card-icon">{{ item?.icon || '📦' }}</span>
+          <GameIcon class="card-icon" :name="item?.icon || 'icon_box'" />
           <span class="card-title">{{ item?.name ? getLocalizedText(item.name) : t('common.emptySlot') }}</span>
         </div>
         <div class="card-footer">
@@ -65,7 +65,7 @@
       <template v-else-if="mode === 'detailed'">
         <div class="card-header">
           <div class="card-icon-box" :class="{ 'grayscale': item?.isLocked }">
-            {{ item?.icon || '?' }}
+            <GameIcon :name="item?.icon || 'icon_unknown'" />
           </div>
           <div class="card-info">
              <div class="card-title" :class="{ 'text-yellow': item?.highlight }">
@@ -90,6 +90,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import GameIcon from '@/components/ui/GameIcon.vue';
 
 const { t, locale } = useI18n();
 

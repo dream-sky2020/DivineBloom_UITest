@@ -54,6 +54,13 @@ export default {
     en: 'Scimitar',
     ja: 'シミター',
     ko: '시미터'
+  },
+  scythe: {
+    zh: '镰刀',
+    'zh-TW': '鐮刀',
+    en: 'Scythe',
+    ja: '大鎌',
+    ko: '낫'
   }
 }
 

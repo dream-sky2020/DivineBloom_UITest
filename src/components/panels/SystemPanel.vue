@@ -18,19 +18,19 @@
           </div>
           
           <div class="setting-row">
-            <span class="setting-label">Master Volume</span>
+            <span class="setting-label">{{ $t('systemSettings.masterVolume') }}</span>
             <input type="range" class="setting-slider" v-model.number="audioStore.masterVolume" min="0" max="100">
             <span class="setting-value">{{ audioStore.masterVolume }}%</span>
           </div>
           
           <div class="setting-row">
-            <span class="setting-label">Music</span>
+            <span class="setting-label">{{ $t('systemSettings.music') }}</span>
             <input type="range" class="setting-slider" v-model.number="audioStore.bgmVolume" min="0" max="100">
             <span class="setting-value">{{ audioStore.bgmVolume }}%</span>
           </div>
           
           <div class="setting-row">
-            <span class="setting-label">Sound Effects</span>
+            <span class="setting-label">{{ $t('systemSettings.soundEffects') }}</span>
             <input type="range" class="setting-slider" v-model.number="audioStore.sfxVolume" min="0" max="100">
             <span class="setting-value">{{ audioStore.sfxVolume }}%</span>
           </div>

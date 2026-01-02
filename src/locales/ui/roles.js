@@ -61,6 +61,13 @@ export default {
     en: 'King',
     ja: '王',
     ko: '국왕'
+  },
+  god_slayer: {
+    zh: '弑神者',
+    'zh-TW': '弒神者',
+    en: 'God Slayer',
+    ja: 'ゴッドスレイヤー',
+    ko: '신을 죽이는 자'
   }
 }
 

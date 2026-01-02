@@ -1,0 +1,85 @@
+// src/utils/iconMap.js
+
+// 图标映射表
+// 键名使用 snake_case 格式：icon_xxx
+// 目前映射到 emoji，未来可以映射到图片路径 (e.g., '/images/icons/potion.png')
+export const iconMap = {
+  // Consumables
+  icon_potion: "🧪",
+  icon_herb: "🌱",
+  icon_tent: "⛺",
+  icon_feather: "🪶",
+  icon_bomb: "💣",
+
+  // Weapons
+  icon_sword: "⚔️",
+  icon_dagger: "🗡️",
+  icon_staff: "🦯",
+
+  // Armor
+  icon_armor: "👕", // Leather Armor
+  icon_shield: "🛡️",
+  icon_robe: "👘",
+
+  // Accessories
+  icon_ring: "💍",
+
+  // Key Items
+  icon_map: "🗺️",
+  icon_key: "🗝️",
+
+  // Skills
+  icon_slash: "⚔️", // 可以复用 icon_sword，但区分语意更好
+  icon_impact: "💥",
+  icon_fire: "🔥",
+  icon_ice: "❄️",
+  icon_lightning: "⚡",
+  icon_heal: "💚",
+  icon_revive: "✨",
+  icon_strength: "🦾",
+  icon_mana: "💧",
+
+  // Status Effects
+  icon_poison: "☠️",
+  icon_freeze: "🧊",
+  icon_bleed: "🩸",
+  icon_slow: "🐢",
+  icon_haste: "⏩",
+  icon_regen: "✨", // 复用星星
+  icon_buff_atk: "⚔️",
+  icon_buff_def: "🛡️",
+
+  // Characters
+  icon_user: "👤",
+
+  // UI / Fallbacks
+  icon_box: "📦",
+  icon_unknown: "?",
+  icon_locked: "🔒",
+
+  // Battle UI
+  icon_backpack: "🎒",
+  icon_switch: "🔄",
+  icon_skip: "⏭️",
+  icon_flower: "🌸",
+  icon_magic: "✨"
+};
+
+/**
+ * 获取图标内容
+ * @param {string} key - 图标的键名 (e.g., 'icon_potion')
+ * @returns {string} - 对应的 emoji 或 原始 key (如果未找到)
+ */
+export const getIcon = (key) => {
+  return iconMap[key] || key;
+};
+
+/**
+ * 检查是否为图片路径 (未来使用)
+ * @param {string} key 
+ * @returns {boolean}
+ */
+export const isImageIcon = (key) => {
+  // 简单的检查逻辑，未来根据实际图片路径规则调整
+  return typeof key === 'string' && (key.startsWith('/') || key.startsWith('http') || key.endsWith('.png') || key.endsWith('.gif'));
+};

@@ -23,6 +23,7 @@ import skills from './skills';
 import systemSettings from './systemSettings';
 import thank from './thank';
 import equipment from './equipment';
+import battle from './battle';
 
 export default {
   common,
@@ -49,5 +50,6 @@ export default {
   skills,
   systemSettings,
   thank,
-  equipment
+  equipment,
+  battle
 };

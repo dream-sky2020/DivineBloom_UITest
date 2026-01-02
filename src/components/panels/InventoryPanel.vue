@@ -55,8 +55,12 @@
       />
 
       <div class="description-panel">
-        <div class="desc-icon-box" v-if="selectedItem && !selectedItem.isEmpty">{{ selectedItem.icon }}</div>
-        <div class="desc-icon-box empty" v-else>📦</div>
+        <div class="desc-icon-box" v-if="selectedItem && !selectedItem.isEmpty">
+          <GameIcon :name="selectedItem.icon" />
+        </div>
+        <div class="desc-icon-box empty" v-else>
+          <GameIcon name="icon_box" />
+        </div>
         
         <div class="desc-text-box">
           <template v-if="selectedItem && !selectedItem.isEmpty">
@@ -82,6 +86,7 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import GameDataGrid from '@/components/ui/GameDataGrid.vue';
+import GameIcon from '@/components/ui/GameIcon.vue';
 import { useInventoryStore } from '@/stores/inventory';
 
 const { t, locale } = useI18n();
