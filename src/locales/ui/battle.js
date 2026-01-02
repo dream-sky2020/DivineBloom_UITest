@@ -37,13 +37,9 @@ export default {
     buffCast: { zh: '{user} 对 {target} 施加了增益', 'zh-TW': '{user} 對 {target} 施加了增益', en: '{user} casts buff on {target}', ja: '{user}は{target}に強化をかけた', ko: '{user}가 {target}에게 버프 시전' },
     partyRestored: { zh: '队伍状态已完全恢复!', 'zh-TW': '隊伍狀態已完全恢復!', en: 'Party fully restored!', ja: 'パーティの状態が全回復した！', ko: '파티 상태 완전 회복!' },
 
-    // Boss specific (Generic versions)
-    bossAoeFire: { zh: '{name} 释放了燎原烈火！(AOE)', 'zh-TW': '{name} 釋放了燎原烈火！(AOE)', en: '{name} unleashed Prairie Fire! (AOE)', ja: '{name}は燎原の炎を放った！(全体)', ko: '{name} 요원의 불길 시전! (광역)' },
-    bossSingleFire: { zh: '{name} 用烈焰之剑斩向 {target}！', 'zh-TW': '{name} 用烈焰之劍斬向 {target}！', en: '{name} slashes {target} with Flaming Sword!', ja: '{name}は烈火の剣で{target}を斬りつけた！', ko: '{name} 화염의 검으로 {target} 베기!' },
-    bossAoeSlash: { zh: '{name} 施展了圆月斩！(AOE)', 'zh-TW': '{name} 施展了圓月斬！(AOE)', en: '{name} performs Full Moon Slash! (AOE)', ja: '{name}は円月斬りを放った！(全体)', ko: '{name} 원월참 시전! (광역)' },
-    bossSingleSlash: { zh: '{name} 精准地刺向 {target}！', 'zh-TW': '{name} 精準地刺向 {target}！', en: '{name} pierces {target} precisely!', ja: '{name}は{target}を正確に突き刺した！', ko: '{name} {target} 정밀 찌르기!' },
-    bossSingleLightning: { zh: '{name} 召唤雷霆轰击 {target}！', 'zh-TW': '{name} 召喚雷霆轟擊 {target}！', en: '{name} calls Lightning upon {target}!', ja: '{name}は{target}に雷を落とした！', ko: '{name} {target}에게 뇌전 소환!' },
-    bossAoeIce: { zh: '{name} 召唤了极寒暴风雪！(AOE)', 'zh-TW': '{name} 召喚了極寒暴風雪！(AOE)', en: '{name} summons Blizzard! (AOE)', ja: '{name}は極寒の吹雪を召喚した！(全体)', ko: '{name} 극한의 눈보라 소환! (광역)' },
+    // Boss specific (Generic versions) - DEPRECATED/REMOVED
+    // The system now uses dynamic skill names from src/data/skills.js combined with 'useSkill' template
+
 
     // Chain
     chainHit: { zh: '[第{count}次弹射] 命中 {target}，造成 {amount} 伤害!', 'zh-TW': '[第{count}次彈射] 命中 {target}，造成 {amount} 傷害!', en: '[Bounce {count}] Hit {target} for {amount} damage!', ja: '[{count}回目] {target}に命中、{amount}のダメージ！', ko: '[{count}회차] {target} 적중, {amount} 피해!' },

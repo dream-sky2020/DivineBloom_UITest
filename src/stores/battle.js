@@ -5,72 +5,10 @@ import { skillsDb } from '@/data/skills';
 import { itemsDb } from '@/data/items';
 import { statusDb } from '@/data/status';
 import { useInventoryStore } from './inventory';
-
-// --- Helper Functions ---
-
-const calculateDamage = (attacker, defender, skill = null, effect = null) => {
-    let atk = attacker.atk || 10;
-    let def = defender.def || 5;
-
-    // Apply Status Modifiers
-    if (attacker.statusEffects) {
-        attacker.statusEffects.forEach(s => {
-            const statusDef = statusDb[s.id];
-            if (statusDef && statusDef.effects) {
-                statusDef.effects.forEach(eff => {
-                    if (eff.trigger === 'passive' && eff.type === 'statMod' && eff.stat === 'atk') {
-                        atk *= eff.value;
-                    }
-                });
-            }
-        });
-    }
-    if (defender.statusEffects) {
-        defender.statusEffects.forEach(s => {
-            const statusDef = statusDb[s.id];
-            if (statusDef && statusDef.effects) {
-                statusDef.effects.forEach(eff => {
-                    if (eff.trigger === 'passive' && eff.type === 'statMod' && eff.stat === 'def') {
-                        def *= eff.value;
-                    }
-                });
-            }
-        });
-    }
-
-    // Skill modifiers
-    let multiplier = 1.0;
-
-    // Check Scaling from Effect or Fallback to generic logic
-    if (effect && effect.value) {
-        multiplier = effect.value;
-    }
-
-    if (skill) {
-        if (skill.category === 'skillCategories.magic' || (effect && effect.scaling === 'mag')) {
-            // Magic ignores some defense
-            def *= 0.7;
-            atk = (attacker.currentMp * 0.5) + (attacker.mag * 2 || atk); // Use MAG stat if available
-            // Elemental Modifiers
-            if (skill.element === 'elements.fire') multiplier *= 1.1;
-            // ... more element logic
-        } else {
-            // Physical
-            atk *= 1.0;
-        }
-    }
-
-    let rawDmg = Math.max(1, (atk * multiplier) - (def / 2));
-
-    // Defend Status
-    if (defender.isDefending) {
-        rawDmg *= 0.5;
-    }
-
-    // Add some randomness +/- 10%
-    const variance = (Math.random() * 0.2) + 0.9;
-    return Math.floor(rawDmg * variance * 10); // Adjusted scaling
-};
+import { getEnemyAction } from '@/game/ai';
+import { calculateDamage, applyDamage, applyHeal } from '@/game/battle/mechanics';
+import { processEffect, processTurnStatuses } from '@/game/battle/effects';
+import { applyStatus, removeStatus, checkCrowdControl } from '@/game/battle/status';
 
 export const useBattleStore = defineStore('battle', () => {
     const inventoryStore = useInventoryStore();
@@ -103,6 +41,14 @@ export const useBattleStore = defineStore('battle', () => {
     });
 
     // --- Actions ---
+
+    // Build Context for Mechanics
+    const getContext = () => ({
+        log,
+        performSwitch,
+        partySlots: partySlots.value,
+        enemies: enemies.value
+    });
 
     // Helper to find any party member
     const findPartyMember = (id) => {
@@ -253,7 +199,7 @@ export const useBattleStore = defineStore('battle', () => {
         unit.isDefending = false; // Reset Defend at start of turn
 
         // Process Turn Start Statuses (DoT, HoT)
-        processTurnStatuses(unit);
+        processTurnStatuses(unit, getContext());
 
         // Check if unit died from status
         if ((unit.currentHp || unit.hp) <= 0) {
@@ -290,12 +236,6 @@ export const useBattleStore = defineStore('battle', () => {
 
     const processEnemyTurn = async (enemy) => {
         // Delay for dramatic effect
-        // Use setTimeout but we are in a store action, ideally we don't block
-        // We can just set a timeout to call 'performEnemyAction'
-
-        // Since we want to stop time, we are paused.
-        // We can execute logic and then unpause after a delay.
-
         setTimeout(() => {
             if (enemy.hp <= 0) {
                 endTurn(enemy);
@@ -306,72 +246,92 @@ export const useBattleStore = defineStore('battle', () => {
             if (typeof enemy.actionCount === 'undefined') enemy.actionCount = 0;
             enemy.actionCount++;
 
-            // Find valid targets
-            const aliveSlots = partySlots.value.filter(s => s.front && s.front.currentHp > 0);
-            if (aliveSlots.length === 0) {
+            // Context
+            const context = {
+                actor: enemy,
+                party: partySlots.value,
+                turnCount: turnCount.value
+            };
+
+            const action = getEnemyAction(enemy.id, context);
+
+            if (!action) {
                 endTurn(enemy);
                 return;
             }
-            const allTargets = aliveSlots.map(s => s.front);
-            const randomTarget = allTargets[Math.floor(Math.random() * allTargets.length)];
 
-            // AI Logic
-            if (enemy.id === 103) { // Hefietian
-                if (enemy.actionCount % 2 === 0) {
-                    // Even: AOE Fire + Burn
-                    log('battle.bossAoeFire', { name: enemy.name });
-                    allTargets.forEach(target => {
-                        const dmg = calculateDamage(enemy, target, null, { value: 1.2, scaling: 'mag' });
-                        applyDamage(target, dmg);
-                        applyStatus(target, 2, 3); // Burn
-                    });
-                } else {
-                    // Odd: Single Strong Fire + Burn
-                    log('battle.bossSingleFire', { name: enemy.name, target: randomTarget.name });
-                    const dmg = calculateDamage(enemy, randomTarget, null, { value: 1.8, scaling: 'str' });
-                    applyDamage(randomTarget, dmg);
-                    applyStatus(randomTarget, 2, 3); // Burn
+            if (action.type === 'custom_skill') {
+                // Log
+                if (action.logKey) {
+                    let logParams = { name: enemy.name };
+                    if (action.targetType === 'single' && action.targetId) {
+                        const t = findPartyMember(action.targetId);
+                        if (t) logParams.target = t.name;
+                    }
+                    log(action.logKey, logParams);
                 }
-            } else if (enemy.id === 102) { // Shahryar
-                if (enemy.actionCount % 2 === 0) {
-                    // Even: AOE Slash + Bleed
-                    log('battle.bossAoeSlash', { name: enemy.name });
-                    allTargets.forEach(target => {
-                        const dmg = calculateDamage(enemy, target, null, { value: 1.0, scaling: 'str' });
-                        applyDamage(target, dmg);
-                        applyStatus(target, 5, 3); // Bleed
-                    });
-                } else {
-                    // Odd: Single Slash + Bleed
-                    log('battle.bossSingleSlash', { name: enemy.name, target: randomTarget.name });
-                    const dmg = calculateDamage(enemy, randomTarget, null, { value: 1.5, scaling: 'str' });
-                    applyDamage(randomTarget, dmg);
-                    applyStatus(randomTarget, 5, 3); // Bleed
+
+                // Resolve Targets
+                let targets = [];
+                if (action.targetType === 'all') {
+                    targets = partySlots.value
+                        .filter(s => s.front && s.front.currentHp > 0)
+                        .map(s => s.front);
+                } else if (action.targetType === 'single' && action.targetId) {
+                    const t = findPartyMember(action.targetId);
+                    if (t) targets = [t];
                 }
-            } else if (enemy.id === 101) { // Emperor Shenwu
-                if (enemy.actionCount % 2 !== 0) {
-                    // Odd: Single Lightning + Paralysis
-                    log('battle.bossSingleLightning', { name: enemy.name, target: randomTarget.name });
-                    const dmg = calculateDamage(enemy, randomTarget, null, { value: 1.6, scaling: 'mag' });
-                    applyDamage(randomTarget, dmg);
-                    applyStatus(randomTarget, 4, 2); // Paralysis
-                } else {
-                    // Even: AOE Blizzard + Chance Freeze + Chance Slow
-                    log('battle.bossAoeIce', { name: enemy.name });
-                    allTargets.forEach(target => {
-                        const dmg = calculateDamage(enemy, target, null, { value: 1.3, scaling: 'mag' });
-                        applyDamage(target, dmg);
-                        // Chance Freeze (30%)
-                        if (Math.random() < 0.3) applyStatus(target, 3, 1);
-                        // Chance Slow (50%)
-                        if (Math.random() < 0.5) applyStatus(target, 6, 3);
+
+                // Apply Effects
+                targets.forEach(target => {
+                    if (action.effects) {
+                        action.effects.forEach(eff => {
+                            processEffect(eff, target, enemy, null, getContext());
+                        });
+                    }
+                });
+
+            } else if (action.type === 'skill') {
+                const skill = skillsDb[action.skillId];
+                if (skill) {
+                    // Log: Always use generic 'useSkill' format
+                    log('battle.useSkill', { user: enemy.name, skill: skill.name });
+
+                    // Resolve Targets
+                    let targets = [];
+                    // Check AI override first, then skill data
+                    const targetType = action.targetType || skill.targetType;
+
+                    if (targetType === 'allEnemies' || targetType === 'all') { // For enemy using skill, 'allEnemies' means Players
+                        targets = partySlots.value
+                            .filter(s => s.front && s.front.currentHp > 0)
+                            .map(s => s.front);
+                    } else if (targetType === 'single' || targetType === 'enemy') {
+                        const t = findPartyMember(action.targetId);
+                        if (t) targets = [t];
+                        else {
+                            // Fallback if AI didn't provide targetId but it's single target
+                            const alive = partySlots.value.filter(s => s.front && s.front.currentHp > 0).map(s => s.front);
+                            if (alive.length > 0) targets = [alive[Math.floor(Math.random() * alive.length)]];
+                        }
+                    }
+
+                    // Apply Effects
+                    targets.forEach(target => {
+                        if (skill.effects) {
+                            skill.effects.forEach(eff => {
+                                processEffect(eff, target, enemy, skill, getContext());
+                            });
+                        }
                     });
                 }
-            } else {
-                // Default AI
-                log('battle.attacks', { attacker: enemy.name, target: randomTarget.name });
-                const dmg = calculateDamage(enemy, randomTarget);
-                applyDamage(randomTarget, dmg);
+            } else if (action.type === 'attack') {
+                const target = findPartyMember(action.targetId);
+                if (target) {
+                    log('battle.attacks', { attacker: enemy.name, target: target.name });
+                    const dmg = calculateDamage(enemy, target);
+                    applyDamage(target, dmg, getContext());
+                }
             }
 
             endTurn(enemy);
@@ -443,7 +403,7 @@ export const useBattleStore = defineStore('battle', () => {
                                     finalEffect.value *= multiplier;
                                 }
                                 // Use silent=true to suppress default logs, we log manually below
-                                const val = processEffect(finalEffect, currentTarget, actor, skill, true);
+                                const val = processEffect(finalEffect, currentTarget, actor, skill, getContext(), true);
                                 if (finalEffect.type === 'damage') damageDealt += val;
                             });
 
@@ -462,12 +422,12 @@ export const useBattleStore = defineStore('battle', () => {
                             if (skill.targetType === 'allEnemies') {
                                 for (const enemy of enemies.value) {
                                     if (enemy.hp > 0) {
-                                        processEffect(effect, enemy, actor, skill);
+                                        processEffect(effect, enemy, actor, skill, getContext());
                                     }
                                 }
                             } else if (skill.targetType === 'allAllies') {
                                 partySlots.value.forEach(slot => {
-                                    if (slot.front && slot.front.currentHp > 0) processEffect(effect, slot.front, actor, skill);
+                                    if (slot.front && slot.front.currentHp > 0) processEffect(effect, slot.front, actor, skill, getContext());
                                 });
                             } else {
                                 // Single Target
@@ -477,7 +437,7 @@ export const useBattleStore = defineStore('battle', () => {
                                 } else if (skill.targetType === 'enemy') {
                                     target = enemies.value.find(e => e.id === targetId) || enemies.value.find(e => e.hp > 0);
                                 }
-                                processEffect(effect, target, actor, skill);
+                                processEffect(effect, target, actor, skill, getContext());
                             }
                         });
                     }
@@ -494,7 +454,7 @@ export const useBattleStore = defineStore('battle', () => {
 
             if (target) {
                 const dmg = calculateDamage(actor, target);
-                applyDamage(target, dmg);
+                applyDamage(target, dmg, getContext());
             }
         } else if (actionType === 'defend') {
             actor.isDefending = true;
@@ -520,108 +480,6 @@ export const useBattleStore = defineStore('battle', () => {
         }
     };
 
-    const processEffect = (effect, target, actor, skill = null, silent = false) => {
-        if (!effect) return 0;
-
-        switch (effect.type) {
-            case 'heal':
-                if (target) {
-                    let amount = effect.value;
-                    if (effect.scaling === 'maxHp') {
-                        amount = Math.floor(target.maxHp * effect.value);
-                    }
-                    return applyHeal(target, amount, silent);
-                }
-                break;
-            case 'recoverMp':
-                if (target) {
-                    target.currentMp = Math.min(target.maxMp, target.currentMp + effect.value);
-                    if (!silent) log('battle.recoveredMp', { target: target.name, amount: effect.value });
-                    return effect.value;
-                }
-                break;
-            case 'revive':
-                if (target && target.currentHp <= 0) {
-                    target.currentHp = Math.floor(target.maxHp * effect.value);
-                    if (!silent) log('battle.revived', { target: target.name });
-                    return target.currentHp;
-                } else {
-                    if (!silent) log('battle.noEffect');
-                    return 0;
-                }
-                break;
-            case 'damage':
-                if (target) {
-                    let dmg = 0;
-                    if (effect.scaling === 'atk' || effect.scaling === 'mag') {
-                        // Use standard calculation
-                        dmg = calculateDamage(actor, target, skill, effect);
-                    } else if (effect.scaling === 'maxHp') {
-                        // MaxHP scaling (e.g. for Poison/DoT)
-                        dmg = Math.floor(target.maxHp * effect.value);
-                    } else {
-                        // Fixed damage
-                        dmg = effect.value;
-                    }
-                    applyDamage(target, dmg, silent);
-                    return dmg;
-                }
-                break;
-            case 'applyStatus':
-                if (target) {
-                    // Check chance if present
-                    if (effect.chance && Math.random() > effect.chance) {
-                        return 0; // Failed chance
-                    }
-                    applyStatus(target, effect.status, effect.duration || 3, null, silent);
-                    return 1;
-                }
-                break;
-            case 'buff':
-                // Attempt to map dynamic buff to statusDb
-                let statusId = null;
-                if (effect.stat === 'def') statusId = 104; // Defense Up
-                if (effect.stat === 'atk') statusId = 102; // Attack Up
-                if (effect.stat === 'spd') statusId = 103; // Haste
-
-                if (statusId) {
-                    applyStatus(target, statusId, effect.duration || 3, effect.value, silent);
-                } else {
-                    if (!silent) log('battle.buffCast', { user: actor.name, target: target ? target.name : { zh: '友方全体', en: 'allies' } });
-                }
-                break;
-            case 'cureStatus':
-                if (target) {
-                    // Map string "poison" to ID 1, etc.
-                    let sId = null;
-                    if (effect.status === 'poison') sId = 1;
-
-                    if (sId) removeStatus(target, sId, silent);
-                    else if (!silent) log('battle.statusCured', { target: target.name, status: effect.status });
-                }
-                break;
-            case 'fullRestore':
-                if (partySlots.value) {
-                    partySlots.value.forEach(slot => {
-                        if (slot.front) {
-                            slot.front.currentHp = slot.front.maxHp;
-                            slot.front.currentMp = slot.front.maxMp;
-                            slot.front.statusEffects = [];
-                        }
-                        if (slot.back) {
-                            slot.back.currentHp = slot.back.maxHp;
-                            slot.back.currentMp = slot.back.maxMp;
-                            slot.back.statusEffects = [];
-                        }
-                    });
-                    if (!silent) log('battle.partyRestored');
-                }
-                break;
-            default:
-                console.warn('Unknown effect type:', effect.type);
-        }
-        return 0;
-    };
 
     const handleItemEffect = (itemId, targetId, actor) => {
         const item = itemsDb[itemId];
@@ -639,95 +497,22 @@ export const useBattleStore = defineStore('battle', () => {
 
         // Apply all effects
         item.effects.forEach(effect => {
-            processEffect(effect, target, actor);
+            processEffect(effect, target, actor, null, getContext());
         });
     };
 
     // --- Status System ---
+    // (Moved to status.js, kept here for store action references if needed, but actually we use the imported ones now via processEffect)
+    // The internal status helpers (applyStatus, removeStatus) are no longer needed here as they are imported by effects.js.
+    // However, if processATB (updateATB) or other logic needs them, we should update those too.
 
-    const applyStatus = (target, statusId, duration = 3, value = null, silent = false) => {
-        if (!target || !statusDb[statusId]) return;
+    // Note: updateATB uses status effects for speed calculation, which is read-only.
+    // processTurnStatuses is called in startTurn.
 
-        // Initialize if not present
-        if (!target.statusEffects) target.statusEffects = [];
+    // We can remove the local definitions of processEffect, applyStatus, removeStatus, processTurnStatuses, checkCrowdControl, performSwitch (wait, performSwitch is used by applyDamage callback, so it must stay or be passed)
 
-        // Check if already exists
-        const existing = target.statusEffects.find(s => s.id === statusId);
-        const statusDef = statusDb[statusId];
-
-        if (existing) {
-            existing.duration = duration; // Refresh duration
-            if (!silent) log('battle.statusExtended', { target: target.name, status: statusDef.name });
-        } else {
-            target.statusEffects.push({
-                id: statusId,
-                duration: duration,
-                value: value
-            });
-            if (!silent) log('battle.statusApplied', { target: target.name, status: statusDef.name });
-        }
-    };
-
-    const removeStatus = (target, statusId, silent = false) => {
-        if (!target || !target.statusEffects) return;
-        const idx = target.statusEffects.findIndex(s => s.id === statusId);
-        if (idx !== -1) {
-            const statusDef = statusDb[statusId];
-            target.statusEffects.splice(idx, 1);
-            if (!silent) log('battle.statusCured', { target: target.name, status: statusDef.name });
-        }
-    };
-
-    const processTurnStatuses = (character) => {
-        if (!character || !character.statusEffects) return;
-
-        // Iterate backwards to allow removal
-        for (let i = character.statusEffects.length - 1; i >= 0; i--) {
-            const status = character.statusEffects[i];
-            const statusDef = statusDb[status.id];
-
-            if (statusDef && statusDef.effects) {
-                statusDef.effects.forEach(eff => {
-                    if (eff.trigger === 'turnStart') {
-                        // Pass actor as character itself for self-inflicted effects (DoT/HoT)
-                        const val = processEffect(eff, character, character, null, true);
-
-                        // Custom logs based on type
-                        if (eff.type === 'damage') {
-                            log('battle.statusDamage', { target: character.name, amount: val, status: statusDef.name });
-                        } else if (eff.type === 'heal') {
-                            log('battle.statusHeal', { target: character.name, amount: val, status: statusDef.name });
-                        }
-                    }
-                });
-            }
-
-            // Decrement Duration
-            status.duration--;
-            if (status.duration <= 0) {
-                character.statusEffects.splice(i, 1);
-                log('battle.statusWoreOff', { target: character.name, status: statusDef.name });
-            }
-        }
-    };
-
-    const checkCrowdControl = (character) => {
-        if (!character || !character.statusEffects) return false;
-
-        for (const status of character.statusEffects) {
-            const statusDef = statusDb[status.id];
-            if (statusDef && statusDef.effects) {
-                for (const eff of statusDef.effects) {
-                    if (eff.trigger === 'checkAction' && eff.type === 'stun') {
-                        if (Math.random() < (eff.chance || 1.0)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    };
+    // performSwitch needs access to partySlots.value (ref), so it should stay in the store.
+    // applyDamage needs to call performSwitch. We pass performSwitch in getContext().
 
     const performSwitch = (slotIndex) => {
         const slot = partySlots.value[slotIndex];
@@ -746,45 +531,8 @@ export const useBattleStore = defineStore('battle', () => {
         }
     };
 
-    const applyDamage = (target, amount, silent = false) => {
-        target.currentHp = Math.max(0, (target.currentHp || target.hp) - amount);
-        if (target.hp !== undefined) target.hp = target.currentHp;
-
-        if (!silent) {
-            log('battle.damage', { target: target.name, amount: amount });
-            if (target.isDefending) {
-                log('battle.defended');
-            }
-        }
-
-        // Check if a front-row party member died and needs switching
-        if (target.currentHp <= 0) {
-            const slotIndex = partySlots.value.findIndex(s => s.front && s.front.id === target.id);
-            if (slotIndex !== -1) {
-                const slot = partySlots.value[slotIndex];
-                if (slot.back && slot.back.currentHp > 0) {
-                    if (!silent) log('battle.fell', { target: target.name, backup: slot.back.name });
-                    performSwitch(slotIndex);
-                }
-            }
-        }
-        return amount;
-    };
-
-    const applyHeal = (target, amount, silent = false) => {
-        if (!target) return 0;
-        if (target.currentHp <= 0) {
-            if (!silent) log('battle.incapacitated', { target: target.name });
-            return 0;
-        }
-
-        const oldHp = target.currentHp;
-        target.currentHp = Math.min(target.maxHp, target.currentHp + amount);
-        const healed = target.currentHp - oldHp;
-
-        if (!silent) log('battle.recoveredHp', { target: target.name, amount: healed });
-        return healed;
-    };
+    // Removing old function definitions that are now imported or unused
+    // processEffect, applyStatus, removeStatus, processTurnStatuses, checkCrowdControl, applyDamage, applyHeal are removed from here.
 
     const checkBattleStatus = () => {
         const allEnemiesDead = enemies.value.every(e => e.hp <= 0);
