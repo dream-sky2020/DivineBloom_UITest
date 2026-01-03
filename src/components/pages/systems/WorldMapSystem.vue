@@ -73,31 +73,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.root {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.cv {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #dbeafe;
-}
-
-.ui {
-  position: absolute;
-  left: 12px;
-  top: 12px;
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.90);
-  border: 1px solid rgba(0,0,0,0.10);
-  border-radius: 8px;
-  font: 13px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  color: #000;
-  pointer-events: none;
-}
-</style>
+<style scoped src="@styles/components/pages/systems/WorldMapSystem.css"></style>

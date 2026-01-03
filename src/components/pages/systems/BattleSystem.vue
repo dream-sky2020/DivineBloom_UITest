@@ -13,6 +13,11 @@
       v-model:speed="gameSpeed"
     />
 
+    <!-- View Toggle -->
+    <div class="view-toggle-pos">
+      <BattleViewToggle v-model="partyViewMode" />
+    </div>
+
     <!-- Enemies Area -->
     <div class="enemy-zone">
       <BattleEnemyUnit 
@@ -50,6 +55,8 @@
         v-for="(slot, index) in partySlots" 
         :key="index" 
         :slot="slot"
+        :compact="compactPartyMode"
+        :view-mode="partyViewMode"
         :is-active-turn="isSlotActive(slot)"
         :selection-context="{ isSelectingAlly, isSelectingDead }"
         @click-character="onCharacterClick"
@@ -68,6 +75,7 @@ import BattlePartySlot from '@/components/ui/BattlePartySlot.vue';
 import BattleActionMenu from '@/components/ui/BattleActionMenu.vue';
 import BattleTopBar from '@/components/ui/BattleTopBar.vue';
 import BattleSpeedControl from '@/components/ui/BattleSpeedControl.vue';
+import BattleViewToggle from '@/components/ui/BattleViewToggle.vue';
 import BattleLog from '@/components/ui/BattleLog.vue';
 
 const battleStore = useBattleStore();
@@ -77,6 +85,8 @@ const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItem
 let animationFrameId = null;
 let lastTime = 0;
 const gameSpeed = ref(1);
+const partyViewMode = ref('default');
+const compactPartyMode = ref(true);
 
 const showSkillMenu = ref(false);
 const showItemMenu = ref(false);
@@ -223,35 +233,4 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped>
-.battle-system {
-  width: 1920px;
-  height: 1080px;
-  background: linear-gradient(to bottom, #1e1b4b, #312e81);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  color: white;
-  font-family: var(--font-main, sans-serif);
-}
-
-/* Enemy Zone */
-.enemy-zone {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-}
-
-/* Party Zone */
-.party-zone {
-  height: 600px;
-  padding: 2rem;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-}
-</style>
+<style scoped src="@styles/components/pages/systems/BattleSystem.css"></style>

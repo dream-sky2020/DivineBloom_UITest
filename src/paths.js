@@ -7,27 +7,30 @@
 export const PATHS = {
   // 数据目录
   DATA: '@/data',
-  
+
   // 游戏核心逻辑
   GAME: '@/game',
   SCENES: '@/game/scenes',
   ENTITIES: '@/game/entities',
-  
+
   // Vue 组件
   COMPONENTS: '@/components',
   PAGES: '@/components/pages',
   SYSTEMS: '@/components/pages/systems',
   PANELS: '@/components/panels',
   UI: '@/components/ui',
-  
+
   // Stores (Pinia)
   STORES: '@/stores',
-  
+
   // 工具类
   UTILS: '@/utils',
-  
+
   // 静态资源
-  ASSETS: '@/assets'
+  ASSETS: '@/assets',
+
+  // 样式目录
+  STYLES: '@/styles'
 }
 
 // 如果需要在 JS 中动态导入，可以使用这些辅助函数 (可选)

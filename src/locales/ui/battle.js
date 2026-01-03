@@ -57,4 +57,10 @@ export default {
     actionSkip: { zh: '空过', 'zh-TW': '空過', en: 'Skip', ja: 'スキップ', ko: '대기' },
     actionBloom: { zh: '怒放', 'zh-TW': '怒放', en: 'Bloom', ja: '開花', ko: '개화' },
     noBackup: { zh: '无后备', 'zh-TW': '無後備', en: 'No Backup', ja: '控えなし', ko: '예비 없음' },
+
+    views: {
+        default: { zh: '默认视图', 'zh-TW': '預設視圖', en: 'Default View', ja: 'デフォルト表示', ko: '기본 보기' },
+        compact: { zh: '紧凑视图', 'zh-TW': '緊湊視圖', en: 'Compact View', ja: 'コンパクト表示', ko: '간략 보기' },
+        avatar: { zh: '头像视图', 'zh-TW': '頭像視圖', en: 'Avatar View', ja: 'アバター表示', ko: '아바타 보기' }
+    },
 }

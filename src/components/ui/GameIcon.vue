@@ -25,19 +25,4 @@ const resolvedIcon = computed(() => getIcon(props.name));
 const isImage = computed(() => isImageIcon(resolvedIcon.value));
 </script>
 
-<style scoped>
-.game-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  user-select: none;
-}
-
-.icon-img {
-  width: 1em;
-  height: 1em;
-  object-fit: contain;
-}
-</style>
-
+<style scoped src="@styles/components/ui/GameIcon.css"></style>
