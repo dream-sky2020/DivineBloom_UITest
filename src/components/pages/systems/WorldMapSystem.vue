@@ -63,6 +63,23 @@ onMounted(async () => {
   const gameEngine = new GameEngine(cv.value)
   engine.value = gameEngine
 
+  // Handle Battle Result (Victory/Flee)
+  if (battleStore.lastBattleResult) {
+    const { result, enemyUuid } = battleStore.lastBattleResult
+    if (worldStore.enemies) {
+      if (result === 'victory') {
+        worldStore.enemies = worldStore.enemies.filter(e => e.options.uuid !== enemyUuid)
+      } else if (result === 'flee') {
+        const enemy = worldStore.enemies.find(e => e.options.uuid === enemyUuid)
+        if (enemy) {
+          enemy.options.isStunned = true
+          enemy.options.stunnedTimer = 3.0 // 3 seconds stun
+        }
+      }
+    }
+    battleStore.lastBattleResult = null
+  }
+
   // 2. 初始化场景
   // 传入遇敌回调
   const initialState = worldStore.isInitialized ? {
@@ -71,13 +88,13 @@ onMounted(async () => {
     enemies: worldStore.enemies
   } : null
 
-  const mainScene = new MainScene(gameEngine, (enemyGroup) => {
+  const mainScene = new MainScene(gameEngine, (enemyGroup, enemyUuid) => {
       console.log('Enter Battle!', enemyGroup)
       // 1. Pause Engine (optional, but good practice)
       gameEngine.stop()
 
       // 2. Init Battle Data
-      battleStore.initBattle(enemyGroup)
+      battleStore.initBattle(enemyGroup, enemyUuid)
 
       // 3. Switch UI
       emit('change-system', 'battle')

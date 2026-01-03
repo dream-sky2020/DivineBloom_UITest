@@ -11,7 +11,7 @@ class ActionBuilder {
     // Standard Attack
     attack(target) {
         this._action.type = 'attack';
-        this._action.targetId = target ? target.id : null;
+        this._action.targetId = target ? (target.uuid || target.id) : null;
         return this;
     }
 
@@ -43,7 +43,7 @@ class ActionBuilder {
 
     targetSingle(unit) {
         this._action.targetType = 'single';
-        this._action.targetId = unit ? unit.id : null;
+        this._action.targetId = unit ? (unit.uuid || unit.id) : null;
         return this;
     }
 

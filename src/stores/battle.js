@@ -23,6 +23,8 @@ export const useBattleStore = defineStore('battle', () => {
     const battleLog = ref([]);
     const atbPaused = ref(false);
     const activeUnit = ref(null); // The unit currently acting (Player or Enemy)
+    const triggeredEnemyUuid = ref(null);
+    const lastBattleResult = ref(null); // { result: 'victory'|'defeat'|'flee', enemyUuid: string }
 
     // --- Getters ---
     const activeCharacter = computed(() => {
@@ -55,17 +57,20 @@ export const useBattleStore = defineStore('battle', () => {
     // Helper to find any party member
     const findPartyMember = (id) => {
         for (const slot of partySlots.value) {
-            if (slot.front && slot.front.id === id) return slot.front;
-            if (slot.back && slot.back.id === id) return slot.back;
+            if (slot.front && (slot.front.uuid === id || slot.front.id === id)) return slot.front;
+            if (slot.back && (slot.back.uuid === id || slot.back.id === id)) return slot.back;
         }
         return null;
     };
+
+    const generateUUID = () => 'u' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 
     const createUnit = (dbId, isPlayer = false) => {
         const data = charactersDb[dbId];
         if (!data) return null;
         return {
             ...data,
+            uuid: generateUUID(),
             // Ensure runtime stats are initialized from initialStats
             currentHp: data.initialStats.hp,
             maxHp: data.initialStats.hp,
@@ -89,6 +94,7 @@ export const useBattleStore = defineStore('battle', () => {
         if (!state) return null;
         return {
             ...state,
+            uuid: generateUUID(),
             // Runtime state for battle
             statusEffects: [],
             isDefending: false,
@@ -99,12 +105,14 @@ export const useBattleStore = defineStore('battle', () => {
     };
 
     // Initialize Battle
-    const initBattle = (enemyList) => {
+    const initBattle = (enemyList, enemyUuid = null) => {
         // Reset state
         turnCount.value = 1;
         battleLog.value = [];
         activeUnit.value = null;
         atbPaused.value = false;
+        triggeredEnemyUuid.value = enemyUuid;
+        lastBattleResult.value = null;
 
         // Setup Enemies
         if (enemyList) {
@@ -384,14 +392,14 @@ export const useBattleStore = defineStore('battle', () => {
                 if (skill.effects) {
                     if (skill.chain) {
                         // Chain Logic
-                        let currentTarget = enemies.value.find(e => e.id === targetId) || enemies.value.find(e => e.currentHp > 0);
+                        let currentTarget = enemies.value.find(e => e.uuid === targetId || e.id === targetId) || enemies.value.find(e => e.currentHp > 0);
                         let bounceCount = skill.chain;
                         let multiplier = 1.0;
                         const hitIds = new Set();
 
                         for (let i = 0; i < bounceCount; i++) {
                             if (!currentTarget) break;
-                            hitIds.add(currentTarget.id);
+                            hitIds.add(currentTarget.uuid);
 
                             // Process effects and capture damage
                             let damageDealt = 0;
@@ -410,7 +418,7 @@ export const useBattleStore = defineStore('battle', () => {
                             multiplier *= (skill.decay || 0.85);
 
                             // Find next target (random alive enemy not yet hit)
-                            const candidates = enemies.value.filter(e => e.currentHp > 0 && !hitIds.has(e.id));
+                            const candidates = enemies.value.filter(e => e.currentHp > 0 && !hitIds.has(e.uuid));
                             if (candidates.length === 0) break;
                             currentTarget = candidates[Math.floor(Math.random() * candidates.length)];
                         }
@@ -458,7 +466,7 @@ export const useBattleStore = defineStore('battle', () => {
                             if (skill.targetType === 'ally' || skill.targetType === 'deadAlly') {
                                 target = targetId ? findPartyMember(targetId) : actor;
                             } else if (skill.targetType === 'enemy') {
-                                target = enemies.value.find(e => e.id === targetId) || enemies.value.find(e => e.currentHp > 0);
+                                target = enemies.value.find(e => e.uuid === targetId || e.id === targetId) || enemies.value.find(e => e.currentHp > 0);
                             }
                             if (target) targets.push(target);
                         }
@@ -477,7 +485,7 @@ export const useBattleStore = defineStore('battle', () => {
             log('battle.attackStart', { attacker: actor.name });
 
             // Resolve Target
-            let target = enemies.value.find(e => e.id === targetId);
+            let target = enemies.value.find(e => e.uuid === targetId || e.id === targetId);
             if (!target) {
                 target = enemies.value.find(e => e.currentHp > 0);
             }
@@ -503,6 +511,9 @@ export const useBattleStore = defineStore('battle', () => {
             }
         } else if (actionType === 'skip') {
             log('battle.skipTurn', { name: actor.name });
+        } else if (actionType === 'run') {
+            runAway();
+            return;
         }
 
         if (actionDone) {
@@ -521,7 +532,7 @@ export const useBattleStore = defineStore('battle', () => {
             target = findPartyMember(targetId);
             if (!target && item.targetType === 'ally') target = actor; // Fallback to self
         } else if (item.targetType === 'enemy') {
-            target = enemies.value.find(e => e.id === targetId);
+            target = enemies.value.find(e => e.uuid === targetId || e.id === targetId);
             if (!target) target = enemies.value.find(e => e.currentHp > 0);
         }
 
@@ -580,6 +591,7 @@ export const useBattleStore = defineStore('battle', () => {
         const allEnemiesDead = enemies.value.every(e => e.currentHp <= 0);
         if (allEnemiesDead) {
             battleState.value = 'victory';
+            lastBattleResult.value = { result: 'victory', enemyUuid: triggeredEnemyUuid.value };
             log('battle.victory');
 
             // Sync state back to PartyStore
@@ -591,10 +603,17 @@ export const useBattleStore = defineStore('battle', () => {
         const allPlayersDead = partySlots.value.every(s => !s.front || s.front.currentHp <= 0);
         if (allPlayersDead) {
             battleState.value = 'defeat';
+            lastBattleResult.value = { result: 'defeat', enemyUuid: triggeredEnemyUuid.value };
             log('battle.defeat');
             return true;
         }
         return false;
+    };
+
+    const runAway = () => {
+        battleState.value = 'flee';
+        lastBattleResult.value = { result: 'flee', enemyUuid: triggeredEnemyUuid.value };
+        log('battle.runAway'); // Make sure translation exists or text
     };
 
     const log = (keyOrMsg, params = {}) => {
@@ -634,6 +653,8 @@ export const useBattleStore = defineStore('battle', () => {
         // Actions
         initBattle,
         playerAction,
-        updateATB
+        updateATB,
+        runAway,
+        lastBattleResult
     };
 });

@@ -76,7 +76,8 @@ export const iconMap = {
   icon_switch: "🔄",
   icon_skip: "⏭️",
   icon_flower: "🌸",
-  icon_magic: "✨"
+  icon_magic: "✨",
+  icon_run: "🏃"
 };
 
 /**

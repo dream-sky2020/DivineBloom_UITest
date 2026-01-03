@@ -22,7 +22,7 @@
     <div class="enemy-zone">
       <BattleEnemyUnit 
         v-for="enemy in enemies" 
-        :key="enemy.id" 
+        :key="enemy.uuid" 
         :enemy="enemy"
         :is-selecting-target="isSelectingTarget"
         @click="onEnemyClick"
@@ -94,6 +94,10 @@ watch(battleState, (newState) => {
     setTimeout(() => {
       emit('change-system', 'world-map');
     }, 2500); 
+  } else if (newState === 'flee') {
+    setTimeout(() => {
+      emit('change-system', 'world-map');
+    }, 1500); // Shorter delay for flee
   }
 });
 const partyViewMode = ref('default');
@@ -198,11 +202,11 @@ const onEnemyClick = (enemy) => {
 
     const action = pendingAction.value;
     if (action.type === 'attack') {
-        battleStore.playerAction('attack', { targetId: enemy.id });
+        battleStore.playerAction('attack', { targetId: enemy.uuid });
     } else if (action.type === 'skill') {
-        battleStore.playerAction('skill', { skillId: action.skillId, targetId: enemy.id });
+        battleStore.playerAction('skill', { skillId: action.skillId, targetId: enemy.uuid });
     } else if (action.type === 'item') {
-        battleStore.playerAction('item', { itemId: action.itemId, targetId: enemy.id });
+        battleStore.playerAction('item', { itemId: action.itemId, targetId: enemy.uuid });
     }
     
     pendingAction.value = null;
@@ -218,9 +222,9 @@ const onCharacterClick = (character) => {
     
     const action = pendingAction.value;
     if (action.type === 'item') {
-         battleStore.playerAction('item', { itemId: action.itemId, targetId: character.id });
+         battleStore.playerAction('item', { itemId: action.itemId, targetId: character.uuid || character.id });
     } else if (action.type === 'skill') {
-         battleStore.playerAction('skill', { skillId: action.skillId, targetId: character.id });
+         battleStore.playerAction('skill', { skillId: action.skillId, targetId: character.uuid || character.id });
     }
     
     pendingAction.value = null;

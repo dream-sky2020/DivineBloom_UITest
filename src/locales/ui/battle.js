@@ -55,7 +55,9 @@ export default {
     actionItem: { zh: '道具', 'zh-TW': '道具', en: 'Item', ja: 'アイテム', ko: '도구' },
     actionSwitch: { zh: '换位', 'zh-TW': '換位', en: 'Switch', ja: '交代', ko: '교체' },
     actionSkip: { zh: '空过', 'zh-TW': '空過', en: 'Skip', ja: 'スキップ', ko: '대기' },
+    actionRun: { zh: '逃跑', 'zh-TW': '逃跑', en: 'Run', ja: '逃げる', ko: '도망' },
     actionBloom: { zh: '怒放', 'zh-TW': '怒放', en: 'Bloom', ja: '開花', ko: '개화' },
+    runAway: { zh: '成功逃离了战斗!', 'zh-TW': '成功逃離了戰鬥!', en: 'Escaped safely!', ja: '逃げ出した！', ko: '성공적으로 도망쳤다!' },
     noBackup: { zh: '无后备', 'zh-TW': '無後備', en: 'No Backup', ja: '控えなし', ko: '예비 없음' },
 
     views: {

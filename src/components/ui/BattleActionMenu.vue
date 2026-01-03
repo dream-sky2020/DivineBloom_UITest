@@ -88,6 +88,10 @@
           <GameIcon class="icon" name="icon_flower" />
           <span class="label">{{ t('battle.actionBloom') }}</span>
         </button>
+        <button class="action-btn run" @click="$emit('action', 'run')">
+          <GameIcon class="icon" name="icon_run" />
+          <span class="label">{{ t('battle.actionRun') }}</span>
+        </button>
      </div>
   </div>
 </template>

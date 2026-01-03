@@ -1,5 +1,6 @@
 import { Player } from '@/game/entities/Player'
 import { MapEnemy } from '@/game/entities/MapEnemy'
+import { maps } from '@/data/maps'
 
 /**
  * @typedef {import('@/game/GameEngine').GameEngine} GameEngine
@@ -11,11 +12,15 @@ export class MainScene {
    * @param {GameEngine} engine 
    * @param {Function} [onEncounter] - Callback when player encounters enemy
    * @param {object} [initialState] - Saved state to restore
+   * @param {string} [mapId] - ID of the map to load
    */
-  constructor(engine, onEncounter, initialState = null) {
+  constructor(engine, onEncounter, initialState = null, mapId = 'demo_plains') {
     this.engine = engine
     this.onEncounter = onEncounter
     this.player = new Player(engine)
+
+    // Load Map Data
+    this.currentMap = maps[mapId] || maps['demo_plains']
 
     // Map Enemies
     this.mapEnemies = []
@@ -23,14 +28,22 @@ export class MainScene {
     if (initialState && initialState.isInitialized) {
       this._restoreState(initialState)
     } else {
-      // Add some test enemies
-      this._spawnEnemies()
+      this._initMap()
     }
 
     // 统一实体列表
     this.entities = [this.player, ...this.mapEnemies]
 
     this.isLoaded = false
+  }
+
+  _initMap() {
+    // Set Player Spawn
+    if (this.currentMap.spawnPoint) {
+      this.player.pos.x = this.currentMap.spawnPoint.x
+      this.player.pos.y = this.currentMap.spawnPoint.y
+    }
+    this._spawnEnemies()
   }
 
   _restoreState(state) {
@@ -52,74 +65,30 @@ export class MainScene {
   }
 
   _spawnEnemies() {
-    // Spawn configured enemies for testing AI
     this.mapEnemies = []
+    if (!this.currentMap || !this.currentMap.spawners) return
 
-    // 1. Chasers (Wolf)
-    for (let i = 0; i < 2; i++) {
-      const x = 300 + Math.random() * 500
-      const y = 300 + Math.random() * 300
-      // Use DB ID 203 (Wolf)
-      const group = [{ id: 203 }]
+    this.currentMap.spawners.forEach(spawner => {
+      for (let i = 0; i < spawner.count; i++) {
+        let x = 0, y = 0
+        if (spawner.area) {
+          x = spawner.area.x + Math.random() * spawner.area.w
+          y = spawner.area.y + Math.random() * spawner.area.h
+        } else {
+          x = 300
+          y = 300
+        }
 
-      const enemy = new MapEnemy(this.engine, x, y, group, {
-        player: this.player,
-        aiType: 'chase',
-        visionRadius: 200,
-        speed: 110
-      })
-      this.mapEnemies.push(enemy)
-    }
+        const group = spawner.enemyIds.map(id => ({ id }))
 
-    // 2. Fleers (Bat)
-    for (let i = 0; i < 2; i++) {
-      const x = 300 + Math.random() * 500
-      const y = 300 + Math.random() * 300
-      // Use DB ID 202 (Bat)
-      const group = [{ id: 202 }]
-
-      const enemy = new MapEnemy(this.engine, x, y, group, {
-        player: this.player,
-        aiType: 'flee',
-        visionRadius: 150,
-        speed: 130
-      })
-      this.mapEnemies.push(enemy)
-    }
-
-    // 3. Wanderers (Slime)
-    for (let i = 0; i < 2; i++) {
-      const x = 300 + Math.random() * 500
-      const y = 300 + Math.random() * 300
-      // Use DB ID 201 (Slime)
-      const group = [{ id: 201 }]
-
-      const enemy = new MapEnemy(this.engine, x, y, group, {
-        player: this.player,
-        aiType: 'wander',
-        visionRadius: 100,
-        speed: 60
-      })
-      this.mapEnemies.push(enemy)
-    }
-
-    // 4. Guards (Heavy Guard)
-    for (let i = 0; i < 2; i++) {
-      const x = 300 + Math.random() * 500
-      const y = 300 + Math.random() * 300
-      // Use DB ID 204 (Heavy Guard)
-      const group = [{ id: 204 }]
-
-      const enemy = new MapEnemy(this.engine, x, y, group, {
-        player: this.player,
-        aiType: 'chase',
-        visionType: 'cone',
-        visionAngle: 75, // 75 degrees cone
-        visionRadius: 250,
-        speed: 90
-      })
-      this.mapEnemies.push(enemy)
-    }
+        const enemy = new MapEnemy(this.engine, x, y, group, {
+          player: this.player,
+          ...spawner.options,
+          minYRatio: this.currentMap.constraints?.minYRatio
+        })
+        this.mapEnemies.push(enemy)
+      }
+    })
   }
 
   async load() {
@@ -162,15 +131,17 @@ export class MainScene {
       const dist = Math.sqrt(dx * dx + dy * dy)
 
       if (dist < detectionRadius) {
+        if (enemy.isStunned) continue
+
         // Trigger Encounter!
         console.log('Encounter triggered with enemy index:', i)
 
-        // Remove from map
-        this.mapEnemies.splice(i, 1)
-        this.entities = this.entities.filter(e => e !== enemy)
+        // Don't remove immediately - let the battle system / world store handle the outcome
+        // this.mapEnemies.splice(i, 1)
+        // this.entities = this.entities.filter(e => e !== enemy)
 
         // Callback
-        this.onEncounter(enemy.battleGroup)
+        this.onEncounter(enemy.battleGroup, enemy.uuid)
         return // Trigger one at a time
       }
     }
@@ -198,15 +169,23 @@ export class MainScene {
    * @param {Renderer2D} renderer 
    */
   _drawEnvironment(renderer) {
+    if (!this.currentMap) return
     const { width, height } = this.engine
+    const bg = this.currentMap.background
+    const minYRatio = this.currentMap.constraints?.minYRatio ?? 0.35
 
     // 草地背景
-    renderer.drawRect(0, height * 0.35, width, height * 0.65, '#bbf7d0')
+    renderer.drawRect(0, height * minYRatio, width, height * (1 - minYRatio), bg.groundColor || '#bbf7d0')
 
-    // 一些装饰块 (模拟之前的 drawGround)
-    // 注意：Renderer2D 需要有 drawRect 方法 (我们在 GameEngine 重构时添加了)
-    renderer.drawRect(80, height * 0.55, 140, 18, 'rgba(0,0,0,0.10)')
-    renderer.drawRect(260, height * 0.70, 200, 18, 'rgba(0,0,0,0.10)')
+    // 一些装饰块
+    if (bg.decorations) {
+      bg.decorations.forEach(dec => {
+        if (dec.type === 'rect') {
+          const y = dec.yRatio ? height * dec.yRatio : dec.y
+          renderer.drawRect(dec.x, y, dec.width, dec.height, dec.color)
+        }
+      })
+    }
   }
 
   // 辅助：生成资源 URL

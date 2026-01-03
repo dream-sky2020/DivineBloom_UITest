@@ -8,13 +8,16 @@ export const useWorldStore = defineStore('world', () => {
 
     const saveState = (player, enemyList) => {
         playerPos.value = { x: player.pos.x, y: player.pos.y };
-        
+
         // Serialize enemies
         enemies.value = enemyList.map(e => ({
             x: e.pos.x,
             y: e.pos.y,
             battleGroup: e.battleGroup,
             options: {
+                uuid: e.uuid,
+                isStunned: e.isStunned,
+                stunnedTimer: e.stunnedTimer,
                 aiType: e.aiType,
                 visionRadius: e.visionRadius,
                 visionType: e.visionType,
@@ -26,7 +29,7 @@ export const useWorldStore = defineStore('world', () => {
                 speed: e.speed
             }
         }));
-        
+
         isInitialized.value = true;
     };
 
