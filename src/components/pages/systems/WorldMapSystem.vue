@@ -6,6 +6,12 @@
     <div class="ui" v-if="debugInfo">
       <div><span v-t="'worldMap.position'"></span>: x={{ Math.round(debugInfo.x) }}, y={{ Math.round(debugInfo.y) }}</div>
       <div><span v-t="'worldMap.lastInput'"></span>: {{ debugInfo.lastInput || $t('common.unknown') }}</div>
+      
+      <!-- Enemy Alert Status -->
+      <div v-if="debugInfo.chasingCount > 0" style="color: #ef4444; font-weight: bold;">
+        ⚠️ {{ debugInfo.chasingCount }} Enemies Chasing!
+      </div>
+      
       <div v-t="'worldMap.moveControls'"></div>
     </div>
   </div>
@@ -15,6 +21,12 @@
 import { onMounted, onUnmounted, ref, shallowRef } from 'vue'
 import { GameEngine } from '@/game/GameEngine'
 import { MainScene } from '@/game/scenes/MainScene'
+import { useBattleStore } from '@/stores/battle'
+import { useWorldStore } from '@/stores/world'
+
+const emit = defineEmits(['change-system'])
+const battleStore = useBattleStore()
+const worldStore = useWorldStore()
 
 const cv = ref(null)
 
@@ -30,11 +42,17 @@ function syncUI() {
   
   const player = scene.value.player
   
+  // Count chasing enemies
+  const chasingCount = scene.value.mapEnemies 
+    ? scene.value.mapEnemies.filter(e => e.aiType === 'chase' && e.state === 'alert').length
+    : 0
+
   // 每帧同步一次数据到 UI (Vue 的响应式系统足够快，处理单纯的文本更新没问题)
   debugInfo.value = {
     x: player.pos.x,
     y: player.pos.y,
-    lastInput: engine.value.input.lastInput
+    lastInput: engine.value.input.lastInput,
+    chasingCount
   }
 }
 
@@ -46,7 +64,24 @@ onMounted(async () => {
   engine.value = gameEngine
 
   // 2. 初始化场景
-  const mainScene = new MainScene(gameEngine)
+  // 传入遇敌回调
+  const initialState = worldStore.isInitialized ? {
+    isInitialized: true,
+    playerPos: worldStore.playerPos,
+    enemies: worldStore.enemies
+  } : null
+
+  const mainScene = new MainScene(gameEngine, (enemyGroup) => {
+      console.log('Enter Battle!', enemyGroup)
+      // 1. Pause Engine (optional, but good practice)
+      gameEngine.stop()
+
+      // 2. Init Battle Data
+      battleStore.initBattle(enemyGroup)
+
+      // 3. Switch UI
+      emit('change-system', 'battle')
+  }, initialState)
   scene.value = mainScene
   
   // 3. 加载资源
@@ -67,6 +102,10 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  if (scene.value && scene.value.player) {
+    worldStore.saveState(scene.value.player, scene.value.mapEnemies)
+  }
+
   if (engine.value) {
     engine.value.destroy()
   }

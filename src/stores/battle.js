@@ -5,6 +5,7 @@ import { skillsDb } from '@/data/skills';
 import { itemsDb } from '@/data/items';
 import { statusDb } from '@/data/status';
 import { useInventoryStore } from './inventory';
+import { usePartyStore } from './party';
 import { getEnemyAction } from '@/game/ai';
 import { calculateDamage, applyDamage, applyHeal } from '@/game/battle/mechanics';
 import { processEffect, processTurnStatuses } from '@/game/battle/effects';
@@ -12,6 +13,7 @@ import { applyStatus, removeStatus, checkCrowdControl } from '@/game/battle/stat
 
 export const useBattleStore = defineStore('battle', () => {
     const inventoryStore = useInventoryStore();
+    const partyStore = usePartyStore();
 
     // --- State ---
     const enemies = ref([]);
@@ -83,6 +85,19 @@ export const useBattleStore = defineStore('battle', () => {
         };
     };
 
+    const hydrateUnit = (state, isPlayer) => {
+        if (!state) return null;
+        return {
+            ...state,
+            // Runtime state for battle
+            statusEffects: [],
+            isDefending: false,
+            atb: 0,
+            isPlayer: isPlayer,
+            actionCount: 0
+        };
+    };
+
     // Initialize Battle
     const initBattle = (enemyList) => {
         // Reset state
@@ -93,7 +108,15 @@ export const useBattleStore = defineStore('battle', () => {
 
         // Setup Enemies
         if (enemyList) {
-            enemies.value = enemyList.map(e => ({ ...e, atb: 0, isPlayer: false, actionCount: 0 }));
+            enemies.value = enemyList.map(e => {
+                // Try to hydrate from DB if ID exists
+                if (e.id && charactersDb[e.id]) {
+                    const base = createUnit(e.id, false);
+                    // Merge overrides (like currentHp) from the passed object
+                    return { ...base, ...e, atb: 0, isPlayer: false, actionCount: 0 };
+                }
+                return { ...e, atb: 0, isPlayer: false, actionCount: 0 };
+            });
         } else {
             // Default Mock Enemies - Loaded from charactersDb using helper
             enemies.value = [
@@ -104,13 +127,12 @@ export const useBattleStore = defineStore('battle', () => {
             ].filter(e => e !== null);
         }
 
-        // Setup Party (Load from global state or mock)
-        partySlots.value = [
-            { front: createUnit(5, true), back: createUnit(1, true) },
-            { front: createUnit(6, true), back: createUnit(2, true) },
-            { front: createUnit(7, true), back: createUnit(3, true) },
-            { front: createUnit(4, true), back: null }
-        ];
+        // Setup Party (Load from PartyStore)
+        partyStore.initParty();
+        partySlots.value = partyStore.formation.map(slot => ({
+            front: hydrateUnit(partyStore.getCharacterState(slot.front), true),
+            back: hydrateUnit(partyStore.getCharacterState(slot.back), true)
+        }));
 
         battleState.value = 'active';
         log('battle.started');
@@ -259,8 +281,9 @@ export const useBattleStore = defineStore('battle', () => {
                 // Apply Effects
                 targets.forEach(target => {
                     if (action.effects) {
+                        let lastResult = 0;
                         action.effects.forEach(eff => {
-                            processEffect(eff, target, enemy, null, getContext());
+                            lastResult = processEffect(eff, target, enemy, null, getContext(), false, lastResult);
                         });
                     }
                 });
@@ -293,8 +316,9 @@ export const useBattleStore = defineStore('battle', () => {
                     // Apply Effects
                     targets.forEach(target => {
                         if (skill.effects) {
+                            let lastResult = 0;
                             skill.effects.forEach(eff => {
-                                processEffect(eff, target, enemy, skill, getContext());
+                                lastResult = processEffect(eff, target, enemy, skill, getContext(), false, lastResult);
                             });
                         }
                     });
@@ -392,68 +416,59 @@ export const useBattleStore = defineStore('battle', () => {
                         }
                     } else {
                         // Generic Effect Processing
-                        skill.effects.forEach(effect => {
-                            if (skill.targetType === 'allEnemies') {
-                                for (const enemy of enemies.value) {
-                                    if (enemy.currentHp > 0) {
-                                        processEffect(effect, enemy, actor, skill, getContext());
-                                    }
-                                }
-                            } else if (skill.targetType === 'allAllies') {
-                                partySlots.value.forEach(slot => {
-                                    if (slot.front && slot.front.currentHp > 0) processEffect(effect, slot.front, actor, skill, getContext());
-                                    if (slot.back && slot.back.currentHp > 0) processEffect(effect, slot.back, actor, skill, getContext());
-                                });
-                            } else if (skill.targetType === 'allDeadAllies') {
-                                partySlots.value.forEach(slot => {
-                                    if (slot.front && slot.front.currentHp <= 0) processEffect(effect, slot.front, actor, skill, getContext());
-                                    if (slot.back && slot.back.currentHp <= 0) processEffect(effect, slot.back, actor, skill, getContext());
-                                });
-                            } else if (skill.targetType === 'allUnits') {
-                                // Enemies
-                                enemies.value.forEach(enemy => {
-                                    if (enemy.currentHp > 0) processEffect(effect, enemy, actor, skill, getContext());
-                                });
-                                // Allies (Front and Back)
-                                partySlots.value.forEach(slot => {
-                                    if (slot.front && slot.front.currentHp > 0) processEffect(effect, slot.front, actor, skill, getContext());
-                                    if (slot.back && slot.back.currentHp > 0) processEffect(effect, slot.back, actor, skill, getContext());
-                                });
-                            } else if (skill.targetType === 'allOtherUnits') {
-                                // All Enemies
-                                enemies.value.forEach(enemy => {
-                                    if (enemy.currentHp > 0) processEffect(effect, enemy, actor, skill, getContext());
-                                });
-                                // All Allies EXCEPT actor
-                                partySlots.value.forEach(slot => {
-                                    if (slot.front && slot.front.currentHp > 0 && slot.front.id !== actor.id) {
-                                        processEffect(effect, slot.front, actor, skill, getContext());
-                                    }
-                                    if (slot.back && slot.back.currentHp > 0 && slot.back.id !== actor.id) {
-                                        processEffect(effect, slot.back, actor, skill, getContext());
-                                    }
-                                });
-                            } else if (skill.targetType === 'allOtherAllies') {
-                                // All Allies EXCEPT actor
-                                partySlots.value.forEach(slot => {
-                                    if (slot.front && slot.front.currentHp > 0 && slot.front.id !== actor.id) {
-                                        processEffect(effect, slot.front, actor, skill, getContext());
-                                    }
-                                    if (slot.back && slot.back.currentHp > 0 && slot.back.id !== actor.id) {
-                                        processEffect(effect, slot.back, actor, skill, getContext());
-                                    }
-                                });
-                            } else {
-                                // Single Target
-                                let target = null;
-                                if (skill.targetType === 'ally' || skill.targetType === 'deadAlly') {
-                                    target = targetId ? findPartyMember(targetId) : actor;
-                                    // Support selecting back row member if targeted explicitly (though findPartyMember usually checks both)
-                                } else if (skill.targetType === 'enemy') {
-                                    target = enemies.value.find(e => e.id === targetId) || enemies.value.find(e => e.currentHp > 0);
-                                }
-                                processEffect(effect, target, actor, skill, getContext());
+                        // Refactored: Resolve Targets First to support dependent effects (e.g. drain)
+                        let targets = [];
+
+                        if (skill.targetType === 'allEnemies') {
+                            targets = enemies.value.filter(e => e.currentHp > 0);
+                        } else if (skill.targetType === 'allAllies') {
+                            partySlots.value.forEach(slot => {
+                                if (slot.front && slot.front.currentHp > 0) targets.push(slot.front);
+                                if (slot.back && slot.back.currentHp > 0) targets.push(slot.back);
+                            });
+                        } else if (skill.targetType === 'allDeadAllies') {
+                            partySlots.value.forEach(slot => {
+                                if (slot.front && slot.front.currentHp <= 0) targets.push(slot.front);
+                                if (slot.back && slot.back.currentHp <= 0) targets.push(slot.back);
+                            });
+                        } else if (skill.targetType === 'allUnits') {
+                            // Enemies
+                            enemies.value.forEach(enemy => { if (enemy.currentHp > 0) targets.push(enemy); });
+                            // Allies
+                            partySlots.value.forEach(slot => {
+                                if (slot.front && slot.front.currentHp > 0) targets.push(slot.front);
+                                if (slot.back && slot.back.currentHp > 0) targets.push(slot.back);
+                            });
+                        } else if (skill.targetType === 'allOtherUnits') {
+                            // All Enemies
+                            enemies.value.forEach(enemy => { if (enemy.currentHp > 0) targets.push(enemy); });
+                            // All Allies EXCEPT actor
+                            partySlots.value.forEach(slot => {
+                                if (slot.front && slot.front.currentHp > 0 && slot.front.id !== actor.id) targets.push(slot.front);
+                                if (slot.back && slot.back.currentHp > 0 && slot.back.id !== actor.id) targets.push(slot.back);
+                            });
+                        } else if (skill.targetType === 'allOtherAllies') {
+                            partySlots.value.forEach(slot => {
+                                if (slot.front && slot.front.currentHp > 0 && slot.front.id !== actor.id) targets.push(slot.front);
+                                if (slot.back && slot.back.currentHp > 0 && slot.back.id !== actor.id) targets.push(slot.back);
+                            });
+                        } else {
+                            // Single Target
+                            let target = null;
+                            if (skill.targetType === 'ally' || skill.targetType === 'deadAlly') {
+                                target = targetId ? findPartyMember(targetId) : actor;
+                            } else if (skill.targetType === 'enemy') {
+                                target = enemies.value.find(e => e.id === targetId) || enemies.value.find(e => e.currentHp > 0);
                             }
+                            if (target) targets.push(target);
+                        }
+
+                        // Apply Effects
+                        targets.forEach(target => {
+                            let lastResult = 0;
+                            skill.effects.forEach(effect => {
+                                lastResult = processEffect(effect, target, actor, skill, getContext(), false, lastResult);
+                            });
                         });
                     }
                 }
@@ -566,6 +581,10 @@ export const useBattleStore = defineStore('battle', () => {
         if (allEnemiesDead) {
             battleState.value = 'victory';
             log('battle.victory');
+
+            // Sync state back to PartyStore
+            partyStore.updatePartyAfterBattle(partySlots.value);
+
             return true;
         }
 

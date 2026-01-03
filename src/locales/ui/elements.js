@@ -82,6 +82,27 @@ export default {
     en: 'Chaos',
     ja: '混沌',
     ko: '혼돈'
+  },
+  wind: {
+    zh: '风',
+    'zh-TW': '風',
+    en: 'Wind',
+    ja: '風',
+    ko: '바람'
+  },
+  earth: {
+    zh: '地',
+    'zh-TW': '地',
+    en: 'Earth',
+    ja: '地',
+    ko: '대지'
+  },
+  metal: {
+    zh: '金',
+    'zh-TW': '金',
+    en: 'Metal',
+    ja: '金',
+    ko: '금'
   }
 }
 

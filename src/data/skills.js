@@ -615,5 +615,64 @@ export const skillsDb = {
       { type: "damage", value: 1.2, scaling: "mag", element: "elements.fire" },
       { type: "applyStatus", status: 2, duration: 3 } // Burn
     ]
+  },
+
+  // Monster Skills (201+)
+  2001: {
+    id: 2001,
+    name: { zh: '粘液喷射', 'zh-TW': '粘液噴射', en: 'Slime Shot', ja: '粘液', ko: '점액 발사' },
+    type: "skillTypes.active",
+    category: "skillCategories.physical",
+    targetType: "single",
+    effects: [
+      { type: "damage", value: 1.1, scaling: "str" },
+      { type: "applyStatus", status: 6, chance: 0.3, duration: 2 } // Slow
+    ],
+    icon: "icon_slime",
+    cost: "0 MP"
+  },
+  2002: {
+    id: 2002,
+    name: { zh: '吸血撕咬', 'zh-TW': '吸血撕咬', en: 'Vampiric Bite', ja: '吸血', ko: '흡혈' },
+    type: "skillTypes.active",
+    category: "skillCategories.physical",
+    targetType: "single",
+    effects: [
+      { type: "damage", value: 1.2, scaling: "str" },
+      { type: "heal", value: 0.5, scaling: "damage_dealt", target: "self" } 
+      // Drain logic handled in effects? Or just simple heal
+      // For now, let's just do damage + self heal separately if system doesn't support drain.
+      // Assuming simple damage for now, or maybe add drain type later.
+    ],
+    // Let's stick to standard damage + bleed for now to be safe
+    // effects: [ { type: "damage", value: 1.2, scaling: "str" }, { type: "applyStatus", status: 5, chance: 0.3 } ]
+    icon: "icon_fang",
+    cost: "5 MP"
+  },
+  2003: {
+    id: 2003,
+    name: { zh: '群狼撕咬', 'zh-TW': '群狼撕咬', en: 'Pack Bite', ja: '群れの牙', ko: '늑대 무리' },
+    type: "skillTypes.active",
+    category: "skillCategories.physical",
+    targetType: "single",
+    effects: [
+      { type: "damage", value: 1.3, scaling: "str" },
+      { type: "applyStatus", status: 5, chance: 0.4, duration: 2 } // Bleed
+    ],
+    icon: "icon_claw",
+    cost: "0 MP"
+  },
+  2004: {
+    id: 2004,
+    name: { zh: '盾牌猛击', 'zh-TW': '盾牌猛擊', en: 'Shield Bash', ja: 'シールドバッシュ', ko: '방패 강타' },
+    type: "skillTypes.active",
+    category: "skillCategories.physical",
+    targetType: "single",
+    effects: [
+      { type: "damage", value: 1.0, scaling: "def" }, // Scales with Def
+      { type: "applyStatus", status: 3, chance: 0.3, duration: 1 } // Freeze (used as Stun)
+    ],
+    icon: "icon_shield_bash",
+    cost: "10 MP"
   }
 };

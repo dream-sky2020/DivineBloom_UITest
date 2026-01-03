@@ -75,6 +75,13 @@ export default {
     en: 'God',
     ja: '神',
     ko: '신'
+  },
+  monster: {
+    zh: '怪物',
+    'zh-TW': '怪物',
+    en: 'Monster',
+    ja: 'モンスター',
+    ko: '몬스터'
   }
 }
 

@@ -12,11 +12,42 @@ const aiRegistry = {
     104: yibitianAI
 };
 
+import { skillsDb } from '@/data/skills';
+
 const defaultAI = (context) => {
-    // Default: Simple Attack on random target
+    // Universal AI: Use skills in sequence (Loop), single target skills pick random alive target
+
+    // 1. Get available skills
+    const skills = context.read.skills;
+
+    // 2. If no skills, attack randomly
+    if (!skills || skills.length === 0) {
+        const target = context.read.getRandomTarget();
+        return context.act()
+            .attack(target)
+            .build();
+    }
+
+    // 3. Determine which skill to use based on action count (Sequence: 0 -> 1 -> ... -> N -> 0)
+    const turnIndex = Math.max(0, context.read.actionCount - 1);
+    const skillIndex = turnIndex % skills.length;
+    const skillId = skills[skillIndex];
+
+    // Check if skill is Passive (400-499 or type === passive)
+    const skillData = skillsDb[skillId];
+    const isPassive = (skillId >= 400 && skillId < 500) || (skillData && skillData.type === 'skillTypes.passive');
+
     const target = context.read.getRandomTarget();
+
+    // 4. Fallback or Passive Logic
+    // If no target, OR if the chosen skill is Passive, fallback to Normal Attack
+    if (!target || isPassive) {
+        return context.act().attack(target || null).build();
+    }
+
     return context.act()
-        .attack(target)
+        .skill(skillId)
+        .targetSingle(target)
         .build();
 };
 

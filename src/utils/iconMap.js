@@ -47,6 +47,12 @@ export const iconMap = {
   icon_forward_allies: "🎺",
   icon_hell_revival: "👿",
 
+  // Monster Skills
+  icon_slime: "🦠",
+  icon_fang: "🦷",
+  icon_claw: "🐾",
+  icon_shield_bash: "💥",
+
   // Status Effects
   icon_poison: "☠️",
   icon_freeze: "🧊",

@@ -22,6 +22,11 @@ export class BattleReader {
         return this._actor.statusEffects.some(s => s.id === statusId);
     }
 
+    // --- Skills Info ---
+    get skills() {
+        return this._actor.skills || [];
+    }
+
     // --- Target Info ---
 
     // Get all alive front-row players

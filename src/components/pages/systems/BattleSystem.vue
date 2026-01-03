@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { onMounted, onBeforeUnmount, computed, ref } from 'vue';
+import { onMounted, onBeforeUnmount, computed, ref, watch } from 'vue';
 import { useBattleStore } from '@/stores/battle';
 import { storeToRefs } from 'pinia';
 import { skillsDb } from '@/data/skills';
@@ -78,6 +78,8 @@ import BattleSpeedControl from '@/components/ui/BattleSpeedControl.vue';
 import BattleViewToggle from '@/components/ui/BattleViewToggle.vue';
 import BattleLog from '@/components/ui/BattleLog.vue';
 
+const emit = defineEmits(['change-system']);
+
 const battleStore = useBattleStore();
 // removed activeSlotIndex
 const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItems } = storeToRefs(battleStore);
@@ -85,6 +87,15 @@ const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItem
 let animationFrameId = null;
 let lastTime = 0;
 const gameSpeed = ref(1);
+
+// Watch for Battle End
+watch(battleState, (newState) => {
+  if (newState === 'victory') {
+    setTimeout(() => {
+      emit('change-system', 'world-map');
+    }, 2500); 
+  }
+});
 const partyViewMode = ref('default');
 const compactPartyMode = ref(true);
 
@@ -224,7 +235,11 @@ const handleAction = (actionType) => {
 };
 
 onMounted(() => {
-  battleStore.initBattle();
+  // Fix: 只有在战斗未激活时才初始化（例如调试或刷新页面时）
+  // 从 WorldMap 进入时，状态已经是 'active'，且敌人数据已设置
+  if (battleState.value !== 'active') {
+    battleStore.initBattle();
+  }
   animationFrameId = requestAnimationFrame(gameLoop);
 });
 

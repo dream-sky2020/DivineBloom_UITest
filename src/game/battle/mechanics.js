@@ -43,6 +43,7 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null)
 
     if (skill || (effect && effect.scaling)) {
         const isMagic = (skill && skill.category === 'skillCategories.magic') || (effect && effect.scaling === 'mag');
+        const isDefScaling = (effect && effect.scaling === 'def');
 
         if (isMagic) {
             // Magic ignores some defense
@@ -53,6 +54,9 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null)
             // Elemental Modifiers
             if (skill && skill.element === 'elements.fire') multiplier *= 1.1;
             // ... more element logic
+        } else if (isDefScaling) {
+            // Scale with Defense (e.g. Shield Bash)
+            atk = Number(attacker.def) || 5;
         } else {
             // Physical
             // ensure atk is a number

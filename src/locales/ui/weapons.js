@@ -61,6 +61,27 @@ export default {
     en: 'Scythe',
     ja: '大鎌',
     ko: '낫'
+  },
+  none: {
+    zh: '无',
+    'zh-TW': '無',
+    en: 'None',
+    ja: '無し',
+    ko: '없음'
+  },
+  claw: {
+    zh: '爪',
+    'zh-TW': '爪',
+    en: 'Claw',
+    ja: '爪',
+    ko: '클로'
+  },
+  shield: {
+    zh: '盾',
+    'zh-TW': '盾',
+    en: 'Shield',
+    ja: '盾',
+    ko: '방패'
   }
 }
 

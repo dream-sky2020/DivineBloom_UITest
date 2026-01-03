@@ -2,10 +2,15 @@ import { statusDb } from '@/data/status';
 import { calculateDamage, applyDamage, applyHeal } from './mechanics';
 import { applyStatus, removeStatus } from './status';
 
-export const processEffect = (effect, target, actor, skill = null, context, silent = false) => {
+export const processEffect = (effect, target, actor, skill = null, context, silent = false, previousResult = 0) => {
     const { log, partySlots } = context;
 
     if (!effect) return 0;
+
+    // Handle target redirection (e.g., for self-heals like Vampiric Bite)
+    if (effect.target === 'self' && actor) {
+        target = actor;
+    }
 
     switch (effect.type) {
         case 'heal':
@@ -14,6 +19,8 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
                 let amount = Number(effect.value) || 0;
                 if (effect.scaling === 'maxHp') {
                     amount = Math.floor(target.maxHp * amount);
+                } else if (effect.scaling === 'damage_dealt') {
+                    amount = Math.floor(previousResult * amount);
                 }
                 return applyHeal(target, amount, context, silent);
             }
