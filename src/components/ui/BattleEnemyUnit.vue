@@ -1,7 +1,7 @@
 <template>
   <div 
     class="enemy-unit" 
-    :class="{ 'boss-unit': enemy.isBoss, 'selectable': isSelectingTarget && enemy.hp > 0 }"
+    :class="{ 'boss-unit': enemy.isBoss, 'selectable': isSelectingTarget && enemy.currentHp > 0 }"
     @click="$emit('click', enemy)"
   >
     <!-- Enemy Avatar -->
@@ -18,8 +18,8 @@
         <span v-if="enemy.isBoss" class="boss-tag">BOSS</span>
       </div>
       <div class="enemy-hp-container">
-        <div class="enemy-hp-bar" :style="{ width: (enemy.hp / enemy.maxHp * 100) + '%' }"></div>
-        <span class="hp-text">{{ enemy.hp }} / {{ enemy.maxHp }}</span>
+        <div class="enemy-hp-bar" :style="{ width: (enemy.currentHp / enemy.maxHp * 100) + '%' }"></div>
+        <span class="hp-text">{{ enemy.currentHp }} / {{ enemy.maxHp }}</span>
       </div>
       <!-- Enemy ATB Bar -->
       <div class="enemy-atb-container">

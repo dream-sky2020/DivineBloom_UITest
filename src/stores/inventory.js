@@ -13,6 +13,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     { id: 1004, count: 5 },
     { id: 1005, count: 1 },
     { id: 1006, count: 5 },
+    { id: 1008, count: 3 },
+    { id: 1009, count: 8 },
     { id: 2001, count: 1 },
     { id: 3001, count: 1 },
     { id: 9001, count: 1 }

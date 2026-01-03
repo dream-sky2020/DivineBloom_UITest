@@ -1,0 +1,66 @@
+## 附录：添加特殊状态效果修改指南
+
+如果在 `src/data/status.js` 中定义了新的状态效果（Status Effects），特别是那些不仅仅是数值增减或每回合扣血/回血的特殊效果，通常涉及以下修改：
+
+### 1. 状态定义 (src/data/status.js)
+首先在数据文件中定义新状态。
+- **关键字段**:
+    - `id`: 唯一 ID。
+    - `effects`: 定义该状态触发的具体效果。
+        - `trigger`: 触发时机。常见值：
+            - `'turnStart'`: 回合开始时（如毒、再生）。
+            - `'passive'`: 被动生效（如攻击力提升、减速）。
+            - `'checkAction'`: 检查行动权时（如眩晕、麻痹）。
+            - **自定义触发器**: 如果需要新的触发时机（例如 `'onHit'` 受击时），需在代码中支持。
+
+### 2. 效果处理 (src/game/battle/effects.js)
+如果状态的 `effects` 数组中包含新的 `type`（例如 `type: 'reflect'` 反弹伤害），需要在 `processEffect` 函数中添加处理逻辑。
+
+```javascript
+// src/game/battle/effects.js
+export const processEffect = (effect, ...) => {
+    switch (effect.type) {
+        // ...
+        case 'reflect': // 新增
+             // 实现反弹逻辑
+             break;
+    }
+}
+```
+
+### 3. 被动数值修正 (src/game/battle/mechanics.js)
+如果状态是影响属性的（如“狂暴”增加攻击力但降低防御力），通常在 `passive` 触发器下定义。
+- 需要检查 `calculateDamage` 或 `updateATB` (在 battle store 中) 是否已经读取了相关属性。
+- 目前 `mechanics.js` 中的 `calculateDamage` 已经会自动遍历 `statusEffects` 寻找 `type: 'statMod'` 的效果。如果你的新状态只是修改属性，**通常无需修改代码**，只需配置数据即可。
+
+### 4. 流程控制效果 (src/stores/battle.js 或 src/game/battle/status.js)
+如果状态会改变战斗流程（如“眩晕”、“魅惑”、“混乱”）。
+- **眩晕/麻痹**: 目前已在 `checkCrowdControl` (`src/game/battle/status.js`) 中实现。
+    - 如果添加新的控制类状态（如“睡眠”），只需在数据中将其 `type` 设为 `stun` 或在 `checkCrowdControl` 中添加新逻辑。
+- **混乱/魅惑**: 这种改变攻击目标的逻辑，需要在 `getEnemyAction` (AI) 或玩家输入处理 (`playerAction`) 中拦截并修改 `target`。
+
+### 示例：添加“反击 (Counter)”状态
+
+1.  **数据 (`status.js`)**:
+    ```javascript
+    {
+        id: 99,
+        name: { zh: '反击架势' },
+        effects: [
+            { trigger: 'onHit', type: 'counterAttack', chance: 1.0, value: 1.0 }
+        ]
+    }
+    ```
+
+2.  **受击逻辑 (`mechanics.js` / `battle.js`)**:
+    目前系统可能还没有 `'onHit'` 的统一触发点。你需要找到造成伤害的地方 (`applyDamage`)。
+    - 修改 `applyDamage`，在伤害结算后，检查目标是否拥有 `trigger: 'onHit'` 的状态。
+    - 如果有，调用 `processEffect` 处理 `counterAttack`。
+
+3.  **效果实现 (`effects.js`)**:
+    在 `processEffect` 中添加 `case 'counterAttack'`:
+    - 执行一次针对 `actor` (攻击者) 的普通攻击或特定技能。
+
+---
+*此部分为 `add_new_skill_guide.txt` 的补充内容*
+

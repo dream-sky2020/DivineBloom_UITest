@@ -32,6 +32,15 @@ class ActionBuilder {
 
     // --- Custom Skill Config ---
 
+    // Generic effect adder (Future-proof)
+    effect(type, config = {}) {
+        this._action.effects.push({
+            type,
+            ...config
+        });
+        return this;
+    }
+
     targetSingle(unit) {
         this._action.targetType = 'single';
         this._action.targetId = unit ? unit.id : null;

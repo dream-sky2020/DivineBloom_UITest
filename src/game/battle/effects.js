@@ -9,6 +9,7 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
 
     switch (effect.type) {
         case 'heal':
+        case 'heal_all':
             if (target) {
                 let amount = Number(effect.value) || 0;
                 if (effect.scaling === 'maxHp') {
@@ -30,6 +31,27 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
                 const pct = Number(effect.value) || 0.1;
                 target.currentHp = Math.floor(target.maxHp * pct);
                 if (!silent && log) log('battle.revived', { target: target.name });
+                return target.currentHp;
+            } else {
+                if (!silent && log) log('battle.noEffect');
+                return 0;
+            }
+            break;
+        case 'revive_enemy':
+            if (target && target.currentHp <= 0) {
+                const pct = Number(effect.value) || 0.1;
+                target.currentHp = Math.floor(target.maxHp * pct);
+
+                if (!silent && log) log('battle.revived', { target: target.name });
+
+                // Add debuffs
+                const debuffs = [1, 2, 3, 4, 5, 7, 8]; // Poison, Burn, Freeze, Paralysis, Bleed, Def Down, Atk Down
+                const duration = effect.duration || 20;
+
+                debuffs.forEach(statusId => {
+                    applyStatus(target, statusId, duration, null, context, silent);
+                });
+
                 return target.currentHp;
             } else {
                 if (!silent && log) log('battle.noEffect');
@@ -110,6 +132,22 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
                     }
                 });
                 if (!silent && log) log('battle.partyRestored');
+            }
+            break;
+        case 'plague_rain':
+            if (target) {
+                // Apply Poison (Status 1)
+                applyStatus(target, 1, effect.duration || 3, null, context, silent);
+                // Apply Regen (Status 101)
+                applyStatus(target, 101, effect.duration || 3, null, context, silent);
+
+                // Heal
+                let amount = Number(effect.value) || 0;
+                if (effect.scaling === 'maxHp') {
+                    amount = Math.floor(target.maxHp * amount);
+                }
+
+                return applyHeal(target, amount, context, silent);
             }
             break;
         default:

@@ -138,6 +138,9 @@ const selectSkill = (skill) => {
     if (skill.targetType === 'ally' || skill.targetType === 'deadAlly' || skill.targetType === 'enemy') {
         // Requires Selection
         pendingAction.value = { type: 'skill', skillId: skill.id, targetType: skill.targetType };
+    } else if (skill.targetType === 'allDeadAllies' || skill.targetType === 'allAllies' || skill.targetType === 'allUnits' || skill.targetType === 'allOtherUnits' || skill.targetType === 'allOtherAllies') {
+         // Instant Cast (Mass Revive / Mass Heal / Global / Multi-Target)
+         battleStore.playerAction('skill', skill.id);
     } else {
         // Instant Cast (Self, AoE, etc.)
         battleStore.playerAction('skill', skill.id);
@@ -152,6 +155,10 @@ const selectItem = (item) => {
         pendingAction.value = { type: 'item', itemId: item.id, targetType: 'enemy' };
     } else if (targetType === 'deadAlly') {
          pendingAction.value = { type: 'item', itemId: item.id, targetType: 'deadAlly' };
+    } else if (targetType === 'allDeadAllies' || targetType === 'allAllies') {
+         // Instant cast for mass revive / mass heal item
+         battleStore.playerAction('item', { itemId: item.id, targetId: null });
+         showItemMenu.value = false;
     } else {
          // Default ally (alive)
          pendingAction.value = { type: 'item', itemId: item.id, targetType: 'ally' };
@@ -166,7 +173,7 @@ const cancelSelection = () => {
 const onEnemyClick = (enemy) => {
     if (!isSelectingTarget.value) return;
     if (pendingAction.value.targetType !== 'enemy' && pendingAction.value.type !== 'attack' && pendingAction.value.type !== 'skill') return;
-    if (enemy.hp <= 0) return;
+    if (enemy.currentHp <= 0) return;
 
     const action = pendingAction.value;
     if (action.type === 'attack') {

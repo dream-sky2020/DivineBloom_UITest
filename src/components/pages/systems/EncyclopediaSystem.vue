@@ -37,7 +37,8 @@
                 <GameIcon :name="selectedItem.icon || 'icon_unknown'" />
               </div>
               <div class="detail-title-group">
-                <h3 class="detail-name">{{ getLocalizedText(selectedItem.name) }}</h3>
+                <h3 class="detail-name" :style="{ color: selectedItem.color }">{{ getLocalizedText(selectedItem.name) }}</h3>
+                <span v-if="selectedItem.isBoss" class="boss-badge">BOSS</span>
                 <span class="detail-subtitle">{{ getSubtitle(selectedItem) }}</span>
               </div>
             </div>
@@ -60,6 +61,16 @@
                    <div v-for="(val, stat) in selectedItem.initialStats" :key="stat" class="stat-item">
                      <span class="stat-label" v-t="`stats.${stat}`"></span>
                      <span class="stat-val">{{ val }}</span>
+                   </div>
+                 </div>
+              </div>
+
+              <!-- Character Skills (Players Only) -->
+              <div v-if="currentTab === 'characters' && selectedItem.skills && selectedItem.skills.length > 0" class="skills-preview">
+                 <h4 v-t="'panels.skills'"></h4>
+                 <div class="skills-list">
+                   <div v-for="skillId in selectedItem.skills" :key="skillId" class="skill-tag">
+                     {{ getSkillName(skillId) }}
                    </div>
                  </div>
               </div>
@@ -93,6 +104,11 @@ const getLocalizedText = (input) => {
     return input[locale.value] || input['en'] || input['zh'] || Object.values(input)[0] || '';
   }
   return t(input);
+};
+
+const getSkillName = (skillId) => {
+  const skill = skillsDb[skillId];
+  return skill ? getLocalizedText(skill.name) : '???';
 };
 
 const tabs = computed(() => [
@@ -406,6 +422,44 @@ watch(currentGridItems, (newItems) => {
 
 .stat-label { color: #64748b; font-size: 0.8rem; font-weight: 700; }
 .stat-val { color: #38bdf8; font-family: monospace; }
+
+.skills-preview {
+  margin-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+}
+.skills-preview h4 {
+  color: #e2e8f0;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.skill-tag {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid #475569;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.boss-badge {
+  display: inline-block;
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-left: 0.5rem;
+  font-weight: bold;
+  vertical-align: middle;
+}
 
 .empty-state {
   height: 100%;

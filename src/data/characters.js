@@ -25,6 +25,7 @@ export const charactersDb = {
       mag: 8,
       spd: 10
     },
+    skills: [101, 306],
     description: {
       zh: '擅长使用火焰剑技的战士。',
       'zh-TW': '擅長使用火焰劍技的戰士。',
@@ -53,6 +54,7 @@ export const charactersDb = {
       mag: 20,
       spd: 14
     },
+    skills: [102, 306],
     description: {
       zh: '拥有爆炸性火力的远程攻击者。',
       'zh-TW': '擁有爆炸性火力的遠程攻擊者。',
@@ -81,6 +83,7 @@ export const charactersDb = {
       mag: 25,
       spd: 12
     },
+    skills: [203, 204, 306],
     description: {
       zh: '精通风与光属性魔法的大师。',
       'zh-TW': '精通風與光屬性魔法的大師。',
@@ -109,6 +112,7 @@ export const charactersDb = {
       mag: 5,
       spd: 18
     },
+    skills: [101, 103, 302, 305, 306],
     description: {
       zh: '受到光之祝福的近战格斗家。',
       'zh-TW': '受到光之祝福的近戰格鬥家。',
@@ -130,13 +134,14 @@ export const charactersDb = {
     element: "elements.blood",
     weaponType: "weapons.spear",
     initialStats: {
-      hp: 600,
+      hp: 1600,
       mp: 80,
       str: 24,
       def: 14,
       mag: 5,
       spd: 16
     },
+    skills: [101, 103, 306, 401],
     description: {
       zh: '为赎罪而战的堂吉诃德家族末裔，能够使用“绯红日花”的力量。',
       'zh-TW': '為贖罪而戰的堂吉訶德家族末裔，能夠使用“緋紅日花”的力量。',
@@ -158,13 +163,14 @@ export const charactersDb = {
     element: "elements.void",
     weaponType: "weapons.jade",
     initialStats: {
-      hp: 400,
+      hp: 1400,
       mp: 150,
       str: 10,
       def: 10,
       mag: 18,
       spd: 12
     },
+    skills: [101, 102, 103, 201, 202, 203, 204, 301, 302, 303, 304, 305, 306, 401, 402],
     description: {
       zh: '通过通灵宝玉重获新生的少年，拥有兼容一切力量的体质。',
       'zh-TW': '通過通靈寶玉重獲新生的少年，擁有兼容一切力量的體質。',
@@ -186,13 +192,14 @@ export const charactersDb = {
     element: "elements.time",
     weaponType: "weapons.scroll",
     initialStats: {
-      hp: 350,
+      hp: 1350,
       mp: 220,
       str: 5,
       def: 8,
       mag: 26,
       spd: 15
     },
+    skills: [103, 201, 202, 203, 204, 301, 303, 306,],
     description: {
       zh: '“虚假生命”的守护者，手持轮回书卷，守护着空心人的幸福。',
       'zh-TW': '“虛假生命”的守護者，手持輪迴書卷，守護著空心人的幸福。',
@@ -289,6 +296,37 @@ export const charactersDb = {
       en: 'A non-human god who slaughters all deities.',
       ja: 'すべての神を屠る非人の神。',
       ko: '모든 신을 학살하는 비인간 신.'
+    }
+  },
+  104: {
+    id: 104,
+    name: {
+      zh: '疫碧天',
+      'zh-TW': '疫碧天',
+      en: 'Yibitian',
+      ja: 'イビティアン',
+      ko: '이비천'
+    },
+    role: "roles.god",
+    element: "elements.water",
+    weaponType: "weapons.scythe",
+    isBoss: true,
+    color: '#10b981',
+    initialStats: {
+      hp: 70000,
+      mp: 9999,
+      str: 50,
+      def: 50,
+      mag: 65,
+      spd: 32
+    },
+    skills: [103, 204, 205],
+    description: {
+      zh: '掌控疫病与恩赐的神明，试图通过平等的死亡赋予众生救赎。',
+      'zh-TW': '掌控疫病與恩賜的神明，試圖通過平等的死亡賦予眾生救贖。',
+      en: 'The god controlling plague and grace, attempting to grant salvation through equal death.',
+      ja: '疫病と恩恵を司る神。',
+      ko: '역병과 은총을 관장하는 신.'
     }
   }
 };

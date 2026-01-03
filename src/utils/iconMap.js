@@ -9,6 +9,8 @@ export const iconMap = {
   icon_herb: "🌱",
   icon_tent: "⛺",
   icon_feather: "🪶",
+  icon_feather_all: "🪶", // Mass Revive Item
+  icon_potion_splash: "🧪", // Splashing Potion
   icon_bomb: "💣",
 
   // Weapons
@@ -35,9 +37,15 @@ export const iconMap = {
   icon_ice: "❄️",
   icon_lightning: "⚡",
   icon_heal: "💚",
+  icon_heal_all: "💖", // Mass Heal
   icon_revive: "✨",
+  icon_revive_all: "🌟", // Mass Revive Skill
   icon_strength: "🦾",
   icon_mana: "💧",
+  icon_plague_rain: "🌧️",
+  icon_spike_explosion: "🌵",
+  icon_forward_allies: "🎺",
+  icon_hell_revival: "👿",
 
   // Status Effects
   icon_poison: "☠️",

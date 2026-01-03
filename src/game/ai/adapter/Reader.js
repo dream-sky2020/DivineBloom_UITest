@@ -10,7 +10,7 @@ export class BattleReader {
 
     get hpRatio() {
         if (!this._actor.maxHp) return 0;
-        return (this._actor.currentHp || this._actor.hp) / this._actor.maxHp;
+        return this._actor.currentHp / this._actor.maxHp;
     }
 
     get actionCount() {
@@ -29,6 +29,14 @@ export class BattleReader {
         if (!this._party) return [];
         return this._party
             .filter(slot => slot.front && slot.front.currentHp > 0)
+            .map(slot => slot.front);
+    }
+
+    // Get all dead front-row players
+    getDeadPlayers() {
+        if (!this._party) return [];
+        return this._party
+            .filter(slot => slot.front && slot.front.currentHp <= 0)
             .map(slot => slot.front);
     }
 

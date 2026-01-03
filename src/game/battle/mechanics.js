@@ -99,13 +99,12 @@ export const applyDamage = (target, amount, context, silent = false) => {
     // Ensure currentHp is valid to prevent NaN/350 bugs
     if (typeof target.currentHp !== 'number' || isNaN(target.currentHp)) {
         console.warn('applyDamage found NaN HP, resetting.', target.name);
-        target.currentHp = target.hp || target.maxHp || 0;
+        target.currentHp = target.currentHp || target.maxHp || 0;
     }
 
     const currentHp = target.currentHp;
     target.currentHp = Math.max(0, currentHp - safeAmount);
-    if (target.hp !== undefined) target.hp = target.currentHp;
-
+    
     // Log "NaN" damage as 0 visually if needed, but safeAmount handles logic
     if (!silent && log) {
         log('battle.damage', { target: target.name, amount: safeAmount });

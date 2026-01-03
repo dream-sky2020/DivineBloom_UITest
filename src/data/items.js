@@ -229,6 +229,69 @@ export const itemsDb = {
     }
   },
 
+  1008: {
+    id: 1008,
+    name: {
+      zh: '凤凰之尾·群',
+      'zh-TW': '鳳凰之尾·群',
+      en: 'Phoenix Down All',
+      ja: 'フェニックスの尾・全',
+      ko: '피닉스의 깃털·전'
+    },
+    type: "itemTypes.consumable",
+    targetType: "allDeadAllies",
+    effects: [
+      { type: "revive", value: 0.5 }
+    ],
+    icon: "icon_feather_all",
+    subText: {
+      zh: '群体复活',
+      'zh-TW': '群體復活',
+      en: 'Mass Revive',
+      ja: '全体蘇生',
+      ko: '전체 부활'
+    },
+    footerLeft: "itemTypes.consumable",
+    description: {
+      zh: '复活所有无法战斗的队友。',
+      'zh-TW': '復活所有無法戰鬥的隊友。',
+      en: 'Revives all KO\'d allies.',
+      ja: '戦闘不能の仲間全員を蘇生する。',
+      ko: '전투 불능이 된 동료 전원을 부활시킨다.'
+    }
+  },
+  1009: {
+    id: 1009,
+    name: {
+      zh: '大范围喷溅治疗药水',
+      'zh-TW': '大範圍噴濺治療藥水',
+      en: 'Splashing Healing Potion',
+      ja: 'スプラッシュポーション',
+      ko: '스플래시 포션'
+    },
+    type: "itemTypes.consumable",
+    targetType: "allAllies",
+    effects: [
+      { type: "heal_all", value: 300 }
+    ],
+    icon: "icon_potion_splash",
+    subText: {
+      zh: '群体回复',
+      'zh-TW': '群體回復',
+      en: 'Mass Heal',
+      ja: '全体回復',
+      ko: '전체 회복'
+    },
+    footerLeft: "itemTypes.consumable",
+    description: {
+      zh: '恢复所有队友的生命值。',
+      'zh-TW': '恢復所有隊友的生命值。',
+      en: 'Restores HP to all allies.',
+      ja: '味方全員のHPを回復する。',
+      ko: '아군 전원의 HP를 회복시킨다.'
+    }
+  },
+
   // Weapons (2000-2999)
   2001: {
     id: 2001,

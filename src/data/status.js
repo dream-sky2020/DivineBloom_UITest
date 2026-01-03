@@ -183,6 +183,64 @@ export const statusDb = {
       { trigger: 'passive', type: 'statMod', stat: 'spd', value: 0.7 }
     ]
   },
+  7: {
+    id: 7,
+    name: {
+      zh: '防御降低',
+      'zh-TW': '防禦降低',
+      en: 'Defense Down',
+      ja: '防御力低下',
+      ko: '방어력 감소'
+    },
+    type: "statusTypes.debuff",
+    icon: "icon_buff_def",
+    subText: {
+      zh: 'DEF -30%',
+      'zh-TW': 'DEF -30%',
+      en: 'DEF -30%',
+      ja: '防御力 -30%',
+      ko: '방어력 -30%'
+    },
+    description: {
+      zh: '物理防御力降低。',
+      'zh-TW': '物理防禦力降低。',
+      en: 'Physical defense is decreased.',
+      ja: '物理防御力が低下する。',
+      ko: '물리 방어력이 감소한다.'
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'def', value: 0.7 }
+    ]
+  },
+  8: {
+    id: 8,
+    name: {
+      zh: '攻击降低',
+      'zh-TW': '攻擊降低',
+      en: 'Attack Down',
+      ja: '攻撃力低下',
+      ko: '공격력 감소'
+    },
+    type: "statusTypes.debuff",
+    icon: "icon_buff_atk",
+    subText: {
+      zh: 'ATK -30%',
+      'zh-TW': 'ATK -30%',
+      en: 'ATK -30%',
+      ja: '攻撃力 -30%',
+      ko: '공격력 -30%'
+    },
+    description: {
+      zh: '物理攻击力降低。',
+      'zh-TW': '物理攻擊力降低。',
+      en: 'Physical attack power is decreased.',
+      ja: '物理攻撃力が低下する。',
+      ko: '물리 공격력이 감소한다.'
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'atk', value: 0.7 }
+    ]
+  },
 
   // Buffs
   101: {
