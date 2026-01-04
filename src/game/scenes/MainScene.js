@@ -1,6 +1,6 @@
 import { Player } from '@/game/entities/Player'
 import { MapEnemy } from '@/game/entities/MapEnemy'
-import { maps } from '@/data/maps'
+// import { maps } from '@/data/maps' // No longer needed directly here
 
 /**
  * @typedef {import('@/game/GameEngine').GameEngine} GameEngine
@@ -12,18 +12,18 @@ export class MainScene {
    * @param {GameEngine} engine 
    * @param {Function} [onEncounter] - Callback when player encounters enemy
    * @param {object} [initialState] - Saved state to restore
-   * @param {string} [mapId] - ID of the map to load
+   * @param {object} [mapData] - Loaded map data object (NOT ID string)
    * @param {string} [entryId] - Entry point ID (e.g. 'default', 'from_village')
    * @param {Function} [onSwitchMap] - Callback when player enters portal
    */
-  constructor(engine, onEncounter, initialState = null, mapId = 'demo_plains', entryId = 'default', onSwitchMap = null) {
+  constructor(engine, onEncounter, initialState = null, mapData = null, entryId = 'default', onSwitchMap = null) {
     this.engine = engine
     this.onEncounter = onEncounter
     this.onSwitchMap = onSwitchMap
     this.player = new Player(engine)
 
     // Load Map Data
-    this.currentMap = maps[mapId] || maps['demo_plains']
+    this.currentMap = mapData || {} // Fallback empty
     this.entryId = entryId
 
     // Map Enemies

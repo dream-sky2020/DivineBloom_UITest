@@ -23,6 +23,7 @@ import { GameEngine } from '@/game/GameEngine'
 import { MainScene } from '@/game/scenes/MainScene'
 import { useBattleStore } from '@/stores/battle'
 import { useWorldStore } from '@/stores/world'
+import { getMapData } from '@/data/maps'
 
 const emit = defineEmits(['change-system'])
 const battleStore = useBattleStore()
@@ -80,6 +81,13 @@ onMounted(async () => {
       worldStore.loadMap(mapId)
     }
 
+    // 1. Load Map Data Async
+    const mapData = await getMapData(mapId)
+    if (!mapData) {
+      console.error(`Map not found: ${mapId}`)
+      return
+    }
+
     const initialState = worldStore.currentMapState
 
     const mainScene = new MainScene(
@@ -93,8 +101,8 @@ onMounted(async () => {
       },
       // 初始状态
       initialState,
-      // 地图ID
-      worldStore.currentMapId,
+      // 地图数据对象 (passing data instead of ID)
+      mapData,
       // 入口ID
       entryId,
       // 切换地图回调
