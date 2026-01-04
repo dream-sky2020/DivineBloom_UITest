@@ -240,150 +240,89 @@ export const useBattleStore = defineStore('battle', () => {
             const context = {
                 actor: enemy,
                 party: partySlots.value,
+                enemies: enemies.value,
                 turnCount: turnCount.value
             };
 
             const action = getEnemyAction(enemy.id, context);
 
-            if (!action) {
+            if (!action || action.type === 'wait') {
                 endTurn(enemy);
                 return;
             }
 
-            if (action.type === 'custom_skill') {
-                // ... custom_skill logic ...
-                // For custom_skill, we assume targetId is already resolved to a Player ID by the AI
-                // But we still need to map the type correctly if it relies on generic types.
-                
-                // Let's rely on the explicit targetId mapping if possible.
-                // But resolveTargets needs correct list context.
-                
-                // FIX: Treat custom_skill targets as "Ally" (Player) by default if it's an attack
-                // But custom skills might be heals. 
-                // Let's assume custom_skill targetType follows standard conventions:
-                // 'single'/'enemy' -> Opponent (Player)
-                // 'ally' -> Teammate (Enemy)
-                
-                let type = action.targetType;
-                if (type === 'single' || type === 'enemy' || type === 'allEnemies' || type === 'all') {
-                    // Map to Player context
-                     if (type === 'allEnemies' || type === 'all') type = 'allAllies';
-                     else type = 'ally'; // Target a Player (ID match in partySlots)
-                } else if (type === 'ally' || type === 'allAllies') {
-                    // Map to Enemy context
-                     if (type === 'allAllies') type = 'allEnemies';
-                     else type = 'enemy';
-                }
-
-                // Log
-                if (action.logKey) {
-                    let logParams = { name: enemy.name };
-                    if (action.targetId) {
-                         // Try finding name in both lists to be safe
-                         const t = findPartyMemberWrapper(action.targetId) || enemies.value.find(e => e.uuid === action.targetId || e.id === action.targetId);
-                         if (t) logParams.target = t.name;
-                    }
-                    log(action.logKey, logParams);
-                }
-
-                const targets = resolveTargets({
-                    partySlots: partySlots.value,
-                    enemies: enemies.value,
-                    actor: enemy,
-                    targetId: action.targetId
-                }, type);
-
-                // Apply Effects
-                targets.forEach(target => {
-                    if (action.effects) {
-                        let lastResult = 0;
-                        action.effects.forEach(eff => {
-                            lastResult = processEffect(eff, target, enemy, null, getContext(), false, lastResult);
-                        });
-                    }
-                });
-
-            } else if (action.type === 'skill') {
-                const skill = skillsDb[action.skillId];
-                if (skill) {
-                    // Log
-                    log('battle.useSkill', { user: enemy.name, skill: skill.name });
-
-                    // --- FIX: Target Type Mapping for Enemy AI ---
-                    // Enemy "enemy" -> Player (Ally in context)
-                    // Enemy "ally"  -> Enemy (Enemy in context)
-                    
-                    let effectiveTargetType = action.targetType || skill.targetType || 'single';
-                    
-                    // Map logic:
-                    // If target is OPPONENT (default, single, enemy, allEnemies) -> Convert to ALLY/PARTY scope
-                    // If target is FRIEND (ally, allAllies) -> Convert to ENEMY scope
-                    
-                    if (['single', 'enemy', 'allEnemies', 'all'].includes(effectiveTargetType)) {
-                        if (effectiveTargetType === 'allEnemies' || effectiveTargetType === 'all') {
-                            effectiveTargetType = 'allAllies'; // All Players
-                        } else {
-                            effectiveTargetType = 'ally'; // Single Player
-                        }
-                    } else if (['ally', 'allAllies', 'deadAlly', 'allDeadAllies'].includes(effectiveTargetType)) {
-                         if (effectiveTargetType === 'allAllies') effectiveTargetType = 'allEnemies';
-                         else if (effectiveTargetType === 'allDeadAllies') effectiveTargetType = 'allDeadAllies'; // Wait, resolveTargets uses partySlots for DeadAllies.
-                         // This is tricky. resolveTargets is hardcoded:
-                         // 'allDeadAllies' -> partySlots dead
-                         // We can't easily swap context for 'dead' types without changing resolveTargets signature.
-                         // BUT, for now, let's assume Enemies don't revive each other often.
-                         // If they do, we might need a better TargetSystem that accepts "OpponentList" and "FriendList".
-                         
-                         else effectiveTargetType = 'enemy'; // Single Enemy Teammate
-                    }
-
-                    // Fallback for AI single target without ID
-                    if ((effectiveTargetType === 'ally') && !action.targetId) {
-                         // Pick random player
-                         const alive = partySlots.value.filter(s => s.front && s.front.currentHp > 0).map(s => s.front);
-                         if (alive.length > 0) action.targetId = alive[Math.floor(Math.random() * alive.length)].id;
-                    }
-
-                    const targets = resolveTargets({
-                        partySlots: partySlots.value,
-                        enemies: enemies.value,
-                        actor: enemy,
-                        targetId: action.targetId
-                    }, effectiveTargetType);
-
-                    // Apply Effects
-                    targets.forEach(target => {
-                        if (skill.effects) {
-                            let lastResult = 0;
-                            skill.effects.forEach(eff => {
-                                lastResult = processEffect(eff, target, enemy, skill, getContext(), false, lastResult);
-                            });
-                        }
-                    });
-                }
-            } else if (action.type === 'attack') {
-                // FIX: Attack always targets OPPONENT -> Player (Ally in context)
-                // Originally was 'enemy', which resolves to enemies.value.
-                
-                // Resolve Target: map 'enemy' to 'ally' logic
-                let effectiveType = 'ally'; 
-                
-                // Fallback ID if missing
-                if (!action.targetId) {
-                     const alive = partySlots.value.filter(s => s.front && s.front.currentHp > 0).map(s => s.front);
-                     if (alive.length > 0) action.targetId = alive[Math.floor(Math.random() * alive.length)].id;
-                }
-
-                const target = findPartyMemberWrapper(action.targetId);
-                if (target) {
-                    log('battle.attacks', { attacker: enemy.name, target: target.name });
-                    const dmg = calculateDamage(enemy, target);
-                    applyDamage(target, dmg, getContext());
-                }
-            }
-
+            executeBattleAction(enemy, action);
             endTurn(enemy);
         }, 1000);
+    };
+
+    const executeBattleAction = (actor, action) => {
+        const context = getContext();
+        let targetType = 'single';
+        let effects = [];
+        let skillData = null;
+
+        // 1. Prepare Action Data
+        if (action.type === 'custom_skill') {
+            targetType = action.targetType || 'single';
+            effects = action.effects || [];
+            
+            // Custom Log
+            if (action.logKey) {
+                // Determine target name for log if possible
+                let targetName = '';
+                if (action.targetId) {
+                    // Try to find target name in both lists (we don't know who it is yet contextually)
+                    // But we can use the resolveTargets to find it properly later, 
+                    // or just quick lookup.
+                    // Let's defer target name logging or do a quick search.
+                    const t = findPartyMemberWrapper(action.targetId) || enemies.value.find(e => e.uuid === action.targetId || e.id === action.targetId);
+                    if (t) targetName = t.name;
+                }
+                log(action.logKey, { name: actor.name, target: targetName });
+            }
+
+        } else if (action.type === 'skill') {
+            skillData = skillsDb[action.skillId];
+            if (!skillData) return;
+            
+            targetType = skillData.targetType || 'single';
+            effects = skillData.effects || [];
+            
+            log('battle.useSkill', { user: actor.name, skill: skillData.name });
+
+        } else if (action.type === 'attack') {
+            targetType = 'enemy';
+            effects = [{ type: 'damage', value: 1, scaling: 'atk' }];
+            // Start log is handled below when targets are found for "Attacks X"
+            // or we can log generic "Attacks!" here.
+            // Existing logic logged "Attacks X"
+        }
+
+        // Override targetType if specified in action (AI overrides DB)
+        if (action.targetType) targetType = action.targetType;
+
+        // 2. Resolve Targets (Context Aware)
+        const targets = resolveTargets({
+            partySlots: partySlots.value,
+            enemies: enemies.value,
+            actor: actor,
+            targetId: action.targetId
+        }, targetType);
+
+        // Attack specific log
+        if (action.type === 'attack' && targets.length > 0) {
+             // If multiple targets, maybe just log first?
+             log('battle.attacks', { attacker: actor.name, target: targets[0].name });
+        }
+
+        // 3. Apply Effects
+        targets.forEach(target => {
+            let lastResult = 0;
+            effects.forEach(eff => {
+                lastResult = processEffect(eff, target, actor, skillData, context, false, lastResult);
+            });
+        });
     };
 
     // Player Actions

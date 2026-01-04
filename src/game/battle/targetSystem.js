@@ -1,102 +1,162 @@
 // src/game/battle/targetSystem.js
 
 /**
- * 在队伍槽位中查找特定 ID 的单位
- * @param {Array} partySlots 队伍槽位数组
- * @param {Number|String} id 目标 ID 或 UUID
- * @returns {Object|null}
+ * Helper to extract all units from the mixed data structures
+ * @param {Array} partySlots 
+ * @param {Array} enemies 
+ * @returns {Array} All units in a flat array
  */
-export const findPartyMember = (partySlots, id) => {
-    for (const slot of partySlots) {
-        if (slot.front && (slot.front.uuid === id || slot.front.id === id)) return slot.front;
-        if (slot.back && (slot.back.uuid === id || slot.back.id === id)) return slot.back;
+const getAllUnits = (partySlots, enemies) => {
+    const list = [];
+    if (partySlots) {
+        partySlots.forEach(slot => {
+            if (slot.front) list.push(slot.front);
+            if (slot.back) list.push(slot.back);
+        });
     }
-    return null;
+    if (enemies) {
+        list.push(...enemies);
+    }
+    return list;
 };
 
 /**
- * 根据类型解析目标列表
- * @param {Object} context 上下文 { partySlots, enemies, actor, targetId }
- * @param {String} targetType 目标类型 (allEnemies, single, ally, etc.)
- * @returns {Array} 目标单位数组
+ * Extract units from a specific source (Party Slots or Enemy Array)
+ * @param {Array} source The source array (partySlots or enemies)
+ * @param {Boolean} isPartySlots Whether the source is the partySlots structure
+ * @returns {Array} Flat array of units
+ */
+const extractUnits = (source, isPartySlots) => {
+    if (!source) return [];
+    if (!isPartySlots) return source; // Assuming enemies is already a flat array of units
+
+    const list = [];
+    source.forEach(slot => {
+        if (slot.front) list.push(slot.front);
+        if (slot.back) list.push(slot.back);
+    });
+    return list;
+};
+
+/**
+ * Find a unit by ID in a flat list of units
+ * @param {Array} units List of unit objects
+ * @param {String|Number} id UUID or ID
+ * @returns {Object|null}
+ */
+const findUnit = (units, id) => {
+    return units.find(u => u.uuid === id || u.id === id) || null;
+};
+
+/**
+ * Legacy export for direct party lookup
+ */
+export const findPartyMember = (partySlots, id) => {
+    const units = extractUnits(partySlots, true);
+    return findUnit(units, id);
+};
+
+/**
+ * Resolve targets based on actor context (Friend vs Foe)
+ * @param {Object} context { partySlots, enemies, actor, targetId }
+ * @param {String} targetType 
+ * @returns {Array} Target units
  */
 export const resolveTargets = ({ partySlots, enemies, actor, targetId }, targetType) => {
     const targets = [];
+    if (!actor) return targets;
+
+    const isPlayer = actor.isPlayer;
+
+    // Define Teams
+    // Team A: Actor's Team
+    // Team B: Opponent's Team
+    const myTeamRaw = isPlayer ? partySlots : enemies;
+    const oppTeamRaw = isPlayer ? enemies : partySlots;
     
-    // 辅助：获取存活的友方
-    const getAliveAllies = () => {
-        const list = [];
-        partySlots.forEach(slot => {
-            if (slot.front && slot.front.currentHp > 0) list.push(slot.front);
-            if (slot.back && slot.back.currentHp > 0) list.push(slot.back);
-        });
-        return list;
-    };
+    const myTeamUnits = extractUnits(myTeamRaw, isPlayer);
+    const oppTeamUnits = extractUnits(oppTeamRaw, !isPlayer);
 
-    // 辅助：获取死亡的友方
-    const getDeadAllies = () => {
-        const list = [];
-        partySlots.forEach(slot => {
-            if (slot.front && slot.front.currentHp <= 0) list.push(slot.front);
-            if (slot.back && slot.back.currentHp <= 0) list.push(slot.back);
-        });
-        return list;
-    };
+    // Filter helpers
+    const getAlive = (list) => list.filter(u => u.currentHp > 0);
+    const getDead = (list) => list.filter(u => u.currentHp <= 0);
 
-    // 辅助：获取存活的敌人
-    const getAliveEnemies = () => enemies.filter(e => e.currentHp > 0);
-
+    // Resolve Logic
     switch (targetType) {
-        case 'allEnemies':
-        case 'all': // 兼容旧定义
-            return getAliveEnemies();
-
-        case 'allAllies':
-            return getAliveAllies();
-
-        case 'allDeadAllies':
-            return getDeadAllies();
-
-        case 'allUnits':
-            return [...getAliveEnemies(), ...getAliveAllies()];
-
-        case 'allOtherUnits':
-            return [
-                ...getAliveEnemies(),
-                ...getAliveAllies().filter(u => u.id !== actor.id)
-            ];
-
-        case 'allOtherAllies':
-            return getAliveAllies().filter(u => u.id !== actor.id);
-
+        // --- Opponent Targeting ---
         case 'single':
         case 'enemy':
-            // 优先尝试 ID 匹配
-            let enemy = enemies.find(e => e.uuid === targetId || e.id === targetId);
-            // 找不到则默认选第一个活着的
-            if (!enemy) enemy = getAliveEnemies()[0];
-            if (enemy) targets.push(enemy);
+            // 1. Try to find specific target in Opponent Team
+            let target = targetId ? findUnit(oppTeamUnits, targetId) : null;
+            
+            // 2. If dead or not found, fallback to first alive opponent
+            // (Unless specifically targeting dead, but 'enemy' usually implies alive)
+            if (!target || target.currentHp <= 0) {
+                 const aliveOpponents = getAlive(oppTeamUnits);
+                 if (aliveOpponents.length > 0) {
+                     // Pick random or first? Usually existing logic picked first or random.
+                     // Default to first alive for stability, or random if previously random.
+                     // Let's pick first alive to be safe, AI usually provides ID if it wants specific.
+                     target = aliveOpponents[0];
+                 }
+            }
+            if (target && target.currentHp > 0) targets.push(target);
             break;
 
-        case 'ally':
-            let ally = targetId ? findPartyMember(partySlots, targetId) : actor;
-            // 如果是给自己且没传ID，或者找到了
-            if (ally) targets.push(ally);
+        case 'allEnemies': // All Opponents
+        case 'all': 
+            targets.push(...getAlive(oppTeamUnits));
             break;
 
-        case 'deadAlly':
-            let deadAlly = targetId ? findPartyMember(partySlots, targetId) : null;
+        // --- Ally Targeting ---
+        case 'ally': // Single Ally (Self or Teammate)
+            let ally = targetId ? findUnit(myTeamUnits, targetId) : actor;
+            if (ally && ally.currentHp > 0) targets.push(ally);
+            break;
+
+        case 'allAllies': // All Teammates
+            targets.push(...getAlive(myTeamUnits));
+            break;
+
+        case 'deadAlly': // Resurrection
+            let deadAlly = targetId ? findUnit(myTeamUnits, targetId) : null;
             if (deadAlly && deadAlly.currentHp <= 0) targets.push(deadAlly);
+            // Fallback: Pick first dead ally?
+            if (!deadAlly && !targetId) {
+                const deads = getDead(myTeamUnits);
+                if (deads.length > 0) targets.push(deads[0]);
+            }
+            break;
+
+        case 'allDeadAllies':
+            targets.push(...getDead(myTeamUnits));
+            break;
+
+        case 'self':
+            targets.push(actor);
+            break;
+
+        // --- Global Targeting ---
+        case 'allUnits':
+            targets.push(...getAlive(myTeamUnits), ...getAlive(oppTeamUnits));
+            break;
+
+        case 'allOtherUnits':
+            const allAlive = [...getAlive(myTeamUnits), ...getAlive(oppTeamUnits)];
+            targets.push(...allAlive.filter(u => u.uuid !== actor.uuid));
+            break;
+
+        case 'allOtherAllies':
+            targets.push(...getAlive(myTeamUnits).filter(u => u.uuid !== actor.uuid));
             break;
             
         default:
-            // 默认单体逻辑 fallback
-            if (targetType === 'single') {
-                 // 上面处理了，这里留空或处理未知类型
-            }
+            // Fallback for unknown types, treat as single opponent
+             if (targetType === 'single') {
+                 // Already handled above
+             }
             break;
     }
 
     return targets;
 };
-
