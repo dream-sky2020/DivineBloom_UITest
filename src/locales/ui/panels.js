@@ -20,12 +20,19 @@ export default {
     ja: 'スキル',
     ko: '스킬'
   },
-  status: {
+    status: {
     zh: '状态',
     'zh-TW': '狀態',
     en: 'Status',
     ja: 'ステータス',
     ko: '상태'
+  },
+  formation: {
+    zh: '队形',
+    'zh-TW': '隊形',
+    en: 'Formation',
+    ja: '隊形',
+    ko: '대형'
   },
   shop: {
     zh: '商店',

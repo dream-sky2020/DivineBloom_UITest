@@ -35,6 +35,13 @@ export default {
       ja: 'リストメニュー',
       ko: '리스트 메뉴'
     },
+    listMenuPreview: {
+      zh: '列表菜单 (预览)',
+      'zh-TW': '列表選單 (預覽)',
+      en: 'List Menu (Preview)',
+      ja: 'リストメニュー (プレビュー)',
+      ko: '리스트 메뉴 (미리보기)'
+    },
     shop: {
       zh: '商店系统',
       'zh-TW': '商店系統',

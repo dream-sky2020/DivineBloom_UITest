@@ -24,6 +24,7 @@ import systemSettings from './systemSettings';
 import thank from './thank';
 import equipment from './equipment';
 import battle from './battle';
+import formation from './formation';
 
 export default {
   common,
@@ -51,5 +52,6 @@ export default {
   systemSettings,
   thank,
   equipment,
-  battle
+  battle,
+  formation
 };

@@ -43,6 +43,12 @@
               >
               </button>
               <button 
+                :class="{ active: currentSystem === 'list-menu-previews' }" 
+                @click="currentSystem = 'list-menu-previews'"
+                v-t="'dev.systems.listMenuPreview'"
+              >
+              </button>
+              <button 
                 :class="{ active: currentSystem === 'shop' }" 
                 @click="currentSystem = 'shop'"
                 v-t="'dev.systems.shop'"
@@ -123,6 +129,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import MainMenuSystem from '@/components/pages/systems/MainMenuSystem.vue';
 import ListMenuSystem from '@/components/pages/systems/ListMenuSystem.vue';
+import ListMenuPreviewsSystem from '@/components/pages/systems/ListMenuPreviewsSystem.vue';
 import ShopSystem from '@/components/pages/systems/ShopSystem.vue';
 import EncyclopediaSystem from '@/components/pages/systems/EncyclopediaSystem.vue';
 import WorldMapSystem from '@/components/pages/systems/WorldMapSystem.vue';
@@ -135,6 +142,7 @@ const activeSystemComponent = computed(() => {
   switch (currentSystem.value) {
     case 'main-menu': return MainMenuSystem;
     case 'list-menu': return ListMenuSystem;
+    case 'list-menu-previews': return ListMenuPreviewsSystem;
     case 'shop': return ShopSystem;
     case 'encyclopedia': return EncyclopediaSystem;
     case 'world-map': return WorldMapSystem;
