@@ -84,7 +84,7 @@
 
 .mini-bar {
     height: 6px;
-    background: #334155;
+    /* background: #334155; Removed to allow specific color classes to take effect */
     border-radius: 3px;
 }
 
@@ -136,4 +136,24 @@
     font-size: 0.5rem;
     bottom: -3px;
     right: -3px;
+}
+
+/* Mini BP Styles */
+.mini-bp-row {
+    display: flex;
+    gap: 2px;
+    height: 4px;
+    margin-top: 2px;
+}
+
+.mini-bp-dot {
+    flex: 1;
+    background: #334155;
+    border-radius: 1px;
+    transition: background 0.3s;
+}
+
+.mini-bp-dot.filled {
+    background: #f59e0b;
+    box-shadow: 0 0 2px #f59e0b;
 }

@@ -3,7 +3,7 @@ import { statusDb } from '@/data/status';
 /**
  * Calculates raw damage based on attacker, defender, and modifiers.
  */
-export const calculateDamage = (attacker, defender, skill = null, effect = null) => {
+export const calculateDamage = (attacker, defender, skill = null, effect = null, damageMultiplier = 1.0) => {
     let atk = Number(attacker.atk) || 10;
     let def = Number(defender.def) || 5;
 
@@ -39,6 +39,11 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null)
     // Check Scaling from Effect or Fallback to generic logic
     if (effect && effect.value) {
         multiplier = effect.value;
+    }
+    
+    // Apply Energy Multiplier
+    if (damageMultiplier) {
+        multiplier *= damageMultiplier;
     }
 
     if (skill || (effect && effect.scaling)) {

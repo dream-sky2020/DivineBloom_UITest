@@ -85,6 +85,7 @@ export const useBattleStore = defineStore('battle', () => {
             statusEffects: [],
             isDefending: false,
             atb: 0,
+            energy: 0, // Energy Points (BP)
             isPlayer: isPlayer,
             actionCount: 0
         };
@@ -99,6 +100,7 @@ export const useBattleStore = defineStore('battle', () => {
             statusEffects: [],
             isDefending: false,
             atb: 0,
+            energy: 0,
             isPlayer: isPlayer,
             actionCount: 0
         };
@@ -151,7 +153,8 @@ export const useBattleStore = defineStore('battle', () => {
         if (battleState.value !== 'active' || atbPaused.value) return;
 
         const MAX_ATB = 100;
-        const RESERVE_MAX_ATB = 500; 
+        const MAX_BP = 6;
+        // Back row also cycles at 100 now to generate Energy
 
         // Collect all active units with metadata to avoid repeated lookups
         const unitEntries = [];
@@ -165,20 +168,29 @@ export const useBattleStore = defineStore('battle', () => {
 
         // Increment ATB
         for (const { unit, isBackRow } of unitEntries) {
-            const maxAtb = isBackRow ? RESERVE_MAX_ATB : MAX_ATB;
-            
+
             // Calculate tick using TimeSystem
             const tick = calculateAtbTick(unit, dt);
-            
-            unit.atb = Math.min(maxAtb, unit.atb + tick);
 
-            // Only trigger turn for non-back row units
-            if (!isBackRow && unit.atb >= MAX_ATB && !atbPaused.value) {
-                // Unit is ready
-                unit.atb = MAX_ATB;
-                startTurn(unit);
-                // Break to handle one unit at a time
-                return;
+            // Update ATB (Cap for front row only)
+            if (isBackRow) {
+                unit.atb = (unit.atb || 0) + tick;
+            } else {
+                unit.atb = Math.min(MAX_ATB, (unit.atb || 0) + tick);
+            }
+
+            if (unit.atb >= MAX_ATB) {
+                if (isBackRow) {
+                    // Back Row Logic: Reset ATB (keep overflow), Add 2 Energy
+                    unit.atb -= MAX_ATB;
+                    unit.energy = Math.min(MAX_BP, (unit.energy || 0) + 2);
+                } else if (!atbPaused.value) {
+                    // Front Row Logic: Turn Ready, Add 1 Energy
+                    unit.atb = MAX_ATB;
+                    unit.energy = Math.min(MAX_BP, (unit.energy || 0) + 1);
+                    startTurn(unit);
+                    return;
+                }
             }
         }
     };
@@ -251,6 +263,9 @@ export const useBattleStore = defineStore('battle', () => {
                 return;
             }
 
+            // Simple Enemy AI Energy Usage (Optional: For now enemies don't use BP or just reset)
+            // But if we want consistent data structure, we can consume it if they have it.
+            // For now, let's just execute.
             executeBattleAction(enemy, action);
             endTurn(enemy);
         }, 1000);
@@ -262,11 +277,23 @@ export const useBattleStore = defineStore('battle', () => {
         let effects = [];
         let skillData = null;
 
+        // --- Energy System Consumption ---
+        let energyMult = 1.0;
+        if ((actor.energy || 0) > 0) {
+            energyMult = 1.0 + (actor.energy * 0.5);
+            // Optionally log for enemies if they use it
+            if (actor.isPlayer) { // Should not happen here usually but safety check
+                log('battle.energyConsume', { name: actor.name, energy: actor.energy });
+            }
+            actor.energy = 0;
+        }
+        const actionContext = { ...context, energyMult };
+
         // 1. Prepare Action Data
         if (action.type === 'custom_skill') {
             targetType = action.targetType || 'single';
             effects = action.effects || [];
-            
+
             // Custom Log
             if (action.logKey) {
                 // Determine target name for log if possible
@@ -285,10 +312,10 @@ export const useBattleStore = defineStore('battle', () => {
         } else if (action.type === 'skill') {
             skillData = skillsDb[action.skillId];
             if (!skillData) return;
-            
+
             targetType = skillData.targetType || 'single';
             effects = skillData.effects || [];
-            
+
             log('battle.useSkill', { user: actor.name, skill: skillData.name });
 
         } else if (action.type === 'attack') {
@@ -312,15 +339,15 @@ export const useBattleStore = defineStore('battle', () => {
 
         // Attack specific log
         if (action.type === 'attack' && targets.length > 0) {
-             // If multiple targets, maybe just log first?
-             log('battle.attacks', { attacker: actor.name, target: targets[0].name });
+            // If multiple targets, maybe just log first?
+            log('battle.attacks', { attacker: actor.name, target: targets[0].name });
         }
 
         // 3. Apply Effects
         targets.forEach(target => {
             let lastResult = 0;
             effects.forEach(eff => {
-                lastResult = processEffect(eff, target, actor, skillData, context, false, lastResult);
+                lastResult = processEffect(eff, target, actor, skillData, actionContext, false, lastResult);
             });
         });
     };
@@ -355,6 +382,10 @@ export const useBattleStore = defineStore('battle', () => {
             log('battle.useItem', { user: actor.name, item: item.name });
 
             // Centralized Item Logic
+            // For items, we might not use energy multiplier, or do we?
+            // "When character attacks or uses skill, consume energy"
+            // Items are not explicitly mentioned but typically consumables don't scale with BP.
+            // Let's assume NO for items for now unless requested.
             handleItemEffect(itemId, targetId, actor);
 
         } else if (actionType === 'skill') {
@@ -369,6 +400,15 @@ export const useBattleStore = defineStore('battle', () => {
                 actor.currentMp -= cost;
                 log('battle.useSkill', { user: actor.name, skill: skill.name });
 
+                // --- Energy Consumption for Skill ---
+                let energyMult = 1.0;
+                if ((actor.energy || 0) > 0) {
+                    energyMult = 1.0 + (actor.energy * 0.5);
+                    log('battle.energyConsume', { name: actor.name, energy: actor.energy });
+                    actor.energy = 0;
+                }
+                const actionContext = { ...getContext(), energyMult };
+
                 // Skill Logic
                 if (skill.effects) {
                     if (skill.chain) {
@@ -377,21 +417,21 @@ export const useBattleStore = defineStore('battle', () => {
                         const hits = resolveChainSequence(skill, initialTarget, enemies.value);
 
                         hits.forEach(({ target, multiplier, hitIndex }) => {
-                             // Log each hit
-                             // Note: We need a way to accumulate damage for the log if needed, 
-                             // but resolveChainSequence doesn't execute the damage, just tells us who and how much mult.
-                             
-                             let damageDealt = 0;
-                             skill.effects.forEach(eff => {
+                            // Log each hit
+                            // Note: We need a way to accumulate damage for the log if needed, 
+                            // but resolveChainSequence doesn't execute the damage, just tells us who and how much mult.
+
+                            let damageDealt = 0;
+                            skill.effects.forEach(eff => {
                                 const finalEffect = { ...eff };
                                 if (finalEffect.type === 'damage') {
                                     finalEffect.value *= multiplier;
                                 }
-                                const val = processEffect(finalEffect, target, actor, skill, getContext(), true);
+                                const val = processEffect(finalEffect, target, actor, skill, actionContext, true);
                                 if (finalEffect.type === 'damage') damageDealt += val;
-                             });
-                             
-                             log('battle.chainHit', { count: hitIndex, target: target.name, amount: damageDealt });
+                            });
+
+                            log('battle.chainHit', { count: hitIndex, target: target.name, amount: damageDealt });
                         });
 
                     } else {
@@ -408,7 +448,7 @@ export const useBattleStore = defineStore('battle', () => {
                         targets.forEach(target => {
                             let lastResult = 0;
                             skill.effects.forEach(effect => {
-                                lastResult = processEffect(effect, target, actor, skill, getContext(), false, lastResult);
+                                lastResult = processEffect(effect, target, actor, skill, actionContext, false, lastResult);
                             });
                         });
                     }
@@ -416,6 +456,15 @@ export const useBattleStore = defineStore('battle', () => {
             }
         } else if (actionType === 'attack') {
             log('battle.attackStart', { attacker: actor.name });
+
+            // --- Energy Consumption for Attack ---
+            let energyMult = 1.0;
+            if ((actor.energy || 0) > 0) {
+                energyMult = 1.0 + (actor.energy * 0.5);
+                log('battle.energyConsume', { name: actor.name, energy: actor.energy });
+                actor.energy = 0;
+            }
+            const actionContext = { ...getContext(), energyMult };
 
             // Resolve Target
             const targets = resolveTargets({
@@ -427,8 +476,8 @@ export const useBattleStore = defineStore('battle', () => {
 
             if (targets.length > 0) {
                 const target = targets[0];
-                const dmg = calculateDamage(actor, target);
-                applyDamage(target, dmg, getContext());
+                const dmg = calculateDamage(actor, target, null, null, energyMult); // Pass Multiplier
+                applyDamage(target, dmg, actionContext);
             }
         } else if (actionType === 'defend') {
             actor.isDefending = true;
@@ -446,7 +495,10 @@ export const useBattleStore = defineStore('battle', () => {
                 }
             }
         } else if (actionType === 'skip') {
+            // Skip Logic: Charge Energy
+            actor.energy = Math.min(6, (actor.energy || 0) + 1);
             log('battle.skipTurn', { name: actor.name });
+            // Optionally log energy gain?
         } else if (actionType === 'run') {
             runAway();
             return;
@@ -465,19 +517,19 @@ export const useBattleStore = defineStore('battle', () => {
         // Resolve Targets using TargetSystem
         // Note: items usually map to generic target types. 
         // We assume item.targetType matches what resolveTargets expects.
-        
+
         const targets = resolveTargets({
-             partySlots: partySlots.value,
-             enemies: enemies.value,
-             actor: actor,
-             targetId: targetId
+            partySlots: partySlots.value,
+            enemies: enemies.value,
+            actor: actor,
+            targetId: targetId
         }, item.targetType);
 
         // Apply all effects to all targets
         targets.forEach(target => {
-             item.effects.forEach(effect => {
-                 processEffect(effect, target, actor, null, getContext());
-             });
+            item.effects.forEach(effect => {
+                processEffect(effect, target, actor, null, getContext());
+            });
         });
     };
 

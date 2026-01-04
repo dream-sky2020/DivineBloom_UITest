@@ -30,6 +30,10 @@
             <span class="role" v-t="'thank.roles.artist'"></span>
             <span class="name">唐幽洛</span>
           </div>
+          <div class="contributor-row">
+            <span class="role" v-t="'thank.roles.artist'"></span>
+            <span class="name">一只凛奈奈</span>
+          </div>
         </div>
       </div>
       

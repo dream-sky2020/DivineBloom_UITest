@@ -46,6 +46,19 @@
               <div class="bar-fill atb-fill" :class="{ 'no-transition': (slot.front.atb || 0) < 5 }" :style="{ width: ((slot.front.atb > 0 ? slot.front.atb : 0) || 0) + '%' }"></div>
             </div>
           </div>
+          
+          <!-- Energy Points (BP) -->
+          <div class="stat-row bp">
+            <label>BP</label>
+            <div class="bp-pills">
+                <div 
+                  v-for="n in 6" 
+                  :key="n" 
+                  class="bp-pill" 
+                  :class="{ 'filled': (slot.front.energy || 0) >= n }"
+                ></div>
+            </div>
+          </div>
 
           <div class="status-row">
             <div 
@@ -121,6 +134,10 @@
                          :style="{ width: getATBWidth(slot.front.atb) + '%' }"
                        ></div>
                   </div>
+                  <!-- Mini BP -->
+                  <div class="mini-bp-row">
+                     <div v-for="n in 6" :key="n" class="mini-bp-dot" :class="{ 'filled': (slot.front.energy || 0) >= n }"></div>
+                  </div>
                 </div>
              </div>
          </div>
@@ -191,6 +208,10 @@
                        :style="{ width: getATBWidth(slot.back.atb) + '%' }"
                      ></div>
                 </div>
+                <!-- Mini BP -->
+                 <div class="mini-bp-row">
+                     <div v-for="n in 6" :key="n" class="mini-bp-dot" :class="{ 'filled': (slot.back.energy || 0) >= n }"></div>
+                  </div>
               </div>
            </div>
        </div>

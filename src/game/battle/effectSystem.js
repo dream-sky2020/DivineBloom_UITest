@@ -3,9 +3,12 @@ import { calculateDamage, applyDamage, applyHeal } from './damageSystem';
 import { applyStatus, removeStatus } from './statusSystem';
 
 export const processEffect = (effect, target, actor, skill = null, context, silent = false, previousResult = 0) => {
-    const { log, partySlots } = context;
+    const { log, partySlots, energyMult } = context;
 
     if (!effect) return 0;
+
+    // Use energy multiplier from context if available, default to 1
+    const multiplier = energyMult || 1.0;
 
     // Handle target redirection (e.g., for self-heals like Vampiric Bite)
     if (effect.target === 'self' && actor) {
@@ -22,6 +25,9 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
                 } else if (effect.scaling === 'damage_dealt') {
                     amount = Math.floor(previousResult * amount);
                 }
+                // Apply Energy Multiplier to Heals too? Usually yes for "Effectiveness"
+                amount *= multiplier;
+
                 return applyHeal(target, amount, context, silent);
             }
             break;
@@ -69,19 +75,21 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
             if (target) {
                 let dmg = 0;
                 if (effect.scaling === 'atk' || effect.scaling === 'mag') {
-                    // Use standard calculation
-                    dmg = calculateDamage(actor, target, skill, effect);
+                    // Use standard calculation, pass multiplier
+                    dmg = calculateDamage(actor, target, skill, effect, multiplier);
                 } else if (effect.scaling === 'maxHp') {
                     // MaxHP scaling (e.g. for Poison/DoT)
                     const maxHp = target.maxHp || 100;
                     dmg = Math.floor(maxHp * (Number(effect.value) || 0));
+                    dmg *= multiplier; // Apply multiplier
                 } else if (effect.scaling === 'str') {
                     // Explicit str scaling (from AI or skills)
                     // Treat as atk for now
-                    dmg = calculateDamage(actor, target, skill, { ...effect, scaling: 'atk' });
+                    dmg = calculateDamage(actor, target, skill, { ...effect, scaling: 'atk' }, multiplier);
                 } else {
                     // Fixed damage
                     dmg = Number(effect.value) || 0;
+                    dmg *= multiplier; // Apply multiplier
                 }
 
                 // Final Safety Check
