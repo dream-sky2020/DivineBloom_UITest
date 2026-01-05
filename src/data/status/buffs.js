@@ -1,0 +1,119 @@
+export default {
+  101: {
+    id: 101,
+    name: {
+      zh: '再生',
+      'zh-TW': '再生',
+      en: 'Regen',
+      ja: 'リジェネ',
+      ko: '재생'
+    },
+    type: "statusTypes.buff",
+    icon: "icon_regen",
+    subText: {
+      zh: '持续恢复',
+      'zh-TW': '持續恢復',
+      en: 'HoT',
+      ja: '継続回復',
+      ko: '지속 회복'
+    },
+    description: {
+      zh: '每回合恢复少量生命值。',
+      'zh-TW': '每回合恢復少量生命值。',
+      en: 'Restores a small amount of HP each turn.',
+      ja: '毎ターンHPを少量回復する。',
+      ko: '매 턴 HP를 소량 회복한다.'
+    },
+    effects: [
+      { trigger: 'turnStart', type: 'heal', value: 0.1, scaling: 'maxHp' }
+    ]
+  },
+  102: {
+    id: 102,
+    name: {
+      zh: '攻击提升',
+      'zh-TW': '攻擊提升',
+      en: 'Attack Up',
+      ja: '攻撃力アップ',
+      ko: '공격력 증가'
+    },
+    type: "statusTypes.buff",
+    icon: "icon_buff_atk",
+    subText: {
+      zh: 'ATK +20%',
+      'zh-TW': 'ATK +20%',
+      en: 'ATK +20%',
+      ja: '攻撃力 +20%',
+      ko: '공격력 +20%'
+    },
+    description: {
+      zh: '物理攻击力暂时提升。',
+      'zh-TW': '物理攻擊力暫時提升。',
+      en: 'Physical attack power is temporarily increased.',
+      ja: '物理攻撃力が一時的に上昇する。',
+      ko: '물리 공격력이 일시적으로 증가한다.'
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'atk', value: 1.2 }
+    ]
+  },
+  103: {
+    id: 103,
+    name: {
+      zh: '加速',
+      'zh-TW': '加速',
+      en: 'Haste',
+      ja: 'ヘイスト',
+      ko: '가속'
+    },
+    type: "statusTypes.buff",
+    icon: "icon_haste",
+    subText: {
+      zh: 'SPD +30%',
+      'zh-TW': 'SPD +30%',
+      en: 'SPD +30%',
+      ja: '速度 +30%',
+      ko: '속도 +30%'
+    },
+    description: {
+      zh: '行动速度大幅提升。',
+      'zh-TW': '行動速度大幅提升。',
+      en: 'Action speed is significantly increased.',
+      ja: '行動速度が大幅に上昇する。',
+      ko: '행동 속도가 크게 증가한다.'
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'spd', value: 1.3 }
+    ]
+  },
+  104: {
+    id: 104,
+    name: {
+      zh: '防御提升',
+      'zh-TW': '防禦提升',
+      en: 'Defense Up',
+      ja: '防御力アップ',
+      ko: '방어력 증가'
+    },
+    type: "statusTypes.buff",
+    icon: "icon_buff_def",
+    subText: {
+      zh: 'DEF +50%',
+      'zh-TW': 'DEF +50%',
+      en: 'DEF +50%',
+      ja: '防御力 +50%',
+      ko: '방어력 +50%'
+    },
+    description: {
+      zh: '物理防御力暂时提升。',
+      'zh-TW': '物理防禦力暫時提升。',
+      en: 'Physical defense is temporarily increased.',
+      ja: '物理防御力が一時的に上昇する。',
+      ko: '물리 방어력이 일시적으로 증가한다.'
+    },
+    effects: [
+      { trigger: 'passive', type: 'statMod', stat: 'def', value: 1.5 }
+    ]
+  }
+}
+

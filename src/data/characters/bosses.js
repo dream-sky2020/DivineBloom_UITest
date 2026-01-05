@@ -1,0 +1,124 @@
+export default {
+  101: {
+    id: 101,
+    name: {
+      zh: '神武皇帝',
+      'zh-TW': '神武皇帝',
+      en: 'Emperor Shenwu',
+      ja: '神武皇帝',
+      ko: '신무 황제'
+    },
+    role: "roles.emperor",
+    element: "elements.divine",
+    weaponType: "weapons.sword",
+    isBoss: true,
+    color: '#fbbf24', // Gold
+    initialStats: {
+      hp: 50000,
+      mp: 9999,
+      str: 50,
+      def: 40,
+      mag: 40,
+      spd: 20
+    },
+    description: {
+      zh: '神戮兵装的持有者，立誓通过武力终结一切混乱的霸主。',
+      'zh-TW': '神戮兵裝的持有者，立誓通過武力終結一切混亂的霸主。',
+      en: 'Wielder of the God-Slaying Armament, a hegemon sworn to end all chaos through force.',
+      ja: '神殺しの兵装を持つ者、武力ですべての混沌を終わらせると誓った覇王。',
+      ko: '신을 죽이는 무구의 소유자, 무력으로 모든 혼란을 끝내겠다고 맹세한 패왕.'
+    }
+  },
+  102: {
+    id: 102,
+    name: {
+      zh: '山鲁亚尔',
+      'zh-TW': '山魯亞爾',
+      en: 'Shahryar',
+      ja: 'シャフリヤール',
+      ko: '샤흐리야르'
+    },
+    role: "roles.king",
+    element: "elements.nihility",
+    weaponType: "weapons.scimitar",
+    isBoss: true,
+    color: '#94a3b8', // Slate/Silver
+    initialStats: {
+      hp: 45000,
+      mp: 9999,
+      str: 45,
+      def: 35,
+      mag: 50,
+      spd: 25
+    },
+    description: {
+      zh: '看破轮回虚无的国王，试图毁灭许愿术核心以赐予众生彻底的解脱。',
+      'zh-TW': '看破輪迴虛無的國王，試圖毀滅許願術核心以賜予眾生徹底的解脫。',
+      en: 'The king who saw through the nihilism of reincarnation, seeking to destroy the core of the wish spell to grant ultimate liberation.',
+      ja: '輪廻の虚無を見抜いた王、願いの術の核を破壊し、衆生に完全な解脱を与えようとする。',
+      ko: '윤회의 허무를 간파한 왕, 소원 주문의 핵심을 파괴하여 중생에게 완전한 해탈을 주려 한다.'
+    }
+  },
+  103: {
+    id: 103,
+    name: {
+      zh: '赫绯天',
+      'zh-TW': '赫緋天',
+      en: 'Hefietian',
+      ja: 'ハー・フェイティアン',
+      ko: '헤페이티안'
+    },
+    role: "roles.god_slayer",
+    element: "elements.chaos",
+    weaponType: "weapons.scythe",
+    isBoss: true,
+    color: '#ef4444',
+    initialStats: {
+      hp: 60000,
+      mp: 9999,
+      str: 60,
+      def: 45,
+      mag: 55,
+      spd: 30
+    },
+    description: {
+      zh: '屠灭所有神明的非人神。',
+      'zh-TW': '屠滅所有神明的非人神。',
+      en: 'A non-human god who slaughters all deities.',
+      ja: 'すべての神を屠る非人の神。',
+      ko: '모든 신을 학살하는 비인간 신.'
+    }
+  },
+  104: {
+    id: 104,
+    name: {
+      zh: '疫碧天',
+      'zh-TW': '疫碧天',
+      en: 'Yibitian',
+      ja: 'イビティアン',
+      ko: '이비천'
+    },
+    role: "roles.god_slayer",
+    element: "elements.water",
+    weaponType: "weapons.scythe",
+    isBoss: true,
+    color: '#10b981',
+    initialStats: {
+      hp: 70000,
+      mp: 9999,
+      str: 50,
+      def: 50,
+      mag: 65,
+      spd: 32
+    },
+    skills: [103, 204, 205],
+    description: {
+      zh: '屠灭所有神明的非人神。',
+      'zh-TW': '屠滅所有神明的非人神。',
+      en: 'A non-human god who slaughters all deities.',
+      ja: 'すべての神を屠る非人の神。',
+      ko: '모든 신을 학살하는 비인간 신.'
+    }
+  }
+}
+
