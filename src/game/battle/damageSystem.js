@@ -40,7 +40,7 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null,
     if (effect && effect.value) {
         multiplier = effect.value;
     }
-    
+
     // Apply Energy Multiplier
     if (damageMultiplier) {
         multiplier *= damageMultiplier;
@@ -54,8 +54,9 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null,
             // Magic ignores some defense
             def *= 0.7;
             const mag = Number(attacker.mag) || 10;
-            const currentMp = Number(attacker.currentMp) || 0;
-            atk = (currentMp * 0.5) + (mag * 2); // Use MAG stat if available
+            // Removed MP scaling to prevent Bosses with 9999 MP from dealing excessive damage
+            // Adjusted MAG scaling to compensate
+            atk = mag * 1.2;
             // Elemental Modifiers
             if (skill && skill.element === 'elements.fire') multiplier *= 1.1;
             // ... more element logic
@@ -113,7 +114,7 @@ export const applyDamage = (target, amount, context, silent = false) => {
 
     const currentHp = target.currentHp;
     target.currentHp = Math.max(0, currentHp - safeAmount);
-    
+
     // Log "NaN" damage as 0 visually if needed, but safeAmount handles logic
     if (!silent && log) {
         log('battle.damage', { target: target.name, amount: safeAmount });
