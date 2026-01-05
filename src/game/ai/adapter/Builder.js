@@ -47,6 +47,12 @@ class ActionBuilder {
         return this;
     }
 
+    // Just set target ID, don't override type (let Skill DB decide)
+    targetUnit(unit) {
+        this._action.targetId = unit ? (unit.uuid || unit.id) : null;
+        return this;
+    }
+
     targetAll() {
         this._action.targetType = 'all';
         return this;

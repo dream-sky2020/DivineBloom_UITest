@@ -73,7 +73,7 @@ export const resolveTargets = ({ partySlots, enemies, actor, targetId }, targetT
     // Team B: Opponent's Team
     const myTeamRaw = isPlayer ? partySlots : enemies;
     const oppTeamRaw = isPlayer ? enemies : partySlots;
-    
+
     const myTeamUnits = extractUnits(myTeamRaw, isPlayer);
     const oppTeamUnits = extractUnits(oppTeamRaw, !isPlayer);
 
@@ -88,23 +88,23 @@ export const resolveTargets = ({ partySlots, enemies, actor, targetId }, targetT
         case 'enemy':
             // 1. Try to find specific target in Opponent Team
             let target = targetId ? findUnit(oppTeamUnits, targetId) : null;
-            
+
             // 2. If dead or not found, fallback to first alive opponent
             // (Unless specifically targeting dead, but 'enemy' usually implies alive)
             if (!target || target.currentHp <= 0) {
-                 const aliveOpponents = getAlive(oppTeamUnits);
-                 if (aliveOpponents.length > 0) {
-                     // Pick random or first? Usually existing logic picked first or random.
-                     // Default to first alive for stability, or random if previously random.
-                     // Let's pick first alive to be safe, AI usually provides ID if it wants specific.
-                     target = aliveOpponents[0];
-                 }
+                const aliveOpponents = getAlive(oppTeamUnits);
+                if (aliveOpponents.length > 0) {
+                    // Pick random or first? Usually existing logic picked first or random.
+                    // Default to first alive for stability, or random if previously random.
+                    // Let's pick first alive to be safe, AI usually provides ID if it wants specific.
+                    target = aliveOpponents[0];
+                }
             }
             if (target && target.currentHp > 0) targets.push(target);
             break;
 
         case 'allEnemies': // All Opponents
-        case 'all': 
+        case 'all':
             targets.push(...getAlive(oppTeamUnits));
             break;
 
@@ -125,6 +125,16 @@ export const resolveTargets = ({ partySlots, enemies, actor, targetId }, targetT
             if (!deadAlly && !targetId) {
                 const deads = getDead(myTeamUnits);
                 if (deads.length > 0) targets.push(deads[0]);
+            }
+            break;
+
+        case 'deadEnemy': // Revive Opponent (e.g. for "Trapping God's Enemy in Living Hell")
+            let deadOpponent = targetId ? findUnit(oppTeamUnits, targetId) : null;
+            if (deadOpponent && deadOpponent.currentHp <= 0) targets.push(deadOpponent);
+            // Fallback: Pick first dead opponent
+            if (!deadOpponent && !targetId) {
+                const deadOpponents = getDead(oppTeamUnits);
+                if (deadOpponents.length > 0) targets.push(deadOpponents[0]);
             }
             break;
 
@@ -149,12 +159,12 @@ export const resolveTargets = ({ partySlots, enemies, actor, targetId }, targetT
         case 'allOtherAllies':
             targets.push(...getAlive(myTeamUnits).filter(u => u.uuid !== actor.uuid));
             break;
-            
+
         default:
             // Fallback for unknown types, treat as single opponent
-             if (targetType === 'single') {
-                 // Already handled above
-             }
+            if (targetType === 'single') {
+                // Already handled above
+            }
             break;
     }
 

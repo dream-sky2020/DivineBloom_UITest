@@ -11,7 +11,7 @@ export const yibitianAI = (context) => {
         const target = deadPlayers[0];
         return act()
             .skill(205) // Revives enemy with curse
-            .targetSingle(target)
+            .targetUnit(target) // Use targetUnit to avoid overriding 'deadEnemy' type
             .build();
     }
 
