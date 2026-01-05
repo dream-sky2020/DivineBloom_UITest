@@ -77,7 +77,10 @@ export const iconMap = {
   icon_skip: "⏭️",
   icon_flower: "🌸",
   icon_magic: "✨",
-  icon_run: "🏃"
+  icon_run: "🏃",
+  icon_bp_plus: "➕",
+  icon_bp_minus: "➖",
+  icon_bp_cancel: "✖️"
 };
 
 /**

@@ -37,6 +37,7 @@
       :character-skills="characterSkills"
       :battle-items="battleItems"
       :can-switch="canSwitch"
+      :boost-level="boostLevel"
       @action="handleAction"
       @open-skill-menu="openSkillMenu"
       @close-skill-menu="showSkillMenu = false"
@@ -44,6 +45,7 @@
       @close-item-menu="showItemMenu = false"
       @select-skill="selectSkill"
       @select-item="selectItem"
+      @adjust-boost="battleStore.adjustBoost"
     />
 
     <!-- Battle Log Display -->
@@ -82,7 +84,7 @@ const emit = defineEmits(['change-system']);
 
 const battleStore = useBattleStore();
 // removed activeSlotIndex
-const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItems } = storeToRefs(battleStore);
+const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItems, boostLevel } = storeToRefs(battleStore);
 
 let animationFrameId = null;
 let lastTime = 0;

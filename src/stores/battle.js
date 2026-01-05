@@ -26,6 +26,7 @@ export const useBattleStore = defineStore('battle', () => {
     const battleLog = ref([]);
     const atbPaused = ref(false);
     const activeUnit = ref(null); // The unit currently acting (Player or Enemy)
+    const boostLevel = ref(0); // Manually controlled BP usage for the current turn
     const triggeredEnemyUuid = ref(null);
     const lastBattleResult = ref(null); // { result: 'victory'|'defeat'|'flee', enemyUuid: string }
 
@@ -48,6 +49,24 @@ export const useBattleStore = defineStore('battle', () => {
     });
 
     // --- Actions ---
+
+    const adjustBoost = (delta) => {
+        if (!activeUnit.value || !activeUnit.value.isPlayer) return;
+        
+        let newLevel;
+        if (delta === 'reset') {
+            newLevel = 0;
+        } else {
+            newLevel = boostLevel.value + delta;
+        }
+
+        const maxBoost = 3; // Max BP usage per turn constraint
+        const currentEnergy = activeUnit.value.energy || 0;
+        
+        // Clamp between 0 and min(currentEnergy, maxBoost)
+        newLevel = Math.max(0, Math.min(newLevel, currentEnergy, maxBoost));
+        boostLevel.value = newLevel;
+    };
 
     // Build Context for Mechanics
     const getContext = () => ({
@@ -199,6 +218,7 @@ export const useBattleStore = defineStore('battle', () => {
         atbPaused.value = true;
         activeUnit.value = unit;
         unit.isDefending = false; // Reset Defend at start of turn
+        boostLevel.value = 0; // Reset Boost Level on new turn
 
         // Process Turn Start Statuses (DoT, HoT)
         processTurnStatuses(unit, getContext());
@@ -233,6 +253,7 @@ export const useBattleStore = defineStore('battle', () => {
         unit.atb = -25;
         activeUnit.value = null;
         atbPaused.value = false;
+        boostLevel.value = 0; // Ensure boost is reset
         checkBattleStatus();
     };
 
@@ -358,6 +379,18 @@ export const useBattleStore = defineStore('battle', () => {
 
         const actor = activeUnit.value;
 
+        // Calculate Energy Multiplier from Manual Boost Level
+        let energyMult = 1.0;
+        let consumedEnergy = 0;
+        if (boostLevel.value > 0) {
+            energyMult = 1.0 + (boostLevel.value * 0.5); // Example scaling
+            consumedEnergy = boostLevel.value;
+            log('battle.energyConsume', { name: actor.name, energy: consumedEnergy });
+        }
+        
+        // Context with energy multiplier
+        const actionContext = { ...getContext(), energyMult };
+
         // Normalize payload
         let targetId = null;
         let skillId = null;
@@ -400,14 +433,10 @@ export const useBattleStore = defineStore('battle', () => {
                 actor.currentMp -= cost;
                 log('battle.useSkill', { user: actor.name, skill: skill.name });
 
-                // --- Energy Consumption for Skill ---
-                let energyMult = 1.0;
-                if ((actor.energy || 0) > 0) {
-                    energyMult = 1.0 + (actor.energy * 0.5);
-                    log('battle.energyConsume', { name: actor.name, energy: actor.energy });
-                    actor.energy = 0;
+                // Deduct Energy
+                if (consumedEnergy > 0) {
+                    actor.energy = Math.max(0, (actor.energy || 0) - consumedEnergy);
                 }
-                const actionContext = { ...getContext(), energyMult };
 
                 // Skill Logic
                 if (skill.effects) {
@@ -457,14 +486,10 @@ export const useBattleStore = defineStore('battle', () => {
         } else if (actionType === 'attack') {
             log('battle.attackStart', { attacker: actor.name });
 
-            // --- Energy Consumption for Attack ---
-            let energyMult = 1.0;
-            if ((actor.energy || 0) > 0) {
-                energyMult = 1.0 + (actor.energy * 0.5);
-                log('battle.energyConsume', { name: actor.name, energy: actor.energy });
-                actor.energy = 0;
+            // Deduct Energy
+            if (consumedEnergy > 0) {
+                actor.energy = Math.max(0, (actor.energy || 0) - consumedEnergy);
             }
-            const actionContext = { ...getContext(), energyMult };
 
             // Resolve Target
             const targets = resolveTargets({
@@ -623,6 +648,7 @@ export const useBattleStore = defineStore('battle', () => {
         battleLog,
         atbPaused,
         activeUnit,
+        boostLevel,
 
         // Getters
         activeCharacter,
@@ -634,6 +660,7 @@ export const useBattleStore = defineStore('battle', () => {
         playerAction,
         updateATB,
         runAway,
-        lastBattleResult
+        lastBattleResult,
+        adjustBoost
     };
 });

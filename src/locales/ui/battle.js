@@ -45,7 +45,25 @@ export default {
     chainHit: { zh: '[第{count}次弹射] 命中 {target}，造成 {amount} 伤害!', 'zh-TW': '[第{count}次彈射] 命中 {target}，造成 {amount} 傷害!', en: '[Bounce {count}] Hit {target} for {amount} damage!', ja: '[{count}回目] {target}に命中、{amount}のダメージ！', ko: '[{count}회차] {target} 적중, {amount} 피해!' },
 
     // Action Menu
-    skillsOf: { zh: '{name} 的技能', 'zh-TW': '{name} 的技能', en: "Skills of {name}", ja: '{name}のスキル', ko: '{name}의 스킬' },
+    actionBpMinus: {
+    en: 'Decrease BP',
+    zh: '减少BP',
+    ja: 'BP減少',
+    ko: 'BP 감소'
+  },
+  actionBpPlus: {
+    en: 'Boost BP',
+    zh: '爆发',
+    ja: 'BPブースト',
+    ko: 'BP 부스트'
+  },
+  actionBpCancel: {
+    en: 'Reset BP',
+    zh: '重置',
+    ja: 'BPリセット',
+    ko: 'BP 초기화'
+  },
+  skillsOf: { zh: '{name} 的技能', 'zh-TW': '{name} 的技能', en: "Skills of {name}", ja: '{name}のスキル', ko: '{name}의 스킬' },
     bagConsumables: { zh: '背包 (消耗品)', 'zh-TW': '背包 (消耗品)', en: 'Bag (Consumables)', ja: 'バッグ (消耗品)', ko: '가방 (소모품)' },
     noSkills: { zh: '暂无可用技能', 'zh-TW': '暫無可用技能', en: 'No skills available', ja: '使用可能なスキルがありません', ko: '사용 가능한 스킬 없음' },
     emptyBag: { zh: '背包空空如也', 'zh-TW': '背包空空如也', en: 'Bag is empty', ja: 'バッグは空です', ko: '가방이 비었습니다' },

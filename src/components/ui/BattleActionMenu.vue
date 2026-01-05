@@ -58,8 +58,41 @@
        </div>
      </div>
 
-     <!-- Action Menu - Centered or near character -->
      <div class="action-ring" v-else>
+        <!-- BP Controls In-Line -->
+        <button class="action-btn bp-minus" 
+          @click="$emit('adjust-boost', -1)" 
+          :class="{ 'disabled': boostLevel <= 0 }"
+          :disabled="boostLevel <= 0"
+        >
+          <GameIcon class="icon" name="icon_bp_minus" />
+          <span class="label">{{ t('battle.actionBpMinus') }}</span>
+        </button>
+        
+        <!-- BP Display Card (Static but styled like a button) -->
+        <div class="action-btn bp-display-card">
+           <span class="bp-label">BP</span>
+           <span class="bp-value">{{ boostLevel }} / {{ activeCharacter.energy || 0 }}</span>
+        </div>
+        
+        <button class="action-btn bp-cancel" 
+          @click="$emit('adjust-boost', 'reset')"
+          :class="{ 'disabled': boostLevel <= 0 }"
+          :disabled="boostLevel <= 0"
+        >
+          <GameIcon class="icon" name="icon_bp_cancel" />
+          <span class="label">{{ t('battle.actionBpCancel') }}</span>
+        </button>
+        
+        <button class="action-btn bp-plus" 
+          @click="$emit('adjust-boost', 1)" 
+          :class="{ 'disabled': boostLevel >= (activeCharacter.energy || 0) || boostLevel >= 3 }"
+          :disabled="boostLevel >= (activeCharacter.energy || 0) || boostLevel >= 3"
+        >
+        
+          <GameIcon class="icon" name="icon_bp_plus" />
+          <span class="label">{{ t('battle.actionBpPlus') }}</span>
+        </button>
         <button class="action-btn attack" @click="$emit('action', 'attack')">
           <GameIcon class="icon" name="icon_sword" />
           <span class="label">{{ t('battle.actionAttack') }}</span>
@@ -112,7 +145,11 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  canSwitch: Boolean
+  canSwitch: Boolean,
+  boostLevel: {
+    type: Number,
+    default: 0
+  }
 });
 
 defineEmits([
@@ -122,7 +159,8 @@ defineEmits([
   'open-item-menu',
   'close-item-menu',
   'select-skill',
-  'select-item'
+  'select-item',
+  'adjust-boost'
 ]);
 
 const { t, locale } = useI18n();
