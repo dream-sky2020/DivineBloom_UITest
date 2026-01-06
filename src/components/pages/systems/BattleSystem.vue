@@ -31,9 +31,10 @@
 
     <!-- Battle UI Layer (Action Menu) -->
     <BattleActionMenu 
-      :active-character="activeCharacter"
+      :active-character="menuActiveCharacter"
       :show-skill-menu="showSkillMenu"
       :show-item-menu="showItemMenu"
+      :is-selecting-target="isSelectingTarget"
       :character-skills="characterSkills"
       :battle-items="battleItems"
       :can-switch="canSwitch"
@@ -84,7 +85,12 @@ const emit = defineEmits(['change-system']);
 
 const battleStore = useBattleStore();
 // removed activeSlotIndex
-const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItems, boostLevel } = storeToRefs(battleStore);
+const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItems, boostLevel, waitingForInput } = storeToRefs(battleStore);
+
+// Only show action menu if waiting for input
+const menuActiveCharacter = computed(() => {
+    return waitingForInput.value ? activeCharacter.value : null;
+});
 
 let animationFrameId = null;
 let lastTime = 0;
@@ -182,8 +188,8 @@ const selectItem = (item) => {
         pendingAction.value = { type: 'item', itemId: item.id, targetType: 'enemy' };
     } else if (targetType === 'deadAlly') {
          pendingAction.value = { type: 'item', itemId: item.id, targetType: 'deadAlly' };
-    } else if (targetType === 'allDeadAllies' || targetType === 'allAllies') {
-         // Instant cast for mass revive / mass heal item
+    } else if (targetType === 'allDeadAllies' || targetType === 'allAllies' || targetType === 'allEnemies') {
+         // Instant cast for mass revive / mass heal / mass attack item
          battleStore.playerAction('item', { itemId: item.id, targetId: null });
          showItemMenu.value = false;
     } else {

@@ -58,7 +58,7 @@
        </div>
      </div>
 
-     <div class="action-ring" v-else>
+     <div class="action-ring" v-else-if="!isSelectingTarget">
         <!-- BP Controls In-Line -->
         <button class="action-btn bp-minus" 
           @click="$emit('adjust-boost', -1)" 
@@ -149,6 +149,10 @@ const props = defineProps({
   boostLevel: {
     type: Number,
     default: 0
+  },
+  isSelectingTarget: {
+    type: Boolean,
+    default: false
   }
 });
 

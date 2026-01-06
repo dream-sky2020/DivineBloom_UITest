@@ -29,6 +29,7 @@ export const useBattleStore = defineStore('battle', () => {
     const boostLevel = ref(0); // Manually controlled BP usage for the current turn
     const triggeredEnemyUuid = ref(null);
     const lastBattleResult = ref(null); // { result: 'victory'|'defeat'|'flee', enemyUuid: string }
+    const waitingForInput = ref(false); // Controls UI visibility
 
     // --- Getters ---
     const activeCharacter = computed(() => {
@@ -132,6 +133,7 @@ export const useBattleStore = defineStore('battle', () => {
         battleLog.value = [];
         activeUnit.value = null;
         atbPaused.value = false;
+        waitingForInput.value = false;
         triggeredEnemyUuid.value = enemyUuid;
         lastBattleResult.value = null;
 
@@ -244,6 +246,7 @@ export const useBattleStore = defineStore('battle', () => {
             processEnemyTurn(unit);
         } else {
             // Player Logic: Waiting for UI input
+            waitingForInput.value = true;
             // UI will see isPlayerTurn = true
         }
     };
@@ -253,6 +256,7 @@ export const useBattleStore = defineStore('battle', () => {
         unit.atb = -25;
         activeUnit.value = null;
         atbPaused.value = false;
+        waitingForInput.value = false;
         boostLevel.value = 0; // Ensure boost is reset
         checkBattleStatus();
     };
@@ -377,6 +381,7 @@ export const useBattleStore = defineStore('battle', () => {
     const playerAction = async (actionType, payload = null) => {
         if (!activeUnit.value || !activeUnit.value.isPlayer) return;
 
+        waitingForInput.value = false; // Hide UI immediately
         const actor = activeUnit.value;
 
         // Calculate Energy Multiplier from Manual Boost Level
@@ -649,6 +654,7 @@ export const useBattleStore = defineStore('battle', () => {
         atbPaused,
         activeUnit,
         boostLevel,
+        waitingForInput,
 
         // Getters
         activeCharacter,

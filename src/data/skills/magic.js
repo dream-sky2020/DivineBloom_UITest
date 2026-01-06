@@ -119,7 +119,9 @@ export default {
     element: "elements.water",
     targetType: "allUnits",
     effects: [
-      { type: "plague_rain", value: 200 } // value for heal amount
+      { type: "plague_rain", value: 200 }, // Heal effect
+      { type: "applyStatus", status: 1, duration: 3, chance: 0.5 },   // Poison
+      { type: "applyStatus", status: 101, duration: 3, chance: 0.5 }  // Regen
     ],
     icon: "icon_plague_rain",
     cost: "50 MP",
@@ -153,7 +155,14 @@ export default {
     element: "elements.dark",
     targetType: "deadEnemy",
     effects: [
-      { type: "revive_enemy", value: 0.5, duration: 20 }
+      { type: "revive_enemy", value: 0.5 },
+      { type: "applyStatus", status: 1, duration: 3, chance: 0.2 }, // Poison
+      { type: "applyStatus", status: 2, duration: 3, chance: 0.2 }, // Burn
+      { type: "applyStatus", status: 3, duration: 3, chance: 0.2 }, // Freeze
+      { type: "applyStatus", status: 4, duration: 3, chance: 0.2 }, // Paralysis
+      { type: "applyStatus", status: 5, duration: 3, chance: 0.2 }, // Bleed
+      { type: "applyStatus", status: 7, duration: 3, chance: 0.2 }, // Def Down
+      { type: "applyStatus", status: 8, duration: 3, chance: 0.2 }  // Atk Down
     ],
     icon: "icon_hell_revival",
     cost: "100 MP",

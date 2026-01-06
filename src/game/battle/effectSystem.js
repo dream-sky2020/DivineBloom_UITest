@@ -57,14 +57,6 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
 
                 if (!silent && log) log('battle.revived', { target: target.name });
 
-                // Add debuffs
-                const debuffs = [1, 2, 3, 4, 5, 7, 8]; // Poison, Burn, Freeze, Paralysis, Bleed, Def Down, Atk Down
-                const duration = effect.duration || 20;
-
-                debuffs.forEach(statusId => {
-                    applyStatus(target, statusId, duration, null, context, silent);
-                });
-
                 return target.currentHp;
             } else {
                 if (!silent && log) log('battle.noEffect');
@@ -167,11 +159,6 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
             break;
         case 'plague_rain':
             if (target) {
-                // Apply Poison (Status 1)
-                applyStatus(target, 1, effect.duration || 3, null, context, silent);
-                // Apply Regen (Status 101)
-                applyStatus(target, 101, effect.duration || 3, null, context, silent);
-
                 // Heal
                 let amount = Number(effect.value) || 0;
                 if (effect.scaling === 'maxHp') {
