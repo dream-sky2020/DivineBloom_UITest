@@ -12,7 +12,8 @@
 
 .system-card {
     width: 100%;
-    max-width: 800px;
+    /* Increase width as requested */
+    max-width: 1000px; 
     height: 100%;
     padding: 3rem;
     display: flex;
@@ -63,7 +64,10 @@
 .setting-label {
     color: var(--slate-300);
     font-weight: 600;
-    font-size: 1.1rem;
+    /* Unified horizontal space */
+    flex: 0 0 200px;
+    /* Unified font size */
+    font-size: 1.2rem;
 }
 
 .setting-value {
@@ -76,11 +80,13 @@
 /* Slider Style */
 .setting-slider {
     -webkit-appearance: none;
-    width: 40%;
+    /* Increase slider width */
+    width: 50%;
     height: 6px;
     background: var(--slate-700);
     border-radius: 3px;
     outline: none;
+    margin: 0 1rem;
 }
 
 .setting-slider::-webkit-slider-thumb {
@@ -106,6 +112,9 @@
     background: var(--slate-900);
     padding: 0.25rem;
     border-radius: 0.25rem;
+    /* Allow expanding */
+    flex: 1;
+    justify-content: flex-end;
 }
 
 .toggle-group button {

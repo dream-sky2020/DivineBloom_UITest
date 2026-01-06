@@ -87,31 +87,31 @@
             <h3 v-t="'system.language'"></h3>
             <div class="btn-group">
               <button 
-                :class="{ active: $i18n.locale === 'zh' }" 
+                :class="{ active: settingsStore.language === 'zh' }" 
                 @click="setLanguage('zh')"
               >
                 简体中文
               </button>
               <button 
-                :class="{ active: $i18n.locale === 'zh-TW' }" 
+                :class="{ active: settingsStore.language === 'zh-TW' }" 
                 @click="setLanguage('zh-TW')"
               >
                 繁體中文
               </button>
               <button 
-                :class="{ active: $i18n.locale === 'en' }" 
+                :class="{ active: settingsStore.language === 'en' }" 
                 @click="setLanguage('en')"
               >
                 English
               </button>
               <button 
-                :class="{ active: $i18n.locale === 'ja' }" 
+                :class="{ active: settingsStore.language === 'ja' }" 
                 @click="setLanguage('ja')"
               >
                 日本語
               </button>
               <button 
-                :class="{ active: $i18n.locale === 'ko' }" 
+                :class="{ active: settingsStore.language === 'ko' }" 
                 @click="setLanguage('ko')"
               >
                 한국어
@@ -127,6 +127,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useSettingsStore } from '@/stores/settings';
 import MainMenuSystem from '@/components/pages/systems/MainMenuSystem.vue';
 import ListMenuSystem from '@/components/pages/systems/ListMenuSystem.vue';
 import ListMenuPreviewsSystem from '@/components/pages/systems/ListMenuPreviewsSystem.vue';
@@ -136,6 +137,7 @@ import WorldMapSystem from '@/components/pages/systems/WorldMapSystem.vue';
 import BattleSystem from '@/components/pages/systems/BattleSystem.vue';
 
 const { locale } = useI18n();
+const settingsStore = useSettingsStore();
 const currentSystem = ref('main-menu'); // Default to Main Menu
 
 const activeSystemComponent = computed(() => {
@@ -203,7 +205,7 @@ const logState = () => {
 };
 
 const setLanguage = (lang) => {
-  locale.value = lang;
+  settingsStore.setLanguage(lang);
 };
 </script>
 

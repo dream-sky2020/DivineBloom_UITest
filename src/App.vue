@@ -1,5 +1,13 @@
 <script setup>
 import GameUI from '@/components/pages/GameUI.vue';
+import { useSettingsStore } from '@/stores/settings';
+import { onMounted } from 'vue';
+
+const settingsStore = useSettingsStore();
+
+onMounted(() => {
+  settingsStore.initSettings();
+});
 </script>
 
 <template>

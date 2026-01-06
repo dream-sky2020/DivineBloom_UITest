@@ -12,8 +12,11 @@
           <div class="setting-row">
             <span class="setting-label">{{ $t('system.language') }}</span>
             <div class="toggle-group">
-                <button :class="{ active: $i18n.locale === 'en' }" @click="$i18n.locale = 'en'">ENG</button>
-                <button :class="{ active: $i18n.locale === 'zh' }" @click="$i18n.locale = 'zh'">中文</button>
+                <button :class="{ active: settingsStore.language === 'en' }" @click="settingsStore.setLanguage('en')">ENG</button>
+                <button :class="{ active: settingsStore.language === 'zh' }" @click="settingsStore.setLanguage('zh')">简体</button>
+                <button :class="{ active: settingsStore.language === 'zh-TW' }" @click="settingsStore.setLanguage('zh-TW')">繁体</button>
+                <button :class="{ active: settingsStore.language === 'ja' }" @click="settingsStore.setLanguage('ja')">日本語</button>
+                <button :class="{ active: settingsStore.language === 'ko' }" @click="settingsStore.setLanguage('ko')">한국어</button>
             </div>
           </div>
           
@@ -43,16 +46,30 @@
           <div class="setting-row">
             <span class="setting-label" v-t="'systemSettings.textSpeed'"></span>
              <div class="toggle-group">
-                <button :class="{ active: settings.textSpeed === 'slow' }" @click="settings.textSpeed = 'slow'" v-t="'systemSettings.speeds.slow'"></button>
-                <button :class="{ active: settings.textSpeed === 'normal' }" @click="settings.textSpeed = 'normal'" v-t="'systemSettings.speeds.normal'"></button>
-                <button :class="{ active: settings.textSpeed === 'fast' }" @click="settings.textSpeed = 'fast'" v-t="'systemSettings.speeds.fast'"></button>
+                <button :class="{ active: settingsStore.textSpeed === 'slow' }" @click="settingsStore.textSpeed = 'slow'" v-t="'systemSettings.speeds.slow'"></button>
+                <button :class="{ active: settingsStore.textSpeed === 'normal' }" @click="settingsStore.textSpeed = 'normal'" v-t="'systemSettings.speeds.normal'"></button>
+                <button :class="{ active: settingsStore.textSpeed === 'fast' }" @click="settingsStore.textSpeed = 'fast'" v-t="'systemSettings.speeds.fast'"></button>
+             </div>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">{{ $t('systemSettings.battleSpeed') }}</span>
+             <div class="toggle-group" style="flex-wrap: wrap;">
+                <button 
+                  v-for="speed in battleSpeeds" 
+                  :key="speed"
+                  :class="{ active: settingsStore.battleSpeed === speed }" 
+                  @click="settingsStore.battleSpeed = speed"
+                >
+                  x{{ speed }}
+                </button>
              </div>
           </div>
           
           <div class="setting-row">
             <span class="setting-label" v-t="'systemSettings.autoSave'"></span>
             <label class="switch">
-              <input type="checkbox" v-model="settings.autoSave">
+              <input type="checkbox" v-model="settingsStore.autoSave">
               <span class="slider round"></span>
             </label>
           </div>
@@ -69,20 +86,21 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useAudioStore } from '@/stores/audio';
+import { useSettingsStore } from '@/stores/settings';
 
 const audioStore = useAudioStore();
+const settingsStore = useSettingsStore();
+
+const battleSpeeds = [0.1, 0.25, 0.5, 1, 2, 3, 4, 5, 10, 20];
 
 // 初始化音频（确保音量设置生效）
 onMounted(() => {
   audioStore.initAudio();
 });
 
-const settings = reactive({
-  textSpeed: 'normal',
-  autoSave: true
-});
+// settings moved to store
 </script>
 
 <style scoped src="@styles/components/panels/SystemPanel.css"></style>

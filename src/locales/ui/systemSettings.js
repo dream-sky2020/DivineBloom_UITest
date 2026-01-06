@@ -20,6 +20,13 @@ export default {
     ja: 'オートセーブ',
     ko: '자동 저장'
   },
+  battleSpeed: {
+    zh: '战斗速度',
+    'zh-TW': '戰鬥速度',
+    en: 'Battle Speed',
+    ja: '戦闘速度',
+    ko: '전투 속도'
+  },
   toTitle: {
     zh: '返回标题',
     'zh-TW': '返回標題',

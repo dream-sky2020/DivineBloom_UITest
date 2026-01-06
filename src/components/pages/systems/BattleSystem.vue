@@ -71,6 +71,7 @@
 <script setup>
 import { onMounted, onBeforeUnmount, computed, ref, watch } from 'vue';
 import { useBattleStore } from '@/stores/battle';
+import { useSettingsStore } from '@/stores/settings';
 import { storeToRefs } from 'pinia';
 import { skillsDb } from '@/data/skills';
 import BattleEnemyUnit from '@/components/ui/BattleEnemyUnit.vue';
@@ -84,8 +85,10 @@ import BattleLog from '@/components/ui/BattleLog.vue';
 const emit = defineEmits(['change-system']);
 
 const battleStore = useBattleStore();
+const settingsStore = useSettingsStore();
 // removed activeSlotIndex
 const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItems, boostLevel, waitingForInput } = storeToRefs(battleStore);
+const { battleSpeed: gameSpeed } = storeToRefs(settingsStore);
 
 // Only show action menu if waiting for input
 const menuActiveCharacter = computed(() => {
@@ -94,7 +97,7 @@ const menuActiveCharacter = computed(() => {
 
 let animationFrameId = null;
 let lastTime = 0;
-const gameSpeed = ref(1);
+// gameSpeed moved to settingsStore
 
 // Watch for Battle End
 watch(battleState, (newState) => {
