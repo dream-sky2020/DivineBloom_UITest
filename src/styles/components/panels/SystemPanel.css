@@ -80,6 +80,7 @@
 /* Slider Style */
 .setting-slider {
     -webkit-appearance: none;
+    appearance: none;
     /* Increase slider width */
     width: 50%;
     height: 6px;

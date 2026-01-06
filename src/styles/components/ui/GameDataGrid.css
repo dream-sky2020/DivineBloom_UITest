@@ -13,10 +13,13 @@
   border-radius: 0.25rem;
   cursor: pointer;
   transition: all 0.2s;
+  /* Fix: prevent border width change causing layout shift */
+  box-sizing: border-box;
 }
 
 .grid-item:hover {
   background-color: var(--slate-700);
+  /* Fix: Use box-shadow or same border-width instead of potentially changing border */
   border-color: rgba(255, 255, 255, 0.5);
   z-index: 10;
 }
@@ -24,7 +27,9 @@
 .grid-item.active {
   background-color: rgba(30, 58, 138, 0.6);
   border-color: var(--blue-400);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  /* 使用 inset box-shadow 模拟加粗效果，避免布局偏移 */
+  box-shadow: inset 0 0 0 1px var(--blue-400), 0 0 10px rgba(59, 130, 246, 0.3);
+  z-index: 10;
 }
 
 .grid-item.empty { opacity: 0.7; }
@@ -242,7 +247,9 @@
   border-radius: 0.125rem;
 }
 .grid-item.detailed.active .status-tag {
-  border-color: var(--yellow-400);
+  /* Fix: prevent border width layout shift */
+  box-shadow: inset 0 0 0 1px var(--yellow-400);
+  border-color: transparent; 
   color: var(--yellow-400);
 }
 .lock-overlay {

@@ -80,7 +80,7 @@
         </div>
         <div v-if="item?.tag" class="status-tag">{{ item.tag }}</div>
         <div v-if="item?.isLocked" class="lock-overlay">🔒</div>
-        <div v-if="selectedIndex === index" class="selection-border"></div>
+        <!-- Removed selection-border to prevent layout shift -->
       </template>
 
     </div>

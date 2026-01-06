@@ -46,8 +46,9 @@
 
 .save-card.active-card {
     background-color: rgba(30, 58, 138, 0.6);
-    border: 2px solid var(--blue-400);
-    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+    border-color: var(--blue-400);
+    /* Fix: Replace 2px spread with internal shadow to prevent layout shift */
+    box-shadow: inset 0 0 0 1px var(--blue-400);
 }
 
 .card-header {

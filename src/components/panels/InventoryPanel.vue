@@ -123,17 +123,7 @@ const rawItems = computed(() => {
 
 // 生成填充网格的空槽位
 const displayItems = computed(() => {
-  const filled = [...rawItems.value];
-  const totalSlots = 40; // 总槽位
-  
-  // 仅在非 List 模式下填充空位，List 模式通常只显示持有的物品
-  if (viewMode.value !== 'list') {
-     for (let i = filled.length; i < totalSlots; i++) {
-       filled.push({ isEmpty: true });
-     }
-  }
-  
-  return filled;
+  return [...rawItems.value];
 });
 
 const selectedItem = computed(() => displayItems.value[selectedIndex.value]);
