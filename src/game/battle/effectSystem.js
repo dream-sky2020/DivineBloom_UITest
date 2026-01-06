@@ -124,12 +124,28 @@ export const processEffect = (effect, target, actor, skill = null, context, sile
             break;
         case 'cureStatus':
             if (target) {
-                // Map string "poison" to ID 1, etc.
-                let sId = null;
-                if (effect.status === 'poison') sId = 1;
+                if (effect.status === 'all') {
+                    if (target.statusEffects) {
+                        const idsToRemove = [];
+                        target.statusEffects.forEach(status => {
+                             const statusDef = statusDb[status.id];
+                             if (statusDef && statusDef.type === 'statusTypes.debuff') {
+                                 idsToRemove.push(status.id);
+                             }
+                        });
+                        
+                        idsToRemove.forEach(id => {
+                            removeStatus(target, id, context, silent);
+                        });
+                    }
+                } else {
+                    // Map string "poison" to ID 1, etc.
+                    let sId = null;
+                    if (effect.status === 'poison') sId = 1;
 
-                if (sId) removeStatus(target, sId, context, silent);
-                else if (!silent && log) log('battle.statusCured', { target: target.name, status: effect.status });
+                    if (sId) removeStatus(target, sId, context, silent);
+                    else if (!silent && log) log('battle.statusCured', { target: target.name, status: effect.status });
+                }
             }
             break;
         case 'fullRestore':

@@ -12,6 +12,7 @@ export const iconMap = {
   icon_feather_all: "🪶", // Mass Revive Item
   icon_potion_splash: "🧪", // Splashing Potion
   icon_bomb: "💣",
+  icon_bomb_ice: "🧊",
 
   // Weapons
   icon_sword: "⚔️",

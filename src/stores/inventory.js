@@ -7,17 +7,34 @@ export const useInventoryStore = defineStore('inventory', () => {
   // State: 仅存储物品 ID 和数量
   // 结构: [{ id: 1001, count: 15 }, { id: 2001, count: 1 }]
   const inventoryState = ref([
-    { id: 1001, count: 15 },
-    { id: 1002, count: 3 },
-    { id: 1003, count: 1 },
-    { id: 1004, count: 5 },
-    { id: 1005, count: 1 },
-    { id: 1006, count: 5 },
-    { id: 1008, count: 3 },
-    { id: 1009, count: 8 },
-    { id: 2001, count: 1 },
-    { id: 3001, count: 1 },
-    { id: 9001, count: 1 }
+    // Consumables (1001-1600)
+    { id: 1001, count: 99 },
+    { id: 1002, count: 99 },
+    { id: 1003, count: 99 },
+    { id: 1101, count: 99 },
+    { id: 1201, count: 99 },
+    { id: 1202, count: 99 },
+    { id: 1301, count: 99 },
+    { id: 1302, count: 99 },
+    { id: 1401, count: 99 },
+    { id: 1402, count: 99 },
+    { id: 1403, count: 99 },
+    { id: 1404, count: 99 },
+    { id: 1501, count: 99 },
+    // Weapons (2001-2003)
+    { id: 2001, count: 99 },
+    { id: 2002, count: 99 },
+    { id: 2003, count: 99 },
+    // Armor (3001-3003)
+    { id: 3001, count: 99 },
+    { id: 3002, count: 99 },
+    { id: 3003, count: 99 },
+    // Accessories (4001-4002)
+    { id: 4001, count: 99 },
+    { id: 4002, count: 99 },
+    // Key Items (9001-9002)
+    { id: 9001, count: 99 },
+    { id: 9002, count: 99 }
   ]);
 
   // Actions
