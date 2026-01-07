@@ -37,6 +37,11 @@ export class MainScene {
 
     // Map Enemies
     this.mapEnemies = []
+    
+    // Static Cache Layer
+    this.staticLayer = null
+    this.lastCacheWidth = 0
+    this.lastCacheHeight = 0
 
     if (initialState && initialState.isInitialized) {
       this.restore(initialState)
@@ -125,6 +130,9 @@ export class MainScene {
     // 统一加载资源
     const sheetUrl = this._buildTinySpriteSheetDataURL()
     await this.engine.textures.load('sheet', sheetUrl)
+
+    // Pre-render background
+    this._refreshStaticLayer()
 
     this.isLoaded = true
   }
@@ -231,23 +239,56 @@ export class MainScene {
    * @param {Renderer2D} renderer 
    */
   _drawEnvironment(renderer) {
-    if (!this.currentMap) return
     const { width, height } = this.engine
-    const bg = this.currentMap.background
-    const minYRatio = this.currentMap.constraints?.minYRatio ?? 0.35
 
-    // 草地背景
-    renderer.drawRect(0, height * minYRatio, width, height * (1 - minYRatio), bg.groundColor || '#bbf7d0')
-
-    // 一些装饰块
-    if (bg.decorations) {
-      bg.decorations.forEach(dec => {
-        if (dec.type === 'rect') {
-          const y = dec.yRatio ? height * dec.yRatio : dec.y
-          renderer.drawRect(dec.x, y, dec.width, dec.height, dec.color)
-        }
-      })
+    // Check if cache needs refresh (e.g. resize)
+    if (!this.staticLayer || this.lastCacheWidth !== width || this.lastCacheHeight !== height) {
+        this._refreshStaticLayer()
     }
+
+    if (this.staticLayer) {
+        // Fast Path: Draw cached image
+        renderer.ctx.drawImage(this.staticLayer, 0, 0)
+    }
+  }
+
+  _refreshStaticLayer() {
+      if (!this.currentMap) return
+      const { width, height } = this.engine
+      if (width === 0 || height === 0) return
+
+      // Create or Resize Canvas
+      if (!this.staticLayer) {
+          this.staticLayer = document.createElement('canvas')
+      }
+      this.staticLayer.width = width
+      this.staticLayer.height = height
+      
+      const ctx = this.staticLayer.getContext('2d')
+      const bg = this.currentMap.background
+      const minYRatio = this.currentMap.constraints?.minYRatio ?? 0.35
+
+      // 1. Clear
+      ctx.clearRect(0, 0, width, height)
+
+      // 2. Draw Ground
+      ctx.fillStyle = bg.groundColor || '#bbf7d0'
+      const groundY = height * minYRatio
+      ctx.fillRect(0, groundY, width, height - groundY)
+
+      // 3. Draw Decorations
+      if (bg.decorations) {
+        bg.decorations.forEach(dec => {
+          if (dec.type === 'rect') {
+            const y = dec.yRatio ? height * dec.yRatio : dec.y
+            ctx.fillStyle = dec.color
+            ctx.fillRect(dec.x, y, dec.width, dec.height)
+          }
+        })
+      }
+      
+      this.lastCacheWidth = width
+      this.lastCacheHeight = height
   }
 
   // 辅助：生成资源 URL
