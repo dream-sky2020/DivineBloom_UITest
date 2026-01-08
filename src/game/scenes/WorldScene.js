@@ -5,6 +5,7 @@ import { ConstraintSystem } from '@/game/ecs/systems/ConstraintSystem'
 import { RenderSystem } from '@/game/ecs/systems/RenderSystem'
 import { EnemyAISystem } from '@/game/ecs/systems/EnemyAISystem'
 import { InteractionSystem } from '@/game/ecs/systems/InteractionSystem'
+import { ActionSystem } from '@/game/ecs/systems/ActionSystem'
 import { EnvironmentSystem } from '@/game/ecs/systems/EnvironmentSystem'
 import { getAssetPath } from '@/data/assets'
 import { Visuals } from '@/data/visuals'
@@ -80,7 +81,7 @@ export class WorldScene {
             if (entity.type) {
                 entitiesToSave.push({
                     type: entity.type,
-                    data: EntityFactory.serialize(entity)
+                    data: EntityManager.serialize(entity)
                 })
             }
         }
@@ -145,6 +146,13 @@ export class WorldScene {
             portals: this.mapData.portals
         })
 
+        // Process Action Events
+        ActionSystem.update({
+            onEncounter: this.onEncounter,
+            onSwitchMap: this.onSwitchMap,
+            onInteract: this.onInteract
+        })
+
         this.engine.renderer.setCamera(0, 0)
     }
 
@@ -161,4 +169,3 @@ export class WorldScene {
         RenderSystem.update(renderer, this.lastDt)
     }
 }
-

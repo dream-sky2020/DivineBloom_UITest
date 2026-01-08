@@ -1,4 +1,4 @@
-import { world } from '../world'
+import { world, eventQueue } from '../world'
 
 // Query entities needed for interaction
 const players = world.with('player', 'position')
@@ -9,7 +9,7 @@ export const InteractionSystem = {
     /**
      * @param {object} params
      * @param {import('@/game/GameEngine').InputManager} [params.input]
-     * @param {Function} [params.onEncounter]
+     * @param {Function} [params.onEncounter] - Used as a flag to enable battle detection
      * @param {Function} [params.onSwitchMap]
      * @param {Function} [params.onInteract]
      * @param {Function} [params.onProximity]
@@ -40,6 +40,7 @@ export const InteractionSystem = {
         }
 
         // 3. Check Encounters (Battle)
+        // We use onEncounter existence as a flag to enable battle checks
         if (onEncounter) {
             const detectionRadius = 40
             for (const enemy of enemies) {
@@ -51,7 +52,8 @@ export const InteractionSystem = {
 
                 if (dist < detectionRadius) {
                     const { battleGroup, uuid } = enemy.interaction
-                    onEncounter(battleGroup, uuid)
+                    // Emit event instead of direct callback
+                    eventQueue.emit('TRIGGER_BATTLE', { battleGroup, uuid })
                     return
                 }
             }
