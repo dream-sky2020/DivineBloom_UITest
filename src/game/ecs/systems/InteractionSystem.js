@@ -1,24 +1,25 @@
-import { world, eventQueue } from '../world'
+import { world } from '../world'
 
-// Query entities needed for interaction
-const players = world.with('player', 'position')
-const enemies = world.with('enemy', 'position', 'interaction')
-const npcs = world.with('npc', 'position', 'interaction')
+// Query entities that might show UI hints (Interactables)
+// We look for entities with 'trigger' component of type 'INTERACT'
+// Or fallback to old 'interaction' component for safety
+const interactables = world.with('position', 'trigger')
+const playerQuery = world.with('player', 'position')
 
 export const InteractionSystem = {
     /**
+     * System dedicated to UI Proximity Hints (e.g. "Press E to Interact")
+     * Logic for actual interaction is now handled by TriggerSystem -> ActionSystem
+     * 
      * @param {object} params
-     * @param {import('@/game/GameEngine').InputManager} [params.input]
-     * @param {Function} [params.onEncounter] - Used as a flag to enable battle detection
-     * @param {Function} [params.onSwitchMap] - Used as a flag to enable portal detection
-     * @param {Function} [params.onInteract] - Used as a flag to enable interaction detection
-     * @param {Function} [params.onProximity]
-     * @param {Array} [params.portals]
+     * @param {Function} [params.onProximity] - Callback to update UI hint
      */
-    update({ input, onEncounter, onSwitchMap, onInteract, onProximity, portals }) {
+    update({ onProximity }) {
+        if (!onProximity) return
+
         // 1. Get Player
         let player = null
-        for (const p of players) {
+        for (const p of playerQuery) {
             player = p
             break
         }
@@ -26,75 +27,40 @@ export const InteractionSystem = {
 
         const pPos = player.position
 
-        // 2. Check Portals (Map Switching)
-        if (onSwitchMap && portals) {
-            for (const portal of portals) {
-                if (pPos.x >= portal.x && pPos.x <= portal.x + portal.w &&
-                    pPos.y >= portal.y && pPos.y <= portal.y + portal.h) {
+        let nearestEntity = null
+        let minDistSq = Infinity
 
-                    console.log('Portal Triggered!', portal)
-                    eventQueue.emit('TRIGGER_MAP_SWITCH', {
-                        targetMapId: portal.targetMapId,
-                        targetEntryId: portal.targetEntryId
-                    })
-                    return
+        // 2. Find nearest interactable in range
+        for (const entity of interactables) {
+            const t = entity.trigger
+
+            // Only care about INTERACT type for UI hints
+            if (t.type !== 'INTERACT') continue
+
+            const dx = pPos.x - entity.position.x
+            const dy = pPos.y - entity.position.y
+            const distSq = dx * dx + dy * dy
+            const radiusSq = t.radius * t.radius
+
+            if (distSq <= radiusSq) {
+                if (distSq < minDistSq) {
+                    minDistSq = distSq
+                    nearestEntity = entity
                 }
             }
         }
 
-        // 3. Check Encounters (Battle)
-        if (onEncounter) {
-            const detectionRadius = 40
-            for (const enemy of enemies) {
-                if (enemy.aiState && enemy.aiState.state === 'stunned') continue
-
-                const dx = pPos.x - enemy.position.x
-                const dy = pPos.y - enemy.position.y
-                const dist = Math.sqrt(dx * dx + dy * dy)
-
-                if (dist < detectionRadius) {
-                    const { battleGroup, uuid } = enemy.interaction
-                    eventQueue.emit('TRIGGER_BATTLE', { battleGroup, uuid })
-                    return
-                }
+        // 3. Update UI
+        // We pass the legacy 'interaction' component because the UI layer expects it
+        // If it doesn't exist (pure new entity), we might need to adapt
+        if (nearestEntity) {
+            const interactionData = nearestEntity.interaction || {
+                type: 'dialogue', // default fallback
+                id: nearestEntity.actionDialogue?.scriptId
             }
-        }
-
-        // 4. Check NPC Interaction
-        if (onInteract) {
-            let nearestNPC = null
-            let minDist = Infinity
-            const defaultRange = 60
-
-            for (const npc of npcs) {
-                const range = npc.interaction.range || defaultRange
-                const dx = pPos.x - npc.position.x
-                const dy = pPos.y - npc.position.y
-                const dist = Math.sqrt(dx * dx + dy * dy)
-
-                if (dist <= range) {
-                    if (dist < minDist) {
-                        minDist = dist
-                        nearestNPC = npc
-                    }
-                }
-            }
-
-            // Proximity callback (for UI prompt)
-            // Note: This is a continuous state update (UI hint), not a discrete event, 
-            // so keeping it as a direct callback is often cleaner for "active/inactive" states.
-            // But we could also emit a 'PROXIMITY_UPDATE' event every frame if we wanted to be strict.
-            // For now, let's keep it direct or move it later.
-            if (onProximity) {
-                onProximity(nearestNPC ? nearestNPC.interaction : null)
-            }
-
-            // Interaction Trigger
-            if (nearestNPC && input) {
-                if (input.isDown('Space') || input.isDown('KeyE') || input.isDown('Enter')) {
-                    eventQueue.emit('INTERACT_NPC', { interaction: nearestNPC.interaction })
-                }
-            }
+            onProximity(interactionData)
+        } else {
+            onProximity(null)
         }
     }
 }

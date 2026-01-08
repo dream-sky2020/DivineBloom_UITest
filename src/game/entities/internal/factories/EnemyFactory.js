@@ -4,25 +4,35 @@ export const EnemyFactory = {
   create(data) {
     const { x, y, battleGroup, options = {} } = data
 
-    // 默认值处理 (逻辑来自原 MapEnemy.js)
+    // 默认值处理
     const isStunned = options.isStunned || false
     const visualId = options.spriteId || 'enemy_slime'
     const uuid = options.uuid || Math.random().toString(36).substr(2, 9)
 
-    // 直接返回 ECS 实体 (不再包裹在 class 里)
     const entity = world.add({
-      type: 'enemy', // 方便序列化识别
+      type: 'enemy', 
       position: { x, y },
       velocity: { x: 0, y: 0 },
-      enemy: true, // Tag Component
+      enemy: true,
 
+      // [NEW ARCHITECTURE]
+      trigger: {
+        type: 'PROXIMITY',
+        radius: 40 // Default encounter radius
+      },
+      actionBattle: {
+        group: battleGroup || [],
+        uuid: uuid
+      },
+
+      // [LEGACY COMPATIBILITY]
       interaction: {
         battleGroup: battleGroup || [],
         uuid: uuid
       },
 
       bounds: {
-        minX: 0, maxX: 9999, // 暂时硬编码，后面由 System 统一更新
+        minX: 0, maxX: 9999, 
         minY: 0, maxY: 9999
       },
 
@@ -43,7 +53,7 @@ export const EnemyFactory = {
         suspicion: 0,
         moveDir: { x: 0, y: 0 },
         facing: { x: 1, y: 0 },
-        colorHex: '#eab308', // 黄色
+        colorHex: '#eab308', 
         alertAnim: 0,
         starAngle: 0,
         justEntered: true
@@ -61,4 +71,3 @@ export const EnemyFactory = {
     return entity
   }
 }
-

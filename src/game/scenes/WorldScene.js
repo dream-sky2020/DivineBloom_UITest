@@ -7,6 +7,7 @@ import { EnemyAISystem } from '@/game/ecs/systems/EnemyAISystem'
 import { InteractionSystem } from '@/game/ecs/systems/InteractionSystem'
 import { ActionSystem } from '@/game/ecs/systems/ActionSystem'
 import { EnvironmentSystem } from '@/game/ecs/systems/EnvironmentSystem'
+import { TriggerSystem } from '@/game/ecs/systems/TriggerSystem'
 import { getAssetPath } from '@/data/assets'
 import { Visuals } from '@/data/visuals'
 import { ScenarioLoader } from '@/game/utils/ScenarioLoader'
@@ -59,26 +60,35 @@ export class WorldScene {
     _initScenario() {
         const { player } = ScenarioLoader.load(this.engine, this.mapData, this.entryId)
         this.player = player
+
+        // [NEW] Convert Portals Data to ECS Entities
+        if (this.mapData.portals) {
+            for (const p of this.mapData.portals) {
+                world.add({
+                    type: 'portal',
+                    position: { x: p.x, y: p.y },
+                    trigger: {
+                        type: 'ZONE',
+                        bounds: { x: 0, y: 0, w: p.w, h: p.h }
+                    },
+                    actionTeleport: {
+                        mapId: p.targetMapId,
+                        entryId: p.targetEntryId
+                    }
+                })
+            }
+        }
     }
 
     // Getter for backward compatibility and debug UI
     get gameEntities() {
-        // Return an array of all entities in the ECS world
-        // Note: miniplex world is iterable or has entities property
-        // We return an array to match the old array-based API
         return Array.from(world)
     }
 
     serialize() {
-        // 获取所有需要序列化的实体
-        // 这里我们假设所有有 'type' 属性的实体都需要序列化
-        // 也可以使用 world.entities 但 miniplex 的迭代方式可能因版本而异，这里使用查询更稳妥
-        // 或者直接遍历 world.entities 如果我们确信它是可迭代的
         const entitiesToSave = []
-
-        // Miniplex world is iterable
         for (const entity of world) {
-            if (entity.type) {
+            if (entity.type && entity.type !== 'portal') { // Don't save static portals
                 entitiesToSave.push({
                     type: entity.type,
                     data: EntityManager.serialize(entity)
@@ -93,18 +103,33 @@ export class WorldScene {
     }
 
     restore(state) {
-        // clearWorld 已经在 constructor 开头调用过了，但如果是热加载或者手动调用 restore
         clearWorld()
-
         const { player } = ScenarioLoader.restore(this.engine, state)
         this.player = player
+
+        // Re-create portals since they aren't saved in save file (they are static map data)
+        if (this.mapData.portals) {
+            for (const p of this.mapData.portals) {
+                world.add({
+                    type: 'portal',
+                    position: { x: p.x, y: p.y },
+                    trigger: {
+                        type: 'ZONE',
+                        bounds: { x: 0, y: 0, w: p.w, h: p.h }
+                    },
+                    actionTeleport: {
+                        mapId: p.targetMapId,
+                        entryId: p.targetEntryId
+                    }
+                })
+            }
+        }
     }
 
     async load() {
         const requiredVisuals = new Set()
         requiredVisuals.add('default')
 
-        // 扫描现有实体收集所需的 visual 资源
         const visualEntities = world.with('visual')
         for (const e of visualEntities) {
             requiredVisuals.add(e.visual.id)
@@ -137,16 +162,16 @@ export class WorldScene {
         MovementSystem.update(dt)
         ConstraintSystem.update(dt)
 
+        // [NEW] Trigger System (Logic)
+        TriggerSystem.update(dt, this.engine.input)
+
+        // [LEGACY] UI Hints System (e.g. "Press E")
+        // Currently disabled as no callback is provided, but structure is ready.
         InteractionSystem.update({
-            input: this.engine.input,
-            onEncounter: this.onEncounter,
-            onSwitchMap: this.onSwitchMap,
-            onInteract: this.onInteract,
-            onProximity: null,
-            portals: this.mapData.portals
+            onProximity: null
         })
 
-        // Process Action Events
+        // [NEW] Action System (Execution)
         ActionSystem.update({
             onEncounter: this.onEncounter,
             onSwitchMap: this.onSwitchMap,
@@ -160,12 +185,10 @@ export class WorldScene {
      * @param {Renderer2D} renderer 
      */
     draw(renderer) {
-        // 背景层
         EnvironmentSystem.draw(renderer, this.engine)
 
         if (!this.isLoaded) return
 
-        // 实体层
         RenderSystem.update(renderer, this.lastDt)
     }
 }

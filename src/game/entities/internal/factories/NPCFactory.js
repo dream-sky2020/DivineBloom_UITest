@@ -17,12 +17,24 @@ export const NPCFactory = {
       type: 'npc',
       position: { x, y },
       npc: true,
+      
+      // [NEW ARCHITECTURE]
+      trigger: {
+        type: 'INTERACT',
+        radius: config.range || 60
+      },
+      actionDialogue: {
+        scriptId: dialogueId
+      },
+
+      // [LEGACY COMPATIBILITY]
       interaction: {
         type: 'dialogue',
         id: dialogueId,
         range: config.range || 60
       },
-      // Body component (for collisions if implemented later, currently used for static property?)
+
+      // Body component
       body: {
         static: true,
         radius: 15,
@@ -43,4 +55,3 @@ export const NPCFactory = {
     return entity
   }
 }
-
