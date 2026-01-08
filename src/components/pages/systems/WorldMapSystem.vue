@@ -56,7 +56,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { GameEngine } from '@/game/GameEngine'
-import { MainScene } from '@/game/scenes/MainScene'
+import { WorldScene } from '@/game/scenes/WorldScene'
 import { useBattleStore } from '@/stores/battle'
 import { useWorldStore } from '@/stores/world'
 import { useDialogueStore } from '@/stores/dialogue'
@@ -118,8 +118,8 @@ function syncUI() {
 
   // Update Reactive State
   debugInfo.value = {
-    x: player.pos.x,
-    y: player.pos.y,
+    x: player.position.x,
+    y: player.position.y,
     lastInput: engine.value.input.lastInput,
     chasingCount
   }
@@ -158,7 +158,7 @@ onMounted(async () => {
 
     const initialState = worldStore.currentMapState
 
-    const mainScene = new MainScene(
+    const mainScene = new WorldScene(
       gameEngine, 
       // 战斗回调
       (enemyGroup, enemyUuid) => {
