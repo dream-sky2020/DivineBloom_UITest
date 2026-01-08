@@ -1,4 +1,4 @@
-import { EntityFactory } from '@/game/entities/EntityFactory'
+import { EntityManager } from '@/game/entities/EntityManager'
 import { PlayerConfig } from '@/data/assets'
 
 export class ScenarioLoader {
@@ -19,7 +19,7 @@ export class ScenarioLoader {
 
         // 1. Create Player
         // 默认位置，会被 spawn point 覆盖
-        const player = EntityFactory.createPlayer({
+        const player = EntityManager.createPlayer({
             x: 200,
             y: 260,
             scale: PlayerConfig.scale
@@ -61,7 +61,7 @@ export class ScenarioLoader {
                         }
                     }
 
-                    const enemyEntity = EntityFactory.createEnemy(enemyData)
+                    const enemyEntity = EntityManager.createEnemy(enemyData)
                     result.entities.push(enemyEntity)
                 }
             })
@@ -80,7 +80,7 @@ export class ScenarioLoader {
                     }
                 }
 
-                const npcEntity = EntityFactory.createNPC(npcData)
+                const npcEntity = EntityManager.createNPC(npcData)
                 result.entities.push(npcEntity)
             })
         }
@@ -102,7 +102,7 @@ export class ScenarioLoader {
 
         if (state.entities) {
             state.entities.forEach(item => {
-                const entity = EntityFactory.create(engine, item.type, item.data, {
+                const entity = EntityManager.create(engine, item.type, item.data, {
                     player: null
                 })
 
@@ -118,7 +118,7 @@ export class ScenarioLoader {
         // Fallback: recreate player if missing
         if (!result.player) {
             console.warn('Player not found in save state, recreating...')
-            const player = EntityFactory.createPlayer({
+            const player = EntityManager.createPlayer({
                 x: 200,
                 y: 260,
                 scale: PlayerConfig.scale

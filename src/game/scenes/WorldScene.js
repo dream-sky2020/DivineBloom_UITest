@@ -9,7 +9,7 @@ import { EnvironmentSystem } from '@/game/ecs/systems/EnvironmentSystem'
 import { getAssetPath } from '@/data/assets'
 import { Visuals } from '@/data/visuals'
 import { ScenarioLoader } from '@/game/utils/ScenarioLoader'
-import { EntityFactory } from '@/game/entities/EntityFactory'
+import { EntityManager } from '@/game/entities/EntityManager'
 
 /**
  * @typedef {import('@/game/GameEngine').GameEngine} GameEngine
