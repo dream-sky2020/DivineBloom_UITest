@@ -39,6 +39,7 @@ export class NPC {
         })
 
         this.pos = this.entity.position
+        this.type = 'npc'
     }
 
     destroy() {
@@ -46,5 +47,26 @@ export class NPC {
             world.remove(this.entity)
             this.entity = null
         }
+    }
+
+    toData() {
+        return {
+            x: this.pos.x,
+            y: this.pos.y,
+            dialogueId: this.dialogueId,
+            spriteId: this.entity.visual.id,
+            range: this.entity.interaction.range,
+            scale: this.entity.visual.scale
+        }
+    }
+
+    static fromData(engine, data, context = {}) {
+        return new NPC(engine, data.x, data.y, {
+            dialogueId: data.dialogueId,
+            spriteId: data.spriteId,
+            range: data.range,
+            scale: data.scale,
+            ...context
+        })
     }
 }

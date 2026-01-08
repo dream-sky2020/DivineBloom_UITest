@@ -73,6 +73,7 @@ export class MapEnemy {
     })
 
     this.pos = this.entity.position
+    this.type = 'enemy'
   }
 
   destroy() {
@@ -100,7 +101,8 @@ export class MapEnemy {
         speed: aiConfig.speed,
         minYRatio: aiConfig.minYRatio,
         suspicionTime: aiConfig.suspicionTime,
-        spriteId: visual.id
+        spriteId: visual.id,
+        scale: visual.scale
       }
     }
   }

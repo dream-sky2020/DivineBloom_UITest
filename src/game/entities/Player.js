@@ -36,12 +36,14 @@ export class Player {
     })
 
     this.pos = this.entity.position
+    this.type = 'player'
   }
 
   toData() {
     return {
       x: this.pos.x,
-      y: this.pos.y
+      y: this.pos.y,
+      scale: this.entity.visual.scale
     }
   }
 
@@ -49,6 +51,9 @@ export class Player {
     if (!data) return
     this.pos.x = data.x
     this.pos.y = data.y
+    if (data.scale !== undefined) {
+      this.entity.visual.scale = data.scale
+    }
   }
 
   destroy() {
@@ -56,6 +61,12 @@ export class Player {
       world.remove(this.entity)
       this.entity = null
     }
+  }
+
+  static fromData(engine, data) {
+    const p = new Player(engine, { scale: data.scale })
+    p.restore(data)
+    return p
   }
 
   // draw() 方法已移除，完全由 RenderSystem 接管

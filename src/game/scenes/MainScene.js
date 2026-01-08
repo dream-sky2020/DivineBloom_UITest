@@ -1,6 +1,7 @@
 import { Player } from '@/game/entities/Player'
 import { MapEnemy } from '@/game/entities/MapEnemy'
 import { NPC } from '@/game/entities/NPC'
+import { EntityFactory } from '@/game/entities/EntityFactory'
 import { clearWorld, world } from '@/game/ecs/world'
 import { MovementSystem } from '@/game/ecs/systems/MovementSystem'
 import { InputSystem } from '@/game/ecs/systems/InputSystem'
@@ -35,17 +36,15 @@ export class MainScene {
     this.onSwitchMap = onSwitchMap
     this.onInteract = onInteract
 
-    // Pass player config from assets
-    this.player = new Player(engine, PlayerConfig)
+    // Unified Entity List
+    this.gameEntities = []
+    
+    // Convenience reference to player (will be populated during init)
+    this.player = null
 
     // Load Map Data
     this.currentMap = mapData || {} // Fallback empty
     this.entryId = entryId
-
-    // Map Enemies
-    this.mapEnemies = []
-    // Map NPCs
-    this.npcs = []
 
     // Static Cache Layer
     this.staticLayer = null
@@ -61,13 +60,14 @@ export class MainScene {
       this._initMap()
     }
 
-    // 统一实体列表
-    this.entities = [this.player, ...this.mapEnemies, ...this.npcs]
-
     this.isLoaded = false
   }
 
   _initMap() {
+    // 1. Create Player
+    this.player = new Player(this.engine, PlayerConfig)
+    this.gameEntities.push(this.player)
+
     // Set Player Spawn from Entry Point
     let spawn = this.currentMap.spawnPoint
     if (this.currentMap.entryPoints && this.currentMap.entryPoints[this.entryId]) {
@@ -78,6 +78,8 @@ export class MainScene {
       this.player.pos.x = spawn.x
       this.player.pos.y = spawn.y
     }
+    
+    // 2. Spawn Enemies and NPCs
     this._spawnEnemies()
     this._spawnNPCs()
   }
@@ -85,38 +87,54 @@ export class MainScene {
   serialize() {
     return {
       isInitialized: true,
-      playerPos: this.player.toData(),
-      enemies: this.mapEnemies.map(e => e.toData())
+      // Serialize ALL entities in one list
+      entities: this.gameEntities.map(e => ({
+        type: e.type,
+        data: e.toData()
+      }))
     }
   }
 
   restore(state) {
-    // Restore Player
-    if (state.playerPos) {
-      this.player.restore(state.playerPos)
+    // Clear existing wrappers just in case (ECS world is already cleared in constructor)
+    this.gameEntities.forEach(e => e.destroy && e.destroy())
+    this.gameEntities = []
+
+    if (state.entities) {
+      state.entities.forEach(item => {
+        const entity = EntityFactory.create(this.engine, item.type, item.data, {
+          player: null // Will attach later if needed, or update dynamically
+        })
+        
+        if (entity) {
+          this.gameEntities.push(entity)
+          if (entity.type === 'player') {
+            this.player = entity
+          }
+        }
+      })
+    }
+    
+    // If for some reason player is missing (e.g. old save format), recreate default
+    if (!this.player) {
+       console.warn('Player not found in save state, recreating...')
+       this.player = new Player(this.engine, PlayerConfig)
+       this.gameEntities.push(this.player)
     }
 
-    // Restore Enemies
-    if (state.enemies) {
-      // Cleanup existing entities
-      this.mapEnemies.forEach(e => e.destroy && e.destroy())
-
-      this.mapEnemies = state.enemies.map(data =>
-        MapEnemy.fromData(this.engine, data, { player: this.player })
-      )
-    }
-
-    // Restore NPCs (Respawn from map data as they are static for now)
-    this._spawnNPCs()
-
-    // Rebuild entities list if needed
-    this.entities = [this.player, ...this.mapEnemies, ...this.npcs]
+    // Update references for enemies (they need player reference for AI)
+    this.gameEntities.forEach(e => {
+      if (e.type === 'enemy' && e.entity.aiState) {
+        // AI logic often queries the world for player, or we can pass it here if needed
+        // Our EnemyAISystem actually calls `getPlayer()` which searches the ECS world,
+        // so we don't strictly need to pass `player` in context anymore if the system is robust.
+        // However, MapEnemy constructor might store it. Let's check MapEnemy...
+        // MapEnemy doesn't store 'player' property, it uses it for initial lookups if needed.
+      }
+    })
   }
 
   _spawnEnemies() {
-    // Cleanup existing entities to prevent ECS leaks
-    this.mapEnemies.forEach(e => e.destroy && e.destroy())
-    this.mapEnemies = []
     if (!this.currentMap || !this.currentMap.spawners) return
 
     this.currentMap.spawners.forEach(spawner => {
@@ -137,51 +155,37 @@ export class MainScene {
           ...spawner.options,
           minYRatio: this.currentMap.constraints?.minYRatio
         })
-        this.mapEnemies.push(enemy)
+        this.gameEntities.push(enemy)
       }
     })
   }
 
   _spawnNPCs() {
-    this.npcs.forEach(n => n.destroy && n.destroy())
-    this.npcs = []
     if (!this.currentMap || !this.currentMap.npcs) return
 
     this.currentMap.npcs.forEach(data => {
-      // 传递 data.config 而不是整个 data 对象
-      // 确保 NPC 构造函数能正确读取 dialogueId 等配置
       const npc = new NPC(this.engine, data.x, data.y, data.config || {})
-      this.npcs.push(npc)
+      this.gameEntities.push(npc)
     })
   }
 
   async load() {
-    // 使用新的 AssetManager 批量加载
-    // 我们不需要手动一个个 load('player', path) 了
-    // 而是收集当前场景所有 Entity 用到的 visualId
-
+    // 扫描所有实体收集所需的 visual ID
     const requiredVisuals = new Set()
+    
+    // 总是包含默认
+    requiredVisuals.add('default')
 
-    // 1. Player
-    requiredVisuals.add('hero')
+    this.gameEntities.forEach(e => {
+      // 检查 ECS visual 组件
+      if (e.entity && e.entity.visual) {
+        requiredVisuals.add(e.entity.visual.id)
+      }
+      // 兼容旧的 spriteId 配置（如果还没生成实体，比如如果是预加载逻辑分离的情况）
+    })
 
-    // 2. NPCs
-    if (this.currentMap && this.currentMap.npcs) {
-      this.currentMap.npcs.forEach(n => {
-        // 假设 map 数据里写的是 spriteId='npc_guide'，这个 key 正好也是 Visuals 的 key
-        // 为了兼容旧代码，如果没有 spriteId 默认用 'npc_guide'
-        const vid = n.spriteId || 'npc_guide'
-        requiredVisuals.add(vid)
-      })
-    }
-
-    // 3. Enemies
-    // 默认 MapEnemy 使用 'enemy_slime'，除非有覆盖
-    requiredVisuals.add('enemy_slime')
-
-    // 4. Map Background
+    // Map Background
     if (this.currentMap.backgroundId) {
-      // 背景图作为普通 Texture 加载
       const bgPath = getAssetPath(this.currentMap.backgroundId)
       if (bgPath) {
         await this.engine.assets.loadTexture(this.currentMap.backgroundId)
@@ -197,6 +201,7 @@ export class MainScene {
 
     this.isLoaded = true
   }
+
 
   /**
    * @param {number} dt 

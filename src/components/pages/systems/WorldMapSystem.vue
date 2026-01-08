@@ -105,10 +105,10 @@ function syncUI() {
   // Count chasing enemies
   // Optimized: Use reduce instead of filter to avoid array allocation
   let chasingCount = 0
-  if (scene.value.mapEnemies) {
-      const enemies = scene.value.mapEnemies
-      for (let i = 0; i < enemies.length; i++) {
-          const e = enemies[i]
+  if (scene.value.gameEntities) {
+      const entities = scene.value.gameEntities
+      for (let i = 0; i < entities.length; i++) {
+          const e = entities[i]
           // Check aiState instead of direct property if needed, but assuming compatibility
           if (e.entity && e.entity.aiState && e.entity.aiState.state === 'chase') {
               chasingCount++
