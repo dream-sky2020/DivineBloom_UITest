@@ -21,6 +21,10 @@ export const VisualRenderSystem = {
    */
   update(dt) {
     for (const entity of renderEntities) {
+      if (!entity.visual) {
+         console.warn(`[VisualRenderSystem] Entity ${entity.id || 'N/A'} missing visual component!`);
+         continue;
+      }
       this.updateAnimation(entity, dt)
     }
   },
@@ -64,6 +68,11 @@ export const VisualRenderSystem = {
     // 1. 收集实体
     const entities = []
     for (const entity of renderEntities) {
+      // Defensive check for entity validity before adding to render list
+      if (!entity.position || !entity.visual) {
+          console.error(`[VisualRenderSystem] Entity ${entity.id || 'N/A'} missing essential components for rendering!`);
+          continue;
+      }
       entities.push(entity)
     }
 
@@ -86,9 +95,19 @@ export const VisualRenderSystem = {
     const viewW = renderer.width || 9999
     const viewH = renderer.height || 9999
     const camera = renderer.camera
+    
+    // Defensive check for camera
+    if (!camera) {
+        console.error('[VisualRenderSystem] Camera not initialized!');
+        return;
+    }
+    
     const cullMargin = 100
 
     const isVisible = (pos) => {
+      // Defensive check for pos
+      if (typeof pos.x !== 'number' || typeof pos.y !== 'number') return false;
+      
       return !(pos.x < camera.x - cullMargin ||
         pos.x > camera.x + viewW + cullMargin ||
         pos.y < camera.y - cullMargin ||
@@ -106,9 +125,9 @@ export const VisualRenderSystem = {
 
     // --- Rect Support ---
     if (visual.type === 'rect') {
-      renderer.ctx.fillStyle = visual.color
+      renderer.ctx.fillStyle = visual.color || 'magenta' // fallback color
       // rect is drawn from top-left by default in canvas
-      renderer.ctx.fillRect(position.x, position.y, visual.width, visual.height)
+      renderer.ctx.fillRect(position.x, position.y, visual.width || 10, visual.height || 10)
       return
     }
 
@@ -133,6 +152,12 @@ export const VisualRenderSystem = {
     }
 
     // --- Sprite Support ---
+    // Defensive check
+    if (!visual.id) {
+        console.warn(`[VisualRenderSystem] Visual component missing 'id'. Entity: ${entity.id || 'N/A'}`);
+        return;
+    }
+    
     const def = Visuals[visual.id]
 
     if (!def) {
@@ -144,6 +169,7 @@ export const VisualRenderSystem = {
 
     const texture = renderer.assetManager.getTexture(def.assetId)
     if (!texture) {
+      // Only warn occasionally to avoid spamming console
       if (Math.random() < 0.01) console.warn(`[VisualRenderSystem] Missing texture for asset: ${def.assetId}`)
       return
     }
@@ -153,6 +179,9 @@ export const VisualRenderSystem = {
 
     let frameId = 0
     if (anim && anim.frames.length > 0) {
+      // Safe access
+      if (visual.frameIndex === undefined) visual.frameIndex = 0;
+      
       if (visual.frameIndex >= anim.frames.length) visual.frameIndex = 0
       frameId = anim.frames[visual.frameIndex]
     }

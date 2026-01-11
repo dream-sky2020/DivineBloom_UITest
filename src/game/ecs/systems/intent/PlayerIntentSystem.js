@@ -20,8 +20,15 @@ const intentEntities = world.with('rawInput')
 export const PlayerIntentSystem = {
     update(dt) {
         for (const entity of intentEntities) {
+            // Defensive Check
+            if (!entity.rawInput) {
+                console.error(`[PlayerIntentSystem] Entity ${entity.id || 'N/A'} has rawInput tag but no component!`);
+                continue;
+            }
+
             // Ensure intent component exists
             if (!entity.playerIntent) {
+                // If creating component dynamically, ensure structure is valid
                 world.addComponent(entity, 'playerIntent', {
                     move: { x: 0, y: 0 },
                     wantsToRun: false,
@@ -31,10 +38,19 @@ export const PlayerIntentSystem = {
 
             const raw = entity.rawInput
             const intent = entity.playerIntent
+            
+            // Validate Raw Input Structure
+            if (!raw.axes || !raw.buttons) {
+                console.warn(`[PlayerIntentSystem] Invalid rawInput structure for Entity ${entity.id || 'N/A'}`);
+                // Reset intent
+                intent.move.x = 0; intent.move.y = 0;
+                intent.wantsToRun = false;
+                continue;
+            }
 
             // 1. Process Movement Intent
-            let dx = raw.axes.x
-            let dy = raw.axes.y
+            let dx = raw.axes.x || 0
+            let dy = raw.axes.y || 0
 
             // Normalize diagonal movement
             if (dx !== 0 && dy !== 0) {
@@ -43,17 +59,20 @@ export const PlayerIntentSystem = {
                 dy *= inv
             }
 
+            // Defensive: Ensure intent.move exists
+            if (!intent.move) intent.move = { x: 0, y: 0 };
+            
             intent.move.x = dx
             intent.move.y = dy
 
             // 2. Process Action Intents
-            intent.wantsToRun = raw.buttons.run
-            intent.wantsToInteract = raw.buttons.interact
+            intent.wantsToRun = !!raw.buttons.run
+            intent.wantsToInteract = !!raw.buttons.interact
             
-            // 这里可以添加状态机逻辑，例如：
-            // 如果处于 "对话中" 状态，忽略移动意图
-            // 如果处于 "攻击后摇" 状态，缓存输入等
+            // Debug Log (Optional)
+            if (intent.wantsToInteract) {
+                console.log(`[PlayerIntentSystem] Interaction Intent Registered! Entity: ${entity.id}`);
+            }
         }
     }
 }
-

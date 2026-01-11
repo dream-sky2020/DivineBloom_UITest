@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID, LocalizedStringSchema } from './common.js';
+import { ID, LocalizedStringSchema } from '../common.js';
 
 // --- 状态 (Status) Schema ---
 
@@ -21,4 +21,3 @@ export const StatusSchema = z.object({
     description: LocalizedStringSchema.optional(),
     effects: z.array(StatusEffectSchema).optional().default([])
 });
-

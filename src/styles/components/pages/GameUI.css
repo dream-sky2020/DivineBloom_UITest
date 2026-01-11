@@ -33,6 +33,50 @@
     color: #fff;
 }
 
+/* Global Canvas (The Actual WebGL/2D Canvas) */
+.global-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* Ensure it fills the #game-canvas container */
+    position: absolute;
+    /* Sit behind UI */
+    top: 0;
+    left: 0;
+    z-index: 0;
+    /* Lowest level */
+}
+
+/* System Layer (Holds UI components like Battle, Menu) */
+.system-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    /* Above canvas, below overlay */
+    pointer-events: none;
+    /* Let clicks pass through to canvas if no UI element blocks them */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Enable pointer events for actual UI elements inside system-layer */
+.system-layer>* {
+    pointer-events: auto;
+    flex: 1;
+    /* Ensure child takes full height */
+}
+
+/* Special Case: WorldMap UI needs to be click-through except for buttons */
+.system-layer.pass-through>* {
+    pointer-events: none;
+}
+
+.system-layer.pass-through>* .dialogue-overlay,
+.system-layer.pass-through>* .ui {
+    pointer-events: auto;
+}
+
+
 /* Background Layer (reused) */
 .background-layer {
     position: absolute;

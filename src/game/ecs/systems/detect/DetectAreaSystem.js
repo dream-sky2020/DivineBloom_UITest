@@ -11,7 +11,6 @@ export const DetectAreaSystem = {
     const detectors = world.with('detectArea', 'position')
 
     // 2. 获取潜在目标 (目前主要优化为只检测玩家，后续可扩展)
-    // 优化：如果 target 是 'player'，我们只需要获取玩家实体
     let player = null
     const players = world.with('player', 'position')
     for (const p of players) {
@@ -20,16 +19,33 @@ export const DetectAreaSystem = {
     }
 
     for (const entity of detectors) {
+      // Defensive Check
+      if (!entity.detectArea) {
+        console.warn(`[DetectAreaSystem] Entity ${entity.id || 'N/A'} missing detectArea component!`);
+        continue;
+      }
+
       const detect = entity.detectArea
       detect.results = [] // 重置结果
+
+      // Defensive Check for required arrays (ensure safe fallback if schema failed)
+      if (!detect.includeTags) detect.includeTags = [];
+      if (!detect.results) detect.results = [];
 
       // 目前只实现对 Player 的检测
       if (detect.target === 'player' || detect.includeTags.includes('player')) {
         if (player && this.checkCollision(entity, player, detect)) {
-          // Debug Log for Portal Trigger
+          // General Debug Log
+          console.log(`[DetectArea] Collision Detected! EntityType: ${entity.type}, ID: ${entity.id}, Target: Player`)
+
           if (entity.type === 'portal') {
-            console.log(`[DetectArea] Portal Triggered! Player: (${player.position.x}, ${player.position.y}), Portal Center: (${entity.position.x + detect.offset.x}, ${entity.position.y + detect.offset.y})`)
+            console.log(`[DetectArea] Portal Details - Player: (${player.position.x.toFixed(2)}, ${player.position.y.toFixed(2)}), Center: (${(entity.position.x + detect.offset.x).toFixed(2)}, ${(entity.position.y + detect.offset.y).toFixed(2)})`)
+          } else if (entity.type === 'enemy') {
+            console.log(`[DetectArea] Enemy Sight Triggered! ID: ${entity.id}`)
+          } else if (entity.type === 'npc') {
+            console.log(`[DetectArea] NPC Interaction Range! ID: ${entity.id}`)
           }
+
           detect.results.push(player)
         }
       }
@@ -39,6 +55,20 @@ export const DetectAreaSystem = {
   },
 
   checkCollision(detectorEntity, targetEntity, config) {
+    // Type Guards & Defensive Checks
+    if (!detectorEntity.position) {
+      console.error(`[DetectAreaSystem] Detector entity missing position! ID: ${detectorEntity.id}`);
+      return false;
+    }
+    if (!targetEntity.position) {
+      console.error(`[DetectAreaSystem] Target entity missing position! ID: ${targetEntity.id}`);
+      return false;
+    }
+    if (!config) {
+      console.error(`[DetectAreaSystem] Missing config for checkCollision!`);
+      return false;
+    }
+
     const dPos = detectorEntity.position
     const tPos = targetEntity.position
 
@@ -50,20 +80,14 @@ export const DetectAreaSystem = {
       const dx = tPos.x - centerX
       const dy = tPos.y - centerY
       const distSq = dx * dx + dy * dy
-      const radiusSq = config.radius * config.radius
+      const radiusSq = (config.radius || 0) * (config.radius || 0)
+
       return distSq <= radiusSq
     }
-    else if (config.shape === 'aabb') {
+    else if (config.shape === 'aabb' || config.shape === 'rect') { // Support both aabb and rect
       // 简单的 AABB 检测
-      // 假设 target 也是一个点或者小的矩形，这里简化为检测 target 中心点是否在区域内
-      // 如果需要更精确的 AABB vs AABB，需要获取 target 的 bounds
-
       const halfW = (config.size?.w || 0) / 2
       const halfH = (config.size?.h || 0) / 2
-
-      const left = centerX // 这里假设 size 定义的是从中心向外的扩展？或者 size 就是 w/h
-      // 通常 AABB 定义为 center + half extents 或者 top-left + size
-      // 鉴于编辑器习惯，假设 offset 是中心偏移
 
       // 修正：如果 offset 是中心，那么：
       const minX = centerX - halfW
@@ -78,4 +102,3 @@ export const DetectAreaSystem = {
     return false
   }
 }
-

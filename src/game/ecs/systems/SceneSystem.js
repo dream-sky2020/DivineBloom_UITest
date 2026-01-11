@@ -36,13 +36,6 @@ export const SceneSystem = {
             world.removeComponent(transitionEntity, 'sceneTransition')
         }
 
-        const battleEntity = world.with('battleTransition').first
-        if (battleEntity) {
-            const request = battleEntity.battleTransition
-            this.manager.requestBattle(request.enemyGroup, request.battleId)
-            world.removeComponent(battleEntity, 'battleTransition')
-        }
-
         // 2. Manager Update (Execute pending transitions)
         this.manager.update()
     }

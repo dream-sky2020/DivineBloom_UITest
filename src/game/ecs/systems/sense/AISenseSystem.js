@@ -13,11 +13,6 @@ import { canSeePlayer } from '@/game/ai/utils'
  * 
  * Output Component:
  * @property {object} aiSensory
- * @property {number} aiSensory.distSqToPlayer
- * @property {object} aiSensory.playerPos { x, y } (Copy for safety)
- * @property {boolean} aiSensory.hasPlayer
- * @property {boolean} aiSensory.canSeePlayer
- * @property {number} aiSensory.suspicion (0-1)
  */
 
 const aiEntities = world.with('aiConfig', 'aiState', 'position')
@@ -35,6 +30,7 @@ export const AISenseSystem = {
         for (const entity of aiEntities) {
             // Ensure aiSensory component exists
             if (!entity.aiSensory) {
+                // Defensive creation
                 world.addComponent(entity, 'aiSensory', {
                     distSqToPlayer: Infinity,
                     playerPos: { x: 0, y: 0 },
@@ -47,6 +43,16 @@ export const AISenseSystem = {
 
             const sensory = entity.aiSensory
             const { aiConfig, position } = entity
+            
+            // Defensive Check
+            if (!aiConfig) {
+                console.error(`[AISenseSystem] Entity ${entity.id || 'N/A'} missing aiConfig!`);
+                continue;
+            }
+            if (!position) {
+                console.error(`[AISenseSystem] Entity ${entity.id || 'N/A'} missing position!`);
+                continue;
+            }
 
             // Throttle sensing logic (e.g. 10 times per second)
             sensory.senseTimer -= dt
@@ -73,19 +79,20 @@ export const AISenseSystem = {
             sensory.distSqToPlayer = dx * dx + dy * dy
 
             // Check Visibility
-            const isVisible = canSeePlayer(entity, sensory.distSqToPlayer, playerPos)
-            sensory.canSeePlayer = isVisible
+            try {
+                const isVisible = canSeePlayer(entity, sensory.distSqToPlayer, playerPos)
+                sensory.canSeePlayer = isVisible
+            } catch (e) {
+                console.error(`[AISenseSystem] Error in canSeePlayer for Entity ${entity.id || 'N/A'}:`, e);
+                sensory.canSeePlayer = false;
+            }
 
-            // Update Suspicion (Migrated from WanderState)
-            // Note: This logic might be better placed here or in Intent, 
-            // but Sense is about interpreting raw data into "knowledge".
-            // Suspicion is "how much I think I see someone".
-
+            // Update Suspicion
             const suspicionTime = aiConfig.suspicionTime || 1.0 // Default 1s to fill
             const fillRate = 1.0 / suspicionTime
             const interval = 0.1 // Matches our throttle
 
-            if (isVisible) {
+            if (sensory.canSeePlayer) {
                 sensory.suspicion += fillRate * interval
                 if (sensory.suspicion > 1.0) sensory.suspicion = 1.0
             } else {
@@ -98,4 +105,3 @@ export const AISenseSystem = {
         }
     }
 }
-

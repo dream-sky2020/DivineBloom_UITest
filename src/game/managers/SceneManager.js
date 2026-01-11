@@ -51,18 +51,6 @@ export class SceneManager {
     }
 
     /**
-     * 请求进入战斗
-     * @param {Array} enemyGroup 
-     * @param {string} battleId 
-     */
-    requestBattle(enemyGroup, battleId) {
-        // 战斗切换目前较简单，可以直接回调，或者也走这里
-        // 这里我们主要处理地图切换，战斗保持原样或稍后集成
-        // 为了统一，我们也可以在这里处理
-        this.pendingRequest = { type: 'BATTLE', enemyGroup, battleId }
-    }
-
-    /**
      * 执行切换逻辑 (原子操作)
      */
     async executeTransition(request) {
@@ -77,8 +65,6 @@ export class SceneManager {
         try {
             if (request.type === 'MAP') {
                 await this._handleMapSwitch(request)
-            } else if (request.type === 'BATTLE') {
-                this._handleBattle(request)
             }
         } catch (e) {
             console.error(`[SceneManager] Transition failed:`, e)
@@ -164,15 +150,6 @@ export class SceneManager {
         // TODO: 如果需要保留上一张图的血量，需要在 saveState 时保存到全局 Store，这里再读出来
 
         console.log(`[SceneManager] Transition complete.`)
-    }
-
-    _handleBattle({ enemyGroup, battleId }) {
-        // 战斗不需要 clearWorld (如果是覆盖式 UI)
-        // 或者需要 clearWorld (如果是独立 Scene)
-        // 目前假设是 Vue 层切换 UI
-        if (this.currentScene && this.currentScene.onEncounter) {
-            this.currentScene.onEncounter(enemyGroup, battleId)
-        }
     }
 }
 

@@ -181,6 +181,31 @@ export class GameEngine {
         // 更新 renderer 的引用（虽然通常不需要，但如果 renderer 缓存了尺寸的话）
     }
 
+    setCanvas(canvas) {
+        if (this.canvas === canvas) return
+
+        // 1. Cleanup old observers
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect()
+        }
+
+        // 2. Set new canvas and context
+        this.canvas = canvas
+        this.ctx = canvas.getContext('2d', { alpha: false })
+
+        // 3. Update renderer context
+        if (this.renderer) {
+            this.renderer.ctx = this.ctx
+        }
+
+        // 4. Setup new observer
+        this.resizeObserver = new ResizeObserver(() => this.resize())
+        this.resizeObserver.observe(canvas)
+
+        // 5. Initial resize for new canvas
+        this.resize()
+    }
+
     start() {
         if (this.isRunning) return
         this.isRunning = true

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID, LocalizedStringSchema } from './common.js';
+import { ID, LocalizedStringSchema } from '../common.js';
 
 // --- 技能 (Skill) Schema ---
 
@@ -41,4 +41,3 @@ export const SkillSchema = z.object({
     decay: z.number().optional(),
     randomHits: z.number().optional()
 });
-

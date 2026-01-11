@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID } from './common.js';
+import { ID } from '../common.js';
 
 // --- 地图 (Map) Schema ---
 

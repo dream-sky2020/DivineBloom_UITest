@@ -14,23 +14,32 @@ export const DetectInputSystem = {
       player = p
       break
     }
-    
+
     if (!player) return
 
     const detectors = world.with('detectInput')
-    
+
+    // Debug: Check if player intends to interact
+    if (player.playerIntent.wantsToInteract) {
+      // console.log('[DetectInputSystem] Player wants to interact (Global)')
+    }
+
     for (const entity of detectors) {
       const input = entity.detectInput
-      
+
       // 检查 'Interact' 键
       if (input.keys.includes('Interact')) {
         // 从 PlayerIntent 获取状态
         const wantsToInteract = player.playerIntent.wantsToInteract
-        
+
+        // Debug Log
+        if (wantsToInteract) {
+          console.log(`[DetectInputSystem] Input Detected on EntityType: ${entity.type}, ID: ${entity.id || entity.uuid}. IsPressed: ${input.isPressed} -> true`)
+        }
+
         input.justPressed = wantsToInteract && !input.isPressed // 简单模拟 justPressed
         input.isPressed = wantsToInteract
       }
     }
   }
 }
-

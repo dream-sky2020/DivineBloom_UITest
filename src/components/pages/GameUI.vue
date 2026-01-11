@@ -3,18 +3,18 @@
     <!-- Viewport 1: Game Canvas (100vh) -->
     <div class="viewport-section">
       <div id="game-canvas">
-          <!-- 背景层 (Global Background) -->
-          <div class="background-layer">
-              <h1 class="placeholder-text" v-t="'common.unknown'"></h1>
-          </div>
+          <!-- Global Game Canvas -->
+          <canvas ref="gameCanvas" class="global-canvas"></canvas>
 
-          <!-- Dynamic System Component -->
-          <transition name="fade" mode="out-in">
-            <component 
-              :is="activeSystemComponent" 
-              @change-system="handleSystemChange"
-            />
-          </transition>
+          <!-- Dynamic System Component (Z-Index Layer) -->
+          <div class="system-layer" :class="{ 'pass-through': currentSystem === 'world-map' }">
+            <transition name="fade" mode="out-in">
+              <component 
+                :is="activeSystemComponent" 
+                @change-system="handleSystemChange"
+              />
+            </transition>
+          </div>
 
           <!-- 网格辅助线 -->
           <div class="grid-overlay"></div>
@@ -131,9 +131,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useSettingsStore } from '@/stores/settings';
+import { gameManager } from '@/game/GameManager';
 import MainMenuSystem from '@/components/pages/systems/MainMenuSystem.vue';
 import ListMenuSystem from '@/components/pages/systems/ListMenuSystem.vue';
 import ListMenuPreviewsSystem from '@/components/pages/systems/ListMenuPreviewsSystem.vue';
@@ -145,7 +146,15 @@ import DialogueSystem from '@/components/pages/systems/DialogueSystem.vue';
 
 const { locale } = useI18n();
 const settingsStore = useSettingsStore();
-const currentSystem = ref('main-menu'); // Default to Main Menu
+const currentSystem = ref(gameManager.state.system); // Initialize from GameManager
+const gameCanvas = ref(null);
+
+// Sync with GameManager state
+watch(() => gameManager.state.system, (newSystem) => {
+  if (newSystem && currentSystem.value !== newSystem) {
+    currentSystem.value = newSystem;
+  }
+});
 
 const activeSystemComponent = computed(() => {
   switch (currentSystem.value) {
@@ -163,7 +172,10 @@ const activeSystemComponent = computed(() => {
 
 const handleSystemChange = (systemId) => {
   console.log('System change requested:', systemId);
+  // Update local state (for immediate feedback if needed)
   currentSystem.value = systemId;
+  // Also update GameManager state to keep them in sync
+  gameManager.state.system = systemId;
 };
 
 // Canvas Resizing Logic
@@ -196,6 +208,10 @@ onMounted(() => {
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
   setTimeout(resizeCanvas, 0);
+
+  if (gameCanvas.value) {
+    gameManager.init(gameCanvas.value);
+  }
 });
 
 onUnmounted(() => {

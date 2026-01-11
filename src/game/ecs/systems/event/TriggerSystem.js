@@ -1,5 +1,7 @@
 import { world, actionQueue } from '@/game/ecs/world'
 
+let debugDumped = false
+
 /**
  * TriggerSystem
  * 决策核心
@@ -10,39 +12,90 @@ export const TriggerSystem = {
   update(dt) {
     const triggers = world.with('trigger')
 
+    // Debug System Heartbeat (Low frequency)
+    if (Math.random() < 0.005) {
+      console.log(`[TriggerSystem] Heartbeat. Triggers count: ${[...triggers].length}`)
+    }
+
+    // ONCE PER SESSION DEBUG DUMP
+    if (!debugDumped && [...triggers].length > 0) {
+      console.group('[TriggerSystem] INITIAL TRIGGER DUMP');
+      for (const entity of triggers) {
+        // Defensive check inside debug loop
+        if (!entity.trigger) {
+          console.error(`[TriggerSystem] Entity ${entity.id} has 'trigger' tag but component is missing!`);
+          continue;
+        }
+        const t = entity.trigger;
+        console.log(`Entity [${entity.type}] ID:${entity.id || 'N/A'}`);
+        // Direct access to flat properties
+        console.log(`  State: Active=${t.active}, Cooldown=${t.cooldownTimer}, OneShotExec=${t.oneShotExecuted}`);
+        console.log(`  Rules:`, JSON.stringify(t.rules));
+        console.log(`  Actions:`, JSON.stringify(t.actions));
+      }
+      console.groupEnd();
+      debugDumped = true;
+    }
+
     for (const entity of triggers) {
       const trigger = entity.trigger
-      
-      // 1. 状态检查
-      if (!trigger.state.active) continue
-      if (trigger.state.oneShotExecuted) continue
-      if (trigger.state.cooldownTimer > 0) {
-        trigger.state.cooldownTimer -= dt
+
+      // Defensive Check: Component Existence
+      if (!trigger) {
+        console.warn(`[TriggerSystem] Missing trigger component on entity ${entity.id || 'N/A'}`);
+        continue;
+      }
+
+      // 1. 状态检查 (Direct Access - Flattened)
+      if (trigger.active === false) continue; // Explicit check, default true
+      if (trigger.oneShotExecuted) continue
+      if (trigger.cooldownTimer > 0) {
+        trigger.cooldownTimer -= dt
         continue
+      }
+
+      // Defensive Check: Rules Array
+      if (!trigger.rules || !Array.isArray(trigger.rules)) {
+        console.warn(`[TriggerSystem] Invalid 'rules' array for Entity: ${entity.type} (ID: ${entity.id})`);
+        trigger.rules = []; // Patch it to prevent crash
+        continue;
       }
 
       // 2. 规则匹配
       let shouldTrigger = false
-      
-      // 遍历所有规则，通常满足任意一个规则即可触发 (OR 逻辑)，
-      // 也可以设计为必须满足所有 (AND 逻辑)，这里暂定为 OR，也就是只要有一个规则通过就执行
+      let triggeredRule = null
+
+      // 遍历所有规则，通常满足任意一个规则即可触发 (OR 逻辑)
       for (const rule of trigger.rules) {
         if (this.checkRule(entity, rule)) {
           shouldTrigger = true
+          triggeredRule = rule
           break
         }
       }
 
       // 3. 执行决策
       if (shouldTrigger) {
-        // 标记状态
-        if (trigger.state.oneShot) { // 如果配置了 oneShot (可以在 component 定义中增加这个配置，或者从 rules 推断)
-           // 暂时假设 oneShot 是 Trigger 的一部分，或者通过 actions 决定
-           // 这里我们简单处理：只要触发了，就看是否需要禁用
+        console.log(`[TriggerSystem] Trigger Activated! Type: ${entity.type}, ID: ${entity.id}, Rule: ${triggeredRule?.type}, Actions: ${trigger.actions?.join(', ')}`)
+
+        // 标记状态 (Direct Access)
+        if (trigger.oneShot) {
+          trigger.oneShotExecuted = true
         }
-        
+
+        // Defensive Check: Actions Array
+        if (!trigger.actions || !Array.isArray(trigger.actions)) {
+          console.error(`[TriggerSystem] Invalid 'actions' array for Entity: ${entity.type} (ID: ${entity.id})`);
+          trigger.actions = [];
+        }
+
         // 收集所有 Actions 并推送到队列
+        if (trigger.actions.length === 0) {
+          console.warn(`[TriggerSystem] Trigger activated but no actions defined for Entity: ${entity.type} (ID: ${entity.id})!`)
+        }
+
         for (const actionType of trigger.actions) {
+          console.log(`[TriggerSystem] Pushing Action: ${actionType} for Entity: ${entity.type} (ID: ${entity.id})`)
           actionQueue.push({
             source: entity,
             type: actionType,
@@ -50,61 +103,80 @@ export const TriggerSystem = {
             target: entity.detectArea?.results?.[0] || null
           })
         }
-        
-        // 处理 OneShot 逻辑 (如果在 TriggerConfig 中有定义)
-        // 目前 Trigger 定义里没有显式 oneShot 字段，但在 checkRule 里可能需要 context
-        // 我们简单约定：如果 rules 里包含 'onEnter' 且没有后续的持续触发逻辑，通常是一次性的？
-        // 不，还是应该在 Trigger 组件数据里加个 oneShot 标记，或者在 Rule 里。
-        // 既然 User 没有显式要求 OneShot 字段，我先保留原有的行为：
-        // 如果是 BATTLE 通常是 OneShot，如果是 TELEPORT 也是。
-        // 让我们在 Trigger 定义中增加 oneShot 字段，或者根据 Action 类型硬编码（不推荐）。
-        // 临时方案：所有触发后设置 0.5s cooldown 防止瞬间重复触发
-        trigger.state.cooldownTimer = 0.5
+
+        trigger.cooldownTimer = 0.5
       }
     }
   },
 
   checkRule(entity, rule) {
+    if (!rule) return false;
+
     const detectArea = entity.detectArea
     const detectInput = entity.detectInput
 
     switch (rule.type) {
       case 'onEnter':
         // 需要 DetectArea
-        // 简单的 onEnter: 只要 results 不为空，且之前是空的 (这就需要上一帧的状态记忆)
-        // 或者：只要 results 不为空，并且不在 cooldown 中 (TriggerSystem 已经处理了 cooldown)
-        // 严格的 onEnter 需要记录 "prevResults"。
-        // 简化版：只要在区域内就触发 (依靠 Cooldown 避免每帧触发)
-        // 或者：TriggerState 记录 "wasInside"
-        
-        if (!detectArea) return false
-        const isInside = detectArea.results.length > 0
-        
-        if (rule.requireEnterOnly) {
-           // 真正的 onEnter
-           const wasInside = entity.trigger.state.wasInside || false
-           entity.trigger.state.wasInside = isInside
-           return isInside && !wasInside
+        if (!detectArea) {
+          // console.warn(`[TriggerSystem] Rule 'onEnter' requires DetectArea component. Entity: ${entity.type}`)
+          return false
         }
-        
+        // Defensive: results might be missing if init failed
+        if (!detectArea.results) detectArea.results = [];
+
+        const isInside = detectArea.results.length > 0
+
+        if (isInside && Math.random() < 0.01) {
+          console.log(`[TriggerSystem] 'onEnter' rule met for Entity: ${entity.type}`)
+        }
+
+        if (rule.requireEnterOnly) {
+          // 真正的 onEnter
+          // Defensive check for wasInside
+          if (entity.trigger.wasInside === undefined) entity.trigger.wasInside = false;
+
+          const wasInside = entity.trigger.wasInside
+          entity.trigger.wasInside = isInside
+          return isInside && !wasInside
+        }
+
         return isInside
 
       case 'onStay':
         if (!detectArea) return false
+        if (!detectArea.results) return false;
         return detectArea.results.length > 0
 
       case 'onPress':
         // 需要 DetectInput
-        if (!detectInput) return false
-        
+        if (!detectInput) {
+          console.warn(`[TriggerSystem] Rule 'onPress' requires DetectInput component. Entity: ${entity.type}`)
+          return false
+        }
+
+        if (detectInput.isPressed || detectInput.justPressed) {
+          console.log(`[TriggerSystem] Checking 'onPress' rule for Entity: ${entity.type}. IsPressed: ${detectInput.isPressed}, JustPressed: ${detectInput.justPressed}`)
+        }
+
         // 如果需要同时在区域内
         if (rule.requireArea) {
-          if (!detectArea || detectArea.results.length === 0) return false
+          if (!detectArea || !detectArea.results || detectArea.results.length === 0) {
+            if (detectInput.isPressed || detectInput.justPressed) {
+              console.log(`[TriggerSystem] 'onPress' rule failed: Not in Area. Entity: ${entity.type}`)
+            }
+            return false
+          }
         }
-        
-        return detectInput.justPressed || detectInput.isPressed // 视需求而定，通常交互是 justPressed
+
+        const triggered = detectInput.justPressed || detectInput.isPressed
+        if (triggered) {
+          console.log(`[TriggerSystem] 'onPress' rule met! Entity: ${entity.type}`)
+        }
+        return triggered
 
       default:
+        console.warn(`[TriggerSystem] Unknown rule type: ${rule.type}`)
         return false
     }
   }

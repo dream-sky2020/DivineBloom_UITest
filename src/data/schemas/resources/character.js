@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID, LocalizedStringSchema } from './common.js';
+import { ID, LocalizedStringSchema } from '../common.js';
 
 // --- 角色 (Character) Schema ---
 export const CharacterSchema = z.object({
@@ -27,4 +27,3 @@ export const CharacterSchema = z.object({
     isBoss: z.boolean().optional(),
     color: z.string().optional(), // UI显示颜色
 });
-

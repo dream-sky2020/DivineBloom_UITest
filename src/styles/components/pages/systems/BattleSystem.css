@@ -1,7 +1,9 @@
 .battle-system {
-    width: 1920px;
-    height: 1080px;
-    background: linear-gradient(to bottom, #1e1b4b, #312e81);
+    width: 100%;
+    height: 100%;
+    /* Transparent Background to show WorldMap if needed, or opaque if desired */
+    /* background: linear-gradient(to bottom, #1e1b4b, #312e81); */
+    background: rgba(30, 27, 75, 0.9); /* Semi-transparent dark blue */
     display: flex;
     flex-direction: column;
     position: relative;

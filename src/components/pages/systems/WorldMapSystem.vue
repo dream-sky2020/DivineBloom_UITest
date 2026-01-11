@@ -1,9 +1,9 @@
 <template>
-  <div class="root">
-    <canvas ref="cv" class="cv"></canvas>
+  <div class="root pointer-events-none">
+    <!-- Canvas is now global in GameUI.vue -->
 
     <!-- UI 层完全与游戏逻辑解耦，只负责展示数据 -->
-    <div class="ui" v-if="debugInfo">
+    <div class="ui pointer-events-auto" v-if="debugInfo">
       <div><span v-t="'worldMap.position'"></span>: x={{ Math.round(debugInfo.x) }}, y={{ Math.round(debugInfo.y) }}</div>
       <div><span v-t="'worldMap.lastInput'"></span>: {{ debugInfo.lastInput || $t('common.unknown') }}</div>
       
@@ -17,7 +17,7 @@
 
     <!-- NEW Dialogue Overlay (Connected to DialogueStore) -->
     <transition name="fade">
-      <div v-if="dialogueStore.isActive" class="dialogue-overlay" @click="handleOverlayClick">
+      <div v-if="dialogueStore.isActive" class="dialogue-overlay pointer-events-auto" @click="handleOverlayClick">
         <div class="dialogue-box" @click.stop>
           
           <!-- Speaker Name -->
@@ -54,62 +54,45 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
-import { GameEngine } from '@/game/GameEngine'
-import { WorldScene } from '@/game/scenes/WorldScene'
-import { useBattleStore } from '@/stores/battle'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { gameManager } from '@/game/GameManager'
 import { useWorldStore } from '@/stores/world'
 import { useDialogueStore } from '@/stores/dialogue'
-import { getMapData } from '@/data/maps'
-import { dialoguesDb } from '@/data/dialogues'
 
 const emit = defineEmits(['change-system'])
-const battleStore = useBattleStore()
 const worldStore = useWorldStore()
 const dialogueStore = useDialogueStore()
 
-const cv = ref(null)
-
-// 使用 shallowRef 保存非响应式的复杂对象
-const engine = shallowRef(null)
-const scene = shallowRef(null)
-
 // 专门用于 UI 展示的响应式数据
 const debugInfo = ref({ x: 0, y: 0, lastInput: '' })
-
-// 切换锁：防止在异步加载期间重复触发切换，导致状态保存错乱
-const isSwitchingMap = ref(false)
-
-// 监听对话结束，恢复游戏
-watch(() => dialogueStore.isActive, (active) => {
-  if (!active && engine.value) {
-    // 对话结束，恢复游戏循环
-    engine.value.start()
-  }
-})
 
 const handleOverlayClick = () => {
   dialogueStore.advance()
 }
 
-let frameCount = 0
+// UI Sync Loop (independent of GameEngine loop)
+let uiRafId = 0
 function syncUI() {
-  // Throttle: Update UI only every 10 frames (~6 times per second)
-  frameCount++
-  if (frameCount % 10 !== 0) return
+  const scene = gameManager.currentScene.value
+  const engine = gameManager.engine
 
-  if (!scene.value || !engine.value) return
+  if (!scene || !engine) {
+      uiRafId = requestAnimationFrame(syncUI)
+      return
+  }
   
-  const player = scene.value.player
+  const player = scene.player
+  if (!player) { // Player might not be ready
+      uiRafId = requestAnimationFrame(syncUI)
+      return
+  }
   
   // Count chasing enemies
-  // Optimized: Use reduce instead of filter to avoid array allocation
   let chasingCount = 0
-  if (scene.value.gameEntities) {
-      const entities = scene.value.gameEntities
+  if (scene.gameEntities) {
+      const entities = scene.gameEntities
       for (let i = 0; i < entities.length; i++) {
           const e = entities[i]
-          // Check aiState instead of direct property if needed, but assuming compatibility
           if (e.entity && e.entity.aiState && e.entity.aiState.state === 'chase') {
               chasingCount++
           }
@@ -118,154 +101,30 @@ function syncUI() {
 
   // Update Reactive State
   debugInfo.value = {
-    x: player.position.x,
-    y: player.position.y,
-    lastInput: engine.value.input.lastInput,
+    x: player.position ? player.position.x : 0,
+    y: player.position ? player.position.y : 0,
+    lastInput: engine.input.lastInput,
     chasingCount
   }
+  
+  uiRafId = requestAnimationFrame(syncUI)
 }
 
 onMounted(async () => {
-  if (!cv.value) return
-  
-  // 1. 初始化引擎
-  const gameEngine = new GameEngine(cv.value)
-  engine.value = gameEngine
+  // 1. Start/Resume World Map
+  // Canvas is handled globally in GameUI.vue
+  await gameManager.startWorldMap()
 
-  // Handle Battle Result (Victory/Flee)
-  if (battleStore.lastBattleResult) {
-    const { result, enemyUuid } = battleStore.lastBattleResult
-    worldStore.applyBattleResult(result, enemyUuid)
-    battleStore.lastBattleResult = null
-  }
-
-  // 2. 初始化场景逻辑封装
-  const initScene = async (mapId, entryId = 'default') => {
-    // 销毁旧场景（如果有）
-    // 目前 MainScene 没有 destroy 方法，GC 会自动回收，但如果有定时器需要清理
-    
-    // 如果是切换地图，需要先加载数据
-    if (mapId !== worldStore.currentMapId) {
-      worldStore.loadMap(mapId)
-    }
-
-    // 1. Load Map Data Async
-    const mapData = await getMapData(mapId)
-    if (!mapData) {
-      console.error(`Map not found: ${mapId}`)
-      return
-    }
-
-    const initialState = worldStore.currentMapState
-
-    const mainScene = new WorldScene(
-      gameEngine, 
-      // 战斗回调
-      (enemyGroup, enemyUuid) => {
-        console.log('Enter Battle!', enemyGroup)
-        gameEngine.stop()
-        battleStore.initBattle(enemyGroup, enemyUuid)
-        emit('change-system', 'battle')
-      },
-      // 初始状态
-      initialState,
-      // 地图数据对象
-      mapData,
-      // 入口ID
-      entryId,
-      // 切换地图回调 (只更新 Store ID，不再手动 saveState)
-      (targetMapId, targetEntryId) => {
-        console.log(`[WorldMapSystem] Map switched to ${targetMapId}`)
-        if (targetMapId) {
-            worldStore.currentMapId = targetMapId
-        }
-      },
-      // NPC 交互回调
-      (interaction) => {
-        if (dialogueStore.isActive) return
-        console.log('Interacted with NPC:', interaction)
-        
-        let scriptId = interaction.id // e.g. 'elder_greeting' or just 'elder'
-        
-        // 尝试在 DB 中查找脚本
-        let scriptFn = dialoguesDb[scriptId]
-        
-        // 如果找不到，尝试查找常用的 id 映射
-        if (!scriptFn) {
-            // 尝试查找以 _test 结尾的 ID 对应的正式脚本，或者反之
-            // 例如: elder_test -> elderDialogue
-            // 这里可以做一个简单的映射或者约定
-            // 目前我们的 elder.js 导出的是 elderDialogue，所以 id 应该是 elderDialogue
-            // 但是 village.js 里面配置的是 elder_test
-            
-            // 简单容错：如果 ID 是 elder_test，尝试找 elderDialogue
-            if (scriptId === 'elder_test' && dialoguesDb['elderDialogue']) {
-                scriptFn = dialoguesDb['elderDialogue'];
-                console.log(`Redirected dialogue ID '${scriptId}' to 'elderDialogue'`);
-            }
-        }
-        
-        if (!scriptFn) {
-           console.warn(`No dialogue script found for ID: ${scriptId}`)
-           // 可以在这里显示一个默认的提示文本，而不是直接报错
-           dialogueStore.startDialogue(function*() {
-               yield { type: 'SAY', speaker: 'System', textKey: `Debug: Dialogue ID '${scriptId}' not found.` };
-           });
-           return
-        }
-
-        // Pause Game
-        gameEngine.stop()
-        
-        // Start Dialogue
-        dialogueStore.startDialogue(scriptFn)
-      },
-      // State Provider
-      {
-        getMapState: (mapId) => {
-             return worldStore.worldStates[mapId]
-        },
-        worldStore // Pass the store instance directly
-      }
-    )
-    
-    scene.value = mainScene
-    
-    // 加载资源
-    await mainScene.load()
-    
-    // 更新循环绑定（闭包引用了新的 mainScene）
-    gameEngine.onUpdate = (dt) => {
-      if (scene.value === mainScene) { // 确保只更新当前场景
-        mainScene.update(dt)
-        syncUI()
-      }
-    }
-    
-    gameEngine.onDraw = (renderer) => {
-      if (scene.value === mainScene) {
-        mainScene.draw(renderer)
-      }
-    }
-  }
-
-  // 初始加载
-  // 如果是从战斗返回，不需要指定 entryId (null)，使用保存的位置
-  // 如果是首次进入，使用默认
-  const startEntryId = worldStore.currentMapState ? null : 'default'
-  await initScene(worldStore.currentMapId, startEntryId)
-
-  // 5. 启动
-  gameEngine.start()
+  // 2. Start UI Loop
+  syncUI()
 })
 
 onUnmounted(() => {
-  if (scene.value) {
-    worldStore.saveState(scene.value)
-  }
+  cancelAnimationFrame(uiRafId)
 
-  if (engine.value) {
-    engine.value.destroy()
+  // Save State when leaving
+  if (gameManager.currentScene.value) {
+    worldStore.saveState(gameManager.currentScene.value)
   }
 })
 </script>

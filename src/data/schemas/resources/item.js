@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID, LocalizedStringSchema, StatsSchema } from './common.js';
+import { ID, LocalizedStringSchema, StatsSchema } from '../common.js';
 
 // --- 物品 (Item) Schema ---
 
@@ -29,4 +29,3 @@ export const ItemSchema = z.object({
     // 装备特有 (StatsSchema 是所有属性可选，符合装备加成)
     stats: StatsSchema.optional(),
 });
-

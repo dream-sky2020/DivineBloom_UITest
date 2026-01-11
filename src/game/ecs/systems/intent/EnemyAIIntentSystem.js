@@ -29,12 +29,32 @@ export const EnemyAIIntentSystem = {
     // No longer need to fetch player here, States use aiSensory
 
     for (const entity of enemyEntities) {
+      // Defensive Checks
+      if (!entity.aiState) {
+          console.error(`[EnemyAIIntentSystem] Entity ${entity.id || 'N/A'} missing aiState!`);
+          continue;
+      }
+
       const { aiState } = entity
       
       const currentState = STATES[aiState.state]
       if (currentState) {
-          // States now read from entity.aiSensory internally
-          currentState.update(entity, dt)
+          try {
+              // States now read from entity.aiSensory internally
+              // Defensive: Check update method
+              if (typeof currentState.update === 'function') {
+                  currentState.update(entity, dt)
+              } else {
+                  console.error(`[EnemyAIIntentSystem] Invalid State Implementation for '${aiState.state}'`);
+              }
+          } catch (e) {
+              console.error(`[EnemyAIIntentSystem] Error in AI State '${aiState.state}' for Entity ${entity.id || 'N/A'}:`, e);
+              // Fallback to wander or idle to prevent loop crash
+              aiState.state = 'wander';
+          }
+      } else {
+          console.warn(`[EnemyAIIntentSystem] Unknown AI State '${aiState.state}' for Entity ${entity.id || 'N/A'}. Resetting to wander.`);
+          aiState.state = 'wander';
       }
       
       // Control Logic moved to EnemyControlSystem

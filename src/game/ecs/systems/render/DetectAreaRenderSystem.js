@@ -17,9 +17,15 @@ export const DetectAreaRenderSystem = {
      * @param {object} renderer Renderer2D
      */
     draw(renderer) {
+        // Defensive check
+        if (!renderer || !renderer.ctx) return;
+        
         const ctx = renderer.ctx
 
         for (const entity of detectors) {
+            // Defensive Check
+            if (!entity.detectArea || !entity.position) continue;
+
             const { detectArea, position } = entity
 
             // 计算中心点 (加上偏移)
@@ -28,7 +34,8 @@ export const DetectAreaRenderSystem = {
 
             // 设置绘制样式
             // 根据是否有检测结果改变颜色 (如果有 detected result 则变红，否则保持默认)
-            const isTriggered = detectArea.results && detectArea.results.length > 0
+            // Defensive check for results array
+            const isTriggered = detectArea.results && Array.isArray(detectArea.results) && detectArea.results.length > 0
 
             if (isTriggered) {
                 ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)' // red-500
@@ -64,4 +71,3 @@ export const DetectAreaRenderSystem = {
         }
     }
 }
-

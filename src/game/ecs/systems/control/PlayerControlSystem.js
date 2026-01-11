@@ -16,9 +16,26 @@ const controlEntities = world.with('playerIntent', 'velocity')
 export const PlayerControlSystem = {
   update(dt) {
     for (const entity of controlEntities) {
-      if (!entity.playerIntent) continue
+      // Defensive checks
+      if (!entity.playerIntent) {
+         console.warn(`[PlayerControlSystem] Entity ${entity.id || 'N/A'} missing playerIntent!`);
+         continue;
+      }
+      if (!entity.velocity) {
+         console.error(`[PlayerControlSystem] Entity ${entity.id || 'N/A'} missing velocity!`);
+         continue;
+      }
 
       const { move, wantsToRun } = entity.playerIntent
+      
+      // Defensive check for move object
+      if (!move || typeof move.x !== 'number' || typeof move.y !== 'number') {
+          console.error(`[PlayerControlSystem] Invalid move intent for Entity ${entity.id || 'N/A'}:`, move);
+          entity.velocity.x = 0;
+          entity.velocity.y = 0;
+          continue;
+      }
+
       const speed = entity.speed || 200
       const fastSpeed = entity.fastSpeed || 320
 
@@ -30,4 +47,3 @@ export const PlayerControlSystem = {
     }
   }
 }
-

@@ -18,13 +18,20 @@ export const StatusRenderSystem = {
    * @param {import('@/game/GameEngine').Renderer2D} renderer 
    */
   draw(renderer) {
+    // Defensive Check: Renderer
+    if (!renderer || !renderer.ctx || !renderer.camera) {
+       console.error('[StatusRenderSystem] Invalid renderer instance!');
+       return;
+    }
+
     const ctx = renderer.ctx
     const camera = renderer.camera
-    const viewW = renderer.width
-    const viewH = renderer.height
+    const viewW = renderer.width || 0
+    const viewH = renderer.height || 0
     const cullMargin = 100
 
     const isVisible = (pos) => {
+      if (!pos || typeof pos.x !== 'number' || typeof pos.y !== 'number') return false;
       return !(pos.x < camera.x - cullMargin ||
         pos.x > camera.x + viewW + cullMargin ||
         pos.y < camera.y - cullMargin ||
@@ -32,6 +39,16 @@ export const StatusRenderSystem = {
     }
 
     for (const entity of statusEntities) {
+      // Defensive checks for components
+      if (!entity.position) {
+         console.warn(`[StatusRenderSystem] Entity ${entity.id || 'N/A'} missing position!`);
+         continue;
+      }
+      if (!entity.aiState) {
+         console.warn(`[StatusRenderSystem] Entity ${entity.id || 'N/A'} missing aiState!`);
+         continue;
+      }
+
       if (!isVisible(entity.position)) continue
 
       const { state, suspicion } = entity.aiState
@@ -54,4 +71,3 @@ export const StatusRenderSystem = {
     }
   }
 }
-

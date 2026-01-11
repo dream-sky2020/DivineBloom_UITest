@@ -18,6 +18,13 @@ const inputEntities = world.with('input')
 
 export const InputSenseSystem = {
   update(dt, input) {
+    // Defensive Check: Input source
+    if (!input) {
+        // Rarely happens, but prevents crash if engine input is not ready
+        // console.warn('[InputSenseSystem] Input source is undefined'); 
+        return;
+    }
+
     for (const entity of inputEntities) {
       // Ensure rawInput component exists
       if (!entity.rawInput) {
@@ -28,27 +35,42 @@ export const InputSenseSystem = {
       }
 
       const raw = entity.rawInput
+      
+      // Defensive check for raw structure
+      if (!raw.axes || !raw.buttons) {
+          console.error(`[InputSenseSystem] Invalid rawInput structure on Entity ${entity.id || 'N/A'}`);
+          // Re-init
+          raw.axes = { x: 0, y: 0 };
+          raw.buttons = { interact: false, run: false, menu: false, cancel: false };
+      }
+
       const keys = input // 假设 input 提供了类似 phaser/custom 的接口
 
       // 1. Reset
       raw.axes.x = 0
       raw.axes.y = 0
 
-      // 2. Keyboard Mapping (Hardware Layer)
-      if (keys.isDown('KeyW') || keys.isDown('ArrowUp')) raw.axes.y -= 1
-      if (keys.isDown('KeyS') || keys.isDown('ArrowDown')) raw.axes.y += 1
-      if (keys.isDown('KeyA') || keys.isDown('ArrowLeft')) raw.axes.x -= 1
-      if (keys.isDown('KeyD') || keys.isDown('ArrowRight')) raw.axes.x += 1
+      try {
+          // 2. Keyboard Mapping (Hardware Layer)
+          // Defensive: Check if keys.isDown is a function
+          if (typeof keys.isDown === 'function') {
+              if (keys.isDown('KeyW') || keys.isDown('ArrowUp')) raw.axes.y -= 1
+              if (keys.isDown('KeyS') || keys.isDown('ArrowDown')) raw.axes.y += 1
+              if (keys.isDown('KeyA') || keys.isDown('ArrowLeft')) raw.axes.x -= 1
+              if (keys.isDown('KeyD') || keys.isDown('ArrowRight')) raw.axes.x += 1
 
-      // Normalize if needed at raw level? 
-      // 通常 RawInput 保持原始值，Intent 层处理归一化，但这里做简单的钳制也是可以的
-      // 这里保持纯粹的轴向叠加
-
-      // Buttons
-      raw.buttons.run = keys.isDown('ShiftLeft') || keys.isDown('ShiftRight')
-      raw.buttons.interact = keys.isDown('Space') || keys.isDown('KeyE') || keys.isDown('Enter')
-      raw.buttons.menu = keys.isDown('Escape')
-      raw.buttons.cancel = keys.isDown('Escape') || keys.isDown('Backspace')
+              // Buttons
+              raw.buttons.run = keys.isDown('ShiftLeft') || keys.isDown('ShiftRight')
+              raw.buttons.interact = keys.isDown('Space') || keys.isDown('KeyE') || keys.isDown('Enter')
+              raw.buttons.menu = keys.isDown('Escape')
+              raw.buttons.cancel = keys.isDown('Escape') || keys.isDown('Backspace')
+          } else {
+              // Maybe accessing raw properties? Or input interface changed?
+              // console.warn('[InputSenseSystem] Input interface mismatch: isDown not found');
+          }
+      } catch (e) {
+          console.error('[InputSenseSystem] Error reading input:', e);
+      }
 
       // TODO: Add Gamepad Support here
     }
