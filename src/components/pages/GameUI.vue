@@ -133,7 +133,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useSettingsStore } from '@/stores/settings';
+import { useGameStore } from '@/stores/game';
 import { gameManager } from '@/game/GameManager';
 import MainMenuSystem from '@/components/pages/systems/MainMenuSystem.vue';
 import ListMenuSystem from '@/components/pages/systems/ListMenuSystem.vue';
@@ -145,7 +145,8 @@ import BattleSystem from '@/components/pages/systems/BattleSystem.vue';
 import DialogueSystem from '@/components/pages/systems/DialogueSystem.vue';
 
 const { locale } = useI18n();
-const settingsStore = useSettingsStore();
+const gameStore = useGameStore();
+const settingsStore = gameStore.settings;
 const currentSystem = ref(gameManager.state.system); // Initialize from GameManager
 const gameCanvas = ref(null);
 

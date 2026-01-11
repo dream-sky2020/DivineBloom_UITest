@@ -3,41 +3,32 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { itemsDb } from '@/data/items';
 
+const INITIAL_ITEMS = [
+  // Consumables (1001-1600)
+  { id: 1001, count: 5 }, // 调整初始数量为合理值，方便测试
+  { id: 1002, count: 2 },
+  { id: 2001, count: 1 },
+];
+
 export const useInventoryStore = defineStore('inventory', () => {
-  // State: 仅存储物品 ID 和数量
-  // 结构: [{ id: 1001, count: 15 }, { id: 2001, count: 1 }]
-  const inventoryState = ref([
-    // Consumables (1001-1600)
-    { id: 1001, count: 99 },
-    { id: 1002, count: 99 },
-    { id: 1003, count: 99 },
-    { id: 1101, count: 99 },
-    { id: 1201, count: 99 },
-    { id: 1202, count: 99 },
-    { id: 1301, count: 99 },
-    { id: 1302, count: 99 },
-    { id: 1401, count: 99 },
-    { id: 1402, count: 99 },
-    { id: 1403, count: 99 },
-    { id: 1404, count: 99 },
-    { id: 1501, count: 99 },
-    // Weapons (2001-2003)
-    { id: 2001, count: 99 },
-    { id: 2002, count: 99 },
-    { id: 2003, count: 99 },
-    // Armor (3001-3003)
-    { id: 3001, count: 99 },
-    { id: 3002, count: 99 },
-    { id: 3003, count: 99 },
-    // Accessories (4001-4002)
-    { id: 4001, count: 99 },
-    { id: 4002, count: 99 },
-    // Key Items (9001-9002)
-    { id: 9001, count: 99 },
-    { id: 9002, count: 99 }
-  ]);
+  // State
+  const inventoryState = ref(JSON.parse(JSON.stringify(INITIAL_ITEMS)));
 
   // Actions
+  function reset() {
+    inventoryState.value = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+  }
+
+  function serialize() {
+    return JSON.parse(JSON.stringify(inventoryState.value));
+  }
+
+  function loadState(data) {
+    if (Array.isArray(data)) {
+      inventoryState.value = data;
+    }
+  }
+
   function addItem(itemId, amount = 1) {
     const existingItem = inventoryState.value.find(item => item.id === itemId);
     if (existingItem) {
@@ -60,6 +51,7 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   // Getters: 将 ID 转换为完整的 UI 数据对象
+
   // 自动填充 GameDataGrid 需要的字段 (icon, name, etc.)
   const getAllItems = computed(() => {
     return inventoryState.value.map(slot => {
@@ -99,7 +91,10 @@ export const useInventoryStore = defineStore('inventory', () => {
     addItem,
     removeItem,
     getAllItems,
-    getItemsByCategory
+    getItemsByCategory,
+    reset,
+    serialize,
+    loadState
   };
 });
 

@@ -2,9 +2,7 @@ import { reactive, shallowRef, watch } from 'vue'
 import { GameEngine } from './GameEngine'
 import { SceneManager } from './managers/SceneManager'
 import { WorldScene } from './scenes/WorldScene'
-import { useWorldStore } from '@/stores/world'
-import { useBattleStore } from '@/stores/battle'
-import { useDialogueStore } from '@/stores/dialogue'
+import { useGameStore } from '@/stores/game'
 import { dialoguesDb } from '@/data/dialogues'
 import { getMapData } from '@/data/maps'
 
@@ -55,7 +53,8 @@ class GameManager {
     }
 
     _setupWatchers() {
-        const dialogueStore = useDialogueStore()
+        const gameStore = useGameStore()
+        const dialogueStore = gameStore.dialogue
 
         // Pause/Resume on Dialogue
         watch(() => dialogueStore.isActive, (active) => {
@@ -75,8 +74,9 @@ class GameManager {
     async startWorldMap() {
         console.log('[GameManager] Switching to World Map')
 
-        const worldStore = useWorldStore()
-        const battleStore = useBattleStore()
+        const gameStore = useGameStore()
+        const worldStore = gameStore.world
+        const battleStore = gameStore.battle
 
         // Handle return from battle
         if (battleStore.lastBattleResult) {
@@ -105,7 +105,8 @@ class GameManager {
      * @param {string} entryId 
      */
     async loadMap(mapId, entryId = 'default') {
-        const worldStore = useWorldStore()
+        const gameStore = useGameStore()
+        const worldStore = gameStore.world
 
         // If we have a SceneManager, let it handle the transition
         // This handles ECS clearing, data loading, etc.
@@ -155,8 +156,9 @@ class GameManager {
 
     _onEncounter(enemyGroup, enemyUuid) {
         console.log('[GameManager] Encounter:', enemyGroup)
-        const battleStore = useBattleStore()
-        const worldStore = useWorldStore()
+        const gameStore = useGameStore()
+        const battleStore = gameStore.battle
+        const worldStore = gameStore.world
 
         // Save Map State before battle (optional, for safety)
         if (this.currentScene.value) {
@@ -168,7 +170,8 @@ class GameManager {
     }
 
     _onInteract(interaction) {
-        const dialogueStore = useDialogueStore()
+        const gameStore = useGameStore()
+        const dialogueStore = gameStore.dialogue
         if (dialogueStore.isActive) return
 
         let scriptId = interaction.id

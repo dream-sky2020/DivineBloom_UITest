@@ -32,10 +32,11 @@
 
 <script setup>
 import { inject, onMounted } from 'vue';
-import { useAudioStore } from '@/stores/audio';
+import { useGameStore } from '@/stores/game';
 
 const emit = defineEmits(['change-system']);
-const audioStore = useAudioStore();
+const gameStore = useGameStore();
+const audioStore = gameStore.audio;
 
 // 进入主菜单播放 BGM
 onMounted(() => {

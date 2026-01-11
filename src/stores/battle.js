@@ -640,7 +640,19 @@ export const useBattleStore = defineStore('battle', () => {
         log('battle.runAway'); // Make sure translation exists or text
     };
 
+    const reset = () => {
+        turnCount.value = 1;
+        battleState.value = 'idle';
+        battleLog.value = [];
+        activeUnit.value = null;
+        atbPaused.value = false;
+        enemies.value = [];
+        // Party slots are references to PartyStore, so just clear the array
+        partySlots.value = [];
+    };
+
     const log = (keyOrMsg, params = {}) => {
+
         if (typeof keyOrMsg === 'string') {
             const hasParams = params && Object.keys(params).length > 0;
             if (!hasParams && (keyOrMsg.includes(' ') || /[\u4e00-\u9fa5]/.test(keyOrMsg))) {
@@ -682,6 +694,7 @@ export const useBattleStore = defineStore('battle', () => {
         updateATB,
         runAway,
         lastBattleResult,
-        adjustBoost
+        adjustBoost,
+        reset
     };
 });

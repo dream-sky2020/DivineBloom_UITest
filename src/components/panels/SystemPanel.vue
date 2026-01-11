@@ -87,11 +87,11 @@
 
 <script setup>
 import { onMounted } from 'vue';
-import { useAudioStore } from '@/stores/audio';
-import { useSettingsStore } from '@/stores/settings';
+import { useGameStore } from '@/stores/game';
 
-const audioStore = useAudioStore();
-const settingsStore = useSettingsStore();
+const gameStore = useGameStore();
+const audioStore = gameStore.audio;
+const settingsStore = gameStore.settings;
 
 const battleSpeeds = [0.1, 0.25, 0.5, 1, 2, 3, 4, 5, 10, 20];
 

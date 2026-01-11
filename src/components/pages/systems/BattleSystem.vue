@@ -70,8 +70,7 @@
 
 <script setup>
 import { onMounted, onBeforeUnmount, computed, ref, watch } from 'vue';
-import { useBattleStore } from '@/stores/battle';
-import { useSettingsStore } from '@/stores/settings';
+import { useGameStore } from '@/stores/game';
 import { storeToRefs } from 'pinia';
 import { skillsDb } from '@/data/skills';
 import BattleEnemyUnit from '@/components/ui/BattleEnemyUnit.vue';
@@ -84,8 +83,9 @@ import BattleLog from '@/components/ui/BattleLog.vue';
 
 const emit = defineEmits(['change-system']);
 
-const battleStore = useBattleStore();
-const settingsStore = useSettingsStore();
+const gameStore = useGameStore();
+const battleStore = gameStore.battle;
+const settingsStore = gameStore.settings;
 // removed activeSlotIndex
 const { enemies, partySlots, activeCharacter, battleLog, battleState, battleItems, boostLevel, waitingForInput } = storeToRefs(battleStore);
 const { battleSpeed: gameSpeed } = storeToRefs(settingsStore);

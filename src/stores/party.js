@@ -17,6 +17,30 @@ export const usePartyStore = defineStore('party', () => {
         { front: 4, back: null }
     ]);
 
+    const reset = () => {
+        members.value = {};
+        // Reset formation to default or empty? Let's keep default structure but maybe clear chars?
+        // For now reset to default formation
+        formation.value = [
+            { front: 5, back: 1 },
+            { front: 6, back: 2 },
+            { front: 7, back: 3 },
+            { front: 4, back: null }
+        ];
+    };
+
+    const serialize = () => {
+        return {
+            members: members.value,
+            formation: formation.value
+        };
+    };
+
+    const loadState = (data) => {
+        if (data.members) members.value = data.members;
+        if (data.formation) formation.value = data.formation;
+    };
+
     // 初始化队伍（如果尚未初始化）
     const initParty = () => {
         if (Object.keys(members.value).length > 0) return;
@@ -91,7 +115,10 @@ export const usePartyStore = defineStore('party', () => {
         formation,
         initParty,
         getCharacterState,
-        updatePartyAfterBattle
+        updatePartyAfterBattle,
+        reset,
+        serialize,
+        loadState
     };
 });
 

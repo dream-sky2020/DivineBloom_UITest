@@ -136,6 +136,10 @@ export const useDialogueStore = defineStore('dialogue', () => {
         iterator = null;
     };
 
+    const reset = () => {
+        endDialogue();
+    };
+
     return {
         isActive,
         isWaitingForInput,
@@ -145,7 +149,8 @@ export const useDialogueStore = defineStore('dialogue', () => {
         startDialogue,
         advance,
         selectOption,
-        endDialogue
+        endDialogue,
+        reset
     };
 });
 

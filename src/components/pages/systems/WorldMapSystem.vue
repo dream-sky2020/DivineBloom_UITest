@@ -56,12 +56,12 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 import { gameManager } from '@/game/GameManager'
-import { useWorldStore } from '@/stores/world'
-import { useDialogueStore } from '@/stores/dialogue'
+import { useGameStore } from '@/stores/game'
 
 const emit = defineEmits(['change-system'])
-const worldStore = useWorldStore()
-const dialogueStore = useDialogueStore()
+const gameStore = useGameStore()
+const worldStore = gameStore.world
+const dialogueStore = gameStore.dialogue
 
 // 专门用于 UI 展示的响应式数据
 const debugInfo = ref({ x: 0, y: 0, lastInput: '' })

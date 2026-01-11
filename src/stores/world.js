@@ -126,10 +126,29 @@ export const useWorldStore = defineStore('world', () => {
         currentMapState.value = newState;
     };
 
-    const clearState = () => {
+    const reset = () => {
         currentMapId.value = 'demo_plains';
         currentMapState.value = null;
         worldStates.value = {};
+    };
+
+    const serialize = () => {
+        return {
+            currentMapId: currentMapId.value,
+            worldStates: worldStates.value
+        };
+    };
+
+    const loadState = (data) => {
+        if (data.currentMapId) currentMapId.value = data.currentMapId;
+        if (data.worldStates) worldStates.value = data.worldStates;
+        // 注意：这里没有恢复 currentMapState，因为它通常会在进入场景时根据 worldStates 重新计算
+        // 或者我们可以选择加载：
+        // loadMap(currentMapId.value);
+    };
+
+    const clearState = () => {
+        reset();
     };
 
     return {
@@ -140,6 +159,9 @@ export const useWorldStore = defineStore('world', () => {
         loadMap,
         applyBattleResult,
         clearState,
+        reset,
+        serialize,
+        loadState,
         initCurrentState
     };
 });
