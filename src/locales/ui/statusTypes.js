@@ -12,6 +12,13 @@ export default {
     en: 'Debuff',
     ja: 'デバフ',
     ko: '디버프'
+  },
+  special: {
+    zh: '特殊',
+    'zh-TW': '特殊',
+    en: 'Special',
+    ja: '特殊',
+    ko: '특수'
   }
 }
 

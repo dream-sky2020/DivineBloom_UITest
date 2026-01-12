@@ -45,7 +45,7 @@ export default {
         category: "skillCategories.support",
         targetType: "allAllies",
         effects: [
-            { type: "buff", stat: "def", value: 1.5, duration: 3 }
+            { type: "applyStatus", status: 104, duration: 3 }
         ],
         icon: "icon_shield",
         cost: "30 MP",
@@ -174,7 +174,7 @@ export default {
         category: "skillCategories.support",
         targetType: "allOtherAllies",
         effects: [
-            { type: "buff", stat: "spd", value: 1.3, duration: 3 } // Haste
+            { type: "applyStatus", status: 103, duration: 3 } // Haste
         ],
         icon: "icon_forward_allies",
         cost: "30 MP",

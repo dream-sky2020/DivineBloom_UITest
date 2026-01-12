@@ -140,6 +140,9 @@ const _executeSingleEffect = (effect, target, actor, skill, context, silent, pre
 
             if (statusId) {
                 applyStatus(target, statusId, effect.duration || 3, effect.value, context, silent);
+            } else if (effect.status) {
+                // Support explicit status ID in type='buff' (legacy/mixed usage)
+                applyStatus(target, effect.status, effect.duration || 3, effect.value, context, silent);
             } else {
                 if (!silent && log) log('battle.buffCast', { user: actor.name, target: target ? target.name : { zh: '友方全体', en: 'allies' } });
             }
@@ -257,11 +260,20 @@ export const processTurnStatuses = (character, context) => {
             });
         }
 
-        // Decrement Duration
-        status.duration--;
-        if (status.duration <= 0) {
-            character.statusEffects.splice(i, 1);
-            if (log) log('battle.statusWoreOff', { target: character.name, status: statusDef.name });
+        // Decrement Duration (Check decayMode)
+        // Default to 'turn' if not specified
+        const decayMode = statusDef.decayMode || 'turn';
+
+        if (decayMode === 'turn') {
+            status.duration--;
+            if (status.duration <= 0) {
+                character.statusEffects.splice(i, 1);
+                if (log) log('battle.statusWoreOff', { target: character.name, status: statusDef.name });
+            }
+        } else if (decayMode === 'action') {
+            // Handled elsewhere (e.g. after action execution)
+        } else if (decayMode === 'none') {
+            // Do not decrement
         }
     }
 };

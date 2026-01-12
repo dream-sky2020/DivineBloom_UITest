@@ -13,7 +13,7 @@
                v-for="skill in characterSkills" 
                :key="skill.id" 
                class="skill-item"
-               :class="{ 'disabled': skill.mpCost > activeCharacter.currentMp }"
+               :class="{ 'disabled': !skill.isUsable }"
                @click="$emit('select-skill', skill)"
              >
                 <GameIcon class="skill-icon" :name="skill.icon" />

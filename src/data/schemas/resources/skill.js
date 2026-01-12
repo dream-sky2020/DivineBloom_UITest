@@ -17,6 +17,13 @@ const SkillEffectSchema = z.object({
     minTimes: z.number().optional(),
     maxTimes: z.number().optional(),
     target: z.string().optional(), // Self heal etc
+    mode: z.string().optional(), // "add_stack", "refresh", etc.
+});
+
+const SkillCostSchema = z.object({
+    type: z.enum(['mp', 'hp', 'status_duration', 'item']),
+    id: z.number().optional(), // Item ID or Status ID
+    amount: z.number()
 });
 
 export const SkillSchema = z.object({
@@ -28,7 +35,13 @@ export const SkillSchema = z.object({
     // 可选
     element: z.string().optional(),
     targetType: z.string().optional(), // "enemy", "allEnemies"
-    cost: z.union([z.string(), z.number()]).optional(), // "10 MP" or number
+
+    // 显示用的消耗文本 (如 "10 MP")
+    cost: z.union([z.string(), z.number()]).optional(),
+
+    // 实际逻辑消耗
+    costs: z.array(SkillCostSchema).optional(),
+
     icon: z.string().optional(),
 
     effects: z.array(SkillEffectSchema).optional().default([]),

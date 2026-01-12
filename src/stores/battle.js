@@ -10,7 +10,7 @@ import { calculateDamage, applyDamage, applyHeal } from '@/game/battle/damageSys
 import { processEffect, processTurnStatuses } from '@/game/battle/effectSystem';
 import { applyStatus, removeStatus, checkCrowdControl } from '@/game/battle/statusSystem';
 import { resolveTargets, findPartyMember } from '@/game/battle/targetSystem';
-import { resolveChainSequence, resolveRandomSequence } from '@/game/battle/skillSystem';
+import { resolveChainSequence, resolveRandomSequence, canUseSkill, paySkillCost } from '@/game/battle/skillSystem';
 import { calculateAtbTick } from '@/game/battle/timeSystem';
 import { calculateDrops, mergeDrops } from '@/game/battle/lootSystem';
 
@@ -55,6 +55,13 @@ export const useBattleStore = defineStore('battle', () => {
 
     // --- Actions ---
 
+    const checkSkillUsability = (skillId) => {
+        if (!activeCharacter.value) return false;
+        const skill = skillsDb[skillId];
+        if (!skill) return false;
+        return canUseSkill(activeCharacter.value, skill, getContext());
+    };
+
     const adjustBoost = (delta) => {
         if (!activeUnit.value || !activeUnit.value.isPlayer) return;
 
@@ -78,7 +85,15 @@ export const useBattleStore = defineStore('battle', () => {
         log,
         performSwitch,
         partySlots: partySlots.value,
-        enemies: enemies.value
+        enemies: enemies.value,
+        // Item Cost Support
+        checkItem: (itemId, amount) => {
+            const item = inventoryStore.inventoryState.find(i => i.id === itemId);
+            return item && item.count >= amount;
+        },
+        consumeItem: (itemId, amount) => {
+            inventoryStore.removeItem(itemId, amount);
+        }
     });
 
     // Helper to find any party member
@@ -431,13 +446,15 @@ export const useBattleStore = defineStore('battle', () => {
         } else if (actionType === 'skill') {
             const skill = skillsDb[skillId];
             if (skill) {
-                // Deduct MP
-                const cost = parseInt(skill.cost) || 0;
-                if (actor.currentMp < cost) {
-                    log('battle.notEnoughMp');
+                // Check Usability
+                if (!canUseSkill(actor, skill, getContext())) {
+                    log('battle.notEnoughMp'); // or generic "cannot use"
                     return; // Don't end turn
                 }
-                actor.currentMp -= cost;
+
+                // Pay Cost
+                paySkillCost(actor, skill, getContext());
+
                 log('battle.useSkill', { user: actor.name, skill: skill.name });
 
                 // Deduct Energy
@@ -745,6 +762,7 @@ export const useBattleStore = defineStore('battle', () => {
         // Actions
         initBattle,
         playerAction,
+        checkSkillUsability,
         updateATB,
         runAway,
         lastBattleResult,

@@ -12,6 +12,13 @@ export default {
     en: 'Passive',
     ja: 'パッシブ',
     ko: '패시브'
+  },
+  utility: {
+    zh: '功能',
+    'zh-TW': '功能',
+    en: 'Utility',
+    ja: 'ユーティリティ',
+    ko: '유틸리티'
   }
 }
 

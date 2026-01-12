@@ -76,6 +76,11 @@ export const iconMap = {
   icon_forward_allies: "🎺",
   icon_hell_revival: "👿",
 
+  // Firearm Skills
+  icon_skill_shoot: "🔫",
+  icon_skill_reload: "🔄",
+  icon_skill_magic_ammo: "🔮",
+
   // Monster Skills
   icon_slime: "🦠",
   icon_fang: "🦷",

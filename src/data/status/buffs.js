@@ -140,6 +140,7 @@ export default {
       ja: '現在の残弾数。使い切るとリロードが必要。',
       ko: '현재 남은 탄약 수. 다 쓰면 재장전이 필요하다.'
     },
+    decayMode: 'none', // 不自动减少
     hasStack: true, // 启用层数/强度显示
     stackLabel: { // 可选：用于UI显示层数含义
       zh: '发',
@@ -148,9 +149,7 @@ export default {
       ja: '発',
       ko: '발'
     },
-    effects: [
-      { trigger: 'passive', type: 'counter', maxStack: 100 } // 标记为计数器类型
-    ]
+    effects: []
   },
   106: {
     id: 106,
@@ -177,6 +176,7 @@ export default {
       ja: '弾が装填されており',
       ko: '탄약이 장전되어 있음'
     },
+    decayMode: 'none', // 不自动减少
     hasStack: true,
     stackLabel: {
       zh: '发',
@@ -185,9 +185,7 @@ export default {
       ja: '発',
       ko: '발'
     },
-    effects: [
-      { trigger: 'passive', type: 'counter', maxStack: 5 }
-    ]
+    effects: []
   }
 }
 

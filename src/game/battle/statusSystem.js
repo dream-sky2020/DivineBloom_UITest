@@ -14,6 +14,7 @@ export const applyStatus = (target, statusId, duration = 3, value = null, contex
 
     if (existing) {
         existing.duration = duration; // Refresh duration
+        if (value !== null) existing.value = value;
         if (!silent && log) log('battle.statusExtended', { target: target.name, status: statusDef.name });
     } else {
         target.statusEffects.push({

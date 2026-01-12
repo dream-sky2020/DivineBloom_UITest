@@ -26,6 +26,13 @@ export default {
     en: 'Passive',
     ja: 'パッシブ',
     ko: '패시브'
+  },
+  enemy: {
+    zh: '敌人',
+    'zh-TW': '敵人',
+    en: 'Enemy',
+    ja: 'エネミー',
+    ko: '적'
   }
 }
 

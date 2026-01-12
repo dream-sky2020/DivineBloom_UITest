@@ -143,7 +143,8 @@ const characterSkills = computed(() => {
       if (!skill) return null;
       // Parse cost "10 MP" -> 10
       const mpCost = parseInt(skill.cost) || 0;
-      return { ...skill, mpCost };
+      const isUsable = battleStore.checkSkillUsability(id);
+      return { ...skill, mpCost, isUsable };
   }).filter(Boolean);
 });
 
@@ -166,7 +167,7 @@ const openItemMenu = () => {
 };
 
 const selectSkill = (skill) => {
-    if (activeCharacter.value.currentMp < skill.mpCost) {
+    if (!battleStore.checkSkillUsability(skill.id)) {
         return;
     }
     
