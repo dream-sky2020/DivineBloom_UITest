@@ -121,8 +121,8 @@ export default {
       zh: '残弹余数',
       'zh-TW': '殘彈餘數',
       en: 'Ammo Count',
-      ja: '残弾数',
-      ko: '잔탄 수'
+      ja: '残弾',
+      ko: '잔탄 수 (殘彈餘數)'
     },
     type: "statusTypes.special", // 改为特殊类型以支持特殊UI条
     icon: "icon_ammo",
@@ -150,6 +150,43 @@ export default {
     },
     effects: [
       { trigger: 'passive', type: 'counter', maxStack: 100 } // 标记为计数器类型
+    ]
+  },
+  106: {
+    id: 106,
+    name: {
+      zh: '弦上余数',
+      'zh-TW': '弦上餘數',
+      en: 'Chambered Count',
+      ja: '弦上餘數',
+      ko: '장전 수 (弦上餘數)'
+    },
+    type: "statusTypes.special",
+    icon: "icon_sniper", // 暂用瞄准图标
+    subText: {
+      zh: '子弹上膛',
+      'zh-TW': '子彈上膛',
+      en: 'Ammo Ready',
+      ja: '弾薬装填',
+      ko: '탄약 장전'
+    },
+    description: {
+      zh: '子弹已装填',
+      'zh-TW': '子彈已裝填',
+      en: 'Special ammo is chambered.',
+      ja: '弾が装填されており',
+      ko: '탄약이 장전되어 있음'
+    },
+    hasStack: true,
+    stackLabel: {
+      zh: '发',
+      'zh-TW': '發',
+      en: 'rds',
+      ja: '発',
+      ko: '발'
+    },
+    effects: [
+      { trigger: 'passive', type: 'counter', maxStack: 5 }
     ]
   }
 }
