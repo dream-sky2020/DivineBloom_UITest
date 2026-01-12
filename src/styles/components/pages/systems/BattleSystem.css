@@ -1,12 +1,11 @@
 .battle-system {
     width: 100%;
     height: 100%;
-    /* Transparent Background to show WorldMap if needed, or opaque if desired */
-    /* background: linear-gradient(to bottom, #1e1b4b, #312e81); */
-    background: rgba(30, 27, 75, 0.9); /* Semi-transparent dark blue */
+    margin: 0;
+    /* Opaque dark blue */
+    background: #1e1b4b;
     display: flex;
     flex-direction: column;
-    position: relative;
     overflow: hidden;
     color: white;
     font-family: var(--font-main, sans-serif);

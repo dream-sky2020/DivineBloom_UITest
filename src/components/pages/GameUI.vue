@@ -6,7 +6,11 @@
           <!-- Global Game Canvas -->
           <canvas ref="gameCanvas" class="global-canvas"></canvas>
 
-          <!-- Dynamic System Component (Z-Index Layer) -->
+          <!-- Layer 1: Grid Overlay (Background/World Level) -->
+          <!-- Only show grid when we are in a system that needs it (like World Map) or isn't opaque -->
+          <div class="grid-overlay" v-show="showGrid"></div>
+
+          <!-- Layer 2: System UI (Top Level) -->
           <div class="system-layer" :class="{ 'pass-through': currentSystem === 'world-map' }">
             <transition name="fade" mode="out-in">
               <component 
@@ -15,9 +19,6 @@
               />
             </transition>
           </div>
-
-          <!-- 网格辅助线 -->
-          <div class="grid-overlay"></div>
       </div>
     </div>
 
@@ -169,6 +170,20 @@ const activeSystemComponent = computed(() => {
     case 'dialogue': return DialogueSystem;
     default: return MainMenuSystem;
   }
+});
+
+// Determine if we should show the background grid
+const showGrid = computed(() => {
+  // Hide grid for opaque full-screen systems to prevent "white line" artifacts at edges
+  const opaqueSystems = [
+    'main-menu', 
+    'battle', 
+    'encyclopedia', 
+    'shop', // Has blur, but better to hide grid to be clean
+    'list-menu', 
+    'list-menu-previews'
+  ];
+  return !opaqueSystems.includes(currentSystem.value);
 });
 
 const handleSystemChange = (systemId) => {
