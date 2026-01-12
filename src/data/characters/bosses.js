@@ -29,8 +29,8 @@ export default {
       ko: '신을 죽이는 무구의 소유자, 무력으로 모든 혼란을 끝내겠다고 맹세한 패왕.'
     },
     drops: [
-      { itemId: 9101, chance: 1.0, minQty: 1, maxQty: 1 }, // Divine Shard (100%)
-      { itemId: 9103, chance: 0.5, minQty: 1, maxQty: 1 }  // Chaos Crystal
+      { itemId: 5101, chance: 1.0, minQty: 1, maxQty: 1 }, // Divine Shard (100%)
+      { itemId: 5103, chance: 0.5, minQty: 1, maxQty: 1 }  // Chaos Crystal
     ]
   },
   102: {
@@ -63,7 +63,7 @@ export default {
       ko: '윤회의 허무를 간파한 왕, 소원 주문의 핵심을 파괴하여 중생에게 완전한 해탈을 주려 한다.'
     },
     drops: [
-      { itemId: 9102, chance: 1.0, minQty: 1, maxQty: 2 }, // Void Dust
+      { itemId: 5102, chance: 1.0, minQty: 1, maxQty: 2 }, // Void Dust
       { itemId: 3, chance: 0.8, minQty: 1, maxQty: 1 }     // Elixir
     ]
   },
@@ -97,8 +97,8 @@ export default {
       ko: '모든 신을 학살하는 비인간 신.'
     },
     drops: [
-      { itemId: 9103, chance: 1.0, minQty: 1, maxQty: 1 }, // Chaos Crystal
-      { itemId: 9101, chance: 0.2, minQty: 1, maxQty: 1 }  // Divine Shard
+      { itemId: 5103, chance: 1.0, minQty: 1, maxQty: 1 }, // Chaos Crystal
+      { itemId: 5101, chance: 0.2, minQty: 1, maxQty: 1 }  // Divine Shard
     ]
   },
   104: {
@@ -132,8 +132,8 @@ export default {
       ko: '모든 신을 학살하는 비인간 신.'
     },
     drops: [
-      { itemId: 9104, chance: 1.0, minQty: 1, maxQty: 1 }, // Plague Essence
-      { itemId: 9001, chance: 1.0, minQty: 5, maxQty: 10 } // Slime Gel (Why not?)
+      { itemId: 5104, chance: 1.0, minQty: 1, maxQty: 1 }, // Plague Essence
+      { itemId: 5001, chance: 1.0, minQty: 5, maxQty: 10 } // Slime Gel (Why not?)
     ]
   }
 }

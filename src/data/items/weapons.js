@@ -106,6 +106,143 @@ export default {
       ja: '自然の魔力を宿した古い杖。',
       ko: '자연의 마력을 품은 오래된 지팡이.'
     }
+  },
+
+  // --- G1L0 Series (2100-2199) ---
+  2101: {
+    id: 2101,
+    name: {
+      zh: 'G1L0 狙击枪',
+      'zh-TW': 'G1L0 狙擊槍',
+      en: 'G1L0 Sniper Rifle',
+      ja: 'G1L0 スナイパーライフル',
+      ko: 'G1L0 스나이퍼 라이플'
+    },
+    type: "itemTypes.weapon",
+    icon: "icon_sniper",
+    subText: {
+      zh: 'ATK +80, 暴击率 +20%',
+      'zh-TW': 'ATK +80, 暴擊率 +20%',
+      en: 'ATK +80, Crit +20%',
+      ja: '攻撃 +80, 会心 +20%',
+      ko: '공격 +80, 치명 +20%'
+    },
+    footerLeft: "itemTypes.weapon",
+    description: {
+      zh: 'G1L0系列的高精度狙击步枪，能在极远距离消灭目标。',
+      'zh-TW': 'G1L0系列的高精度狙擊步槍，能在極遠距離消滅目標。',
+      en: 'G1L0 series high-precision sniper rifle, capable of eliminating targets from extreme distances.',
+      ja: 'G1L0シリーズの高精度スナイパーライフル。極遠距離から標的を排除できる。',
+      ko: 'G1L0 시리즈의 고정밀 스나이퍼 라이플, 초장거리에서 목표를 제거할 수 있다.'
+    }
+  },
+  2102: {
+    id: 2102,
+    name: {
+      zh: 'G1L0 机关枪',
+      'zh-TW': 'G1L0 機關槍',
+      en: 'G1L0 Machine Gun',
+      ja: 'G1L0 マシンガン',
+      ko: 'G1L0 머신건'
+    },
+    type: "itemTypes.weapon",
+    icon: "icon_machinegun",
+    subText: {
+      zh: 'ATK +60, 射速 ++',
+      'zh-TW': 'ATK +60, 射速 ++',
+      en: 'ATK +60, Fire Rate ++',
+      ja: '攻撃 +60, 連射 ++',
+      ko: '공격 +60, 연사 ++'
+    },
+    footerLeft: "itemTypes.weapon",
+    description: {
+      zh: 'G1L0系列的重型机关枪，提供持续的火力压制。',
+      'zh-TW': 'G1L0系列的重型機關槍，提供持續的火力壓制。',
+      en: 'G1L0 series heavy machine gun, providing sustained suppressive fire.',
+      ja: 'G1L0シリーズの重機関銃。持続的な制圧射撃を提供する。',
+      ko: 'G1L0 시리즈의 중기관총, 지속적인 화력 제압을 제공한다.'
+    }
+  },
+  2103: {
+    id: 2103,
+    name: {
+      zh: 'G1L0 手枪',
+      'zh-TW': 'G1L0 手槍',
+      en: 'G1L0 Pistol',
+      ja: 'G1L0 ピストル',
+      ko: 'G1L0 피스톨'
+    },
+    type: "itemTypes.weapon",
+    icon: "icon_pistol",
+    subText: {
+      zh: 'ATK +30, SPD +10',
+      'zh-TW': 'ATK +30, SPD +10',
+      en: 'ATK +30, SPD +10',
+      ja: '攻撃 +30, 速度 +10',
+      ko: '공격 +30, 속도 +10'
+    },
+    footerLeft: "itemTypes.weapon",
+    description: {
+      zh: 'G1L0系列的战术手枪，轻便且可靠。',
+      'zh-TW': 'G1L0系列的戰術手槍，輕便且可靠。',
+      en: 'G1L0 series tactical pistol, lightweight and reliable.',
+      ja: 'G1L0シリーズの戦術ピストル。軽量で信頼性が高い。',
+      ko: 'G1L0 시리즈의 전술 권총, 가볍고 신뢰할 수 있다.'
+    }
+  },
+  2104: {
+    id: 2104,
+    name: {
+      zh: 'G1L0 霰弹枪',
+      'zh-TW': 'G1L0 霰彈槍',
+      en: 'G1L0 Shotgun',
+      ja: 'G1L0 ショットガン',
+      ko: 'G1L0 샷건'
+    },
+    type: "itemTypes.weapon",
+    icon: "icon_shotgun",
+    subText: {
+      zh: 'ATK +90, 范围攻击',
+      'zh-TW': 'ATK +90, 範圍攻擊',
+      en: 'ATK +90, AoE',
+      ja: '攻撃 +90, 範囲攻撃',
+      ko: '공격 +90, 범위 공격'
+    },
+    footerLeft: "itemTypes.weapon",
+    description: {
+      zh: 'G1L0系列的近战霰弹枪，具有极强的破坏力。',
+      'zh-TW': 'G1L0系列的近戰霰彈槍，具有極強的破壞力。',
+      en: 'G1L0 series close-quarters shotgun with devastating power.',
+      ja: 'G1L0シリーズの近接用ショットガン。極めて強力な破壊力を持つ。',
+      ko: 'G1L0 시리즈의 근접 산탄총, 강력한 파괴력을 지녔다.'
+    }
+  },
+  2105: {
+    id: 2105,
+    name: {
+      zh: 'G1L0 冲锋枪',
+      'zh-TW': 'G1L0 衝鋒槍',
+      en: 'G1L0 SMG',
+      ja: 'G1L0 サブマシンガン',
+      ko: 'G1L0 기관단총'
+    },
+    type: "itemTypes.weapon",
+    icon: "icon_smg",
+    subText: {
+      zh: 'ATK +45, 连击',
+      'zh-TW': 'ATK +45, 連擊',
+      en: 'ATK +45, Multi-hit',
+      ja: '攻撃 +45, 連撃',
+      ko: '공격 +45, 연타'
+    },
+    footerLeft: "itemTypes.weapon",
+    description: {
+      zh: 'G1L0系列的高速冲锋枪，适合快速突击。',
+      'zh-TW': 'G1L0系列的高速衝鋒槍，適合快速突擊。',
+      en: 'G1L0 series high-speed SMG, suitable for rapid assaults.',
+      ja: 'G1L0シリーズの高速サブマシンガン。迅速な突撃に適している。',
+      ko: 'G1L0 시리즈의 고속 기관단총, 빠른 돌격에 적합하다.'
+    }
   }
 }
 

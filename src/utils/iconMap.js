@@ -18,6 +18,23 @@ export const iconMap = {
   icon_sword: "⚔️",
   icon_dagger: "🗡️",
   icon_staff: "🦯",
+  icon_sniper: "🎯",
+  icon_machinegun: "🔫",
+  icon_pistol: "🔫",
+  icon_shotgun: "💥",
+  icon_smg: "🔫",
+
+  // Ammo
+  icon_ammo: "💊",
+  icon_ammo_speed: "⏩",
+  icon_ammo_fire: "🔥",
+  icon_ammo_curse: "☠️",
+  icon_ammo_bomb: "💣",
+  icon_ammo_homing: "🎯",
+  icon_ammo_pierce: "🔩",
+  icon_ammo_acid: "🧪",
+  icon_ammo_magic: "✨",
+  icon_ammo_holy: "🌟",
 
   // Armor
   icon_armor: "👕", // Leather Armor

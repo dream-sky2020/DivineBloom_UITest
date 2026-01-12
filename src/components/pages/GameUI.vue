@@ -4,7 +4,11 @@
     <div class="viewport-section">
       <div id="game-canvas">
           <!-- Global Game Canvas -->
-          <canvas ref="gameCanvas" class="global-canvas"></canvas>
+          <canvas 
+            ref="gameCanvas" 
+            class="global-canvas"
+            :style="canvasStyle"
+          ></canvas>
 
           <!-- Layer 1: Grid Overlay (Background/World Level) -->
           <!-- Only show grid when we are in a system that needs it (like World Map) or isn't opaque -->
@@ -184,6 +188,18 @@ const showGrid = computed(() => {
     'list-menu-previews'
   ];
   return !opaqueSystems.includes(currentSystem.value);
+});
+
+// Control Canvas Opacity based on current system
+const canvasStyle = computed(() => {
+  // When in World Map, canvas is fully visible (Opacity 1)
+  if (currentSystem.value === 'world-map') {
+    return { opacity: 1, transition: 'opacity 0.3s ease' };
+  }
+  
+  // For other systems (Menu, etc.), user requested 100% transparency (Opacity 0)
+  // If you meant "100% visible", change this to 1.
+  return { opacity: 0, transition: 'opacity 0.3s ease' };
 });
 
 const handleSystemChange = (systemId) => {

@@ -1,4 +1,5 @@
 export default {
+  // --- Key Items (9000-9999) ---
   9001: {
     id: 9001,
     name: {

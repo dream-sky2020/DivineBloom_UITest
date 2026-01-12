@@ -40,6 +40,13 @@ export default {
     en: 'Material',
     ja: '素材',
     ko: '재료'
+  },
+  ammo: {
+    zh: '弹药',
+    'zh-TW': '彈藥',
+    en: 'Ammo',
+    ja: '弾薬',
+    ko: '탄약'
   }
 }
 

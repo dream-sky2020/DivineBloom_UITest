@@ -10,7 +10,7 @@ export default {
     spriteId: 'enemy_slime',
     description: { zh: '常见的胶状怪物。', en: 'A common gelatinous monster.' },
     drops: [
-      { itemId: 9001, chance: 0.8, minQty: 1, maxQty: 2 }, // Slime Gel
+      { itemId: 5001, chance: 0.8, minQty: 1, maxQty: 2 }, // Slime Gel
       { itemId: 1, chance: 0.1, minQty: 1, maxQty: 1 }     // Potion (example)
     ]
   },
@@ -25,7 +25,7 @@ export default {
     spriteId: 'default',
     description: { zh: '行动敏捷的飞行怪物。', en: 'An agile flying monster.' },
     drops: [
-      { itemId: 9002, chance: 0.6, minQty: 1, maxQty: 1 } // Bat Fang
+      { itemId: 5002, chance: 0.6, minQty: 1, maxQty: 1 } // Bat Fang
     ]
   },
   203: {
@@ -39,8 +39,8 @@ export default {
     spriteId: 'default',
     description: { zh: '凶猛的群居野兽。', en: 'A ferocious pack beast.' },
     drops: [
-      { itemId: 9003, chance: 0.5, minQty: 1, maxQty: 1 }, // Wolf Pelt
-      { itemId: 9002, chance: 0.2, minQty: 1, maxQty: 1 }  // Bat Fang (maybe they ate a bat?) - Just example
+      { itemId: 5003, chance: 0.5, minQty: 1, maxQty: 1 }, // Wolf Pelt
+      { itemId: 5002, chance: 0.2, minQty: 1, maxQty: 1 }  // Bat Fang (maybe they ate a bat?) - Just example
     ]
   },
   204: {
@@ -54,7 +54,7 @@ export default {
     spriteId: 'default',
     description: { zh: '全副武装的巡逻者。', en: 'A fully armed patroller.' },
     drops: [
-      { itemId: 9004, chance: 0.7, minQty: 1, maxQty: 3 }, // Iron Scrap
+      { itemId: 5004, chance: 0.7, minQty: 1, maxQty: 3 }, // Iron Scrap
       { itemId: 3, chance: 0.1, minQty: 1, maxQty: 1 }     // Elixir
     ]
   }
