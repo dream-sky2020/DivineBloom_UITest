@@ -168,10 +168,10 @@ export const useBattleStore = defineStore('battle', () => {
         } else {
             // Default Mock Enemies - Loaded from charactersDb using helper
             enemies.value = [
-                createUnit(101, false),
-                createUnit(102, false),
-                createUnit(103, false),
-                createUnit(104, false)
+                createUnit('character_emperor_shenwu', false),
+                createUnit('character_shahryar', false),
+                createUnit('character_hefietian', false),
+                createUnit('character_yibitian', false)
             ].filter(e => e !== null);
         }
 

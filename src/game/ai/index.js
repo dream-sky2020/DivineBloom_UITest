@@ -6,10 +6,10 @@ import { hefietianAI } from './bosses/hefietian';
 import { yibitianAI } from './bosses/yibitian';
 
 const aiRegistry = {
-    101: emperorAI,
-    102: shahryarAI,
-    103: hefietianAI,
-    104: yibitianAI
+    'character_emperor_shenwu': emperorAI,
+    'character_shahryar': shahryarAI,
+    'character_hefietian': hefietianAI,
+    'character_yibitian': yibitianAI
 };
 
 import { skillsDb } from '@/data/skills';

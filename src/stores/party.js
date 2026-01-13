@@ -8,13 +8,13 @@ export const usePartyStore = defineStore('party', () => {
     const members = ref({});
     
     // 简单的队伍编队 (Slot mapping)
-    // 0: { front: 5, back: 1 }
-    // 1: { front: 6, back: 2 } ...
+    // 0: { front: 'character_flame_swordsman', back: 'character_tempest_mage' }
+    // ...
     const formation = ref([
-        { front: 5, back: 1 },
-        { front: 6, back: 2 },
-        { front: 7, back: 3 },
-        { front: 4, back: null }
+        { front: 'character_flame_swordsman', back: 'character_tempest_mage' },
+        { front: 'character_holy_brawler', back: 'character_blaze_gunner' },
+        { front: 'character_don_quixote', back: 'character_scheherazade' },
+        { front: 'character_jia_baoyu', back: null }
     ]);
 
     const reset = () => {
@@ -22,10 +22,10 @@ export const usePartyStore = defineStore('party', () => {
         // Reset formation to default or empty? Let's keep default structure but maybe clear chars?
         // For now reset to default formation
         formation.value = [
-            { front: 5, back: 1 },
-            { front: 6, back: 2 },
-            { front: 7, back: 3 },
-            { front: 4, back: null }
+            { front: 'character_flame_swordsman', back: 'character_tempest_mage' },
+            { front: 'character_holy_brawler', back: 'character_blaze_gunner' },
+            { front: 'character_don_quixote', back: 'character_scheherazade' },
+            { front: 'character_jia_baoyu', back: null }
         ];
     };
 
@@ -46,7 +46,15 @@ export const usePartyStore = defineStore('party', () => {
         if (Object.keys(members.value).length > 0) return;
 
         // 加载初始角色状态
-        const initialIds = [1, 2, 3, 4, 5, 6, 7]; // 所有可能的角色
+        const initialIds = [
+            'character_flame_swordsman',
+            'character_blaze_gunner', 
+            'character_tempest_mage',
+            'character_holy_brawler',
+            'character_don_quixote',
+            'character_jia_baoyu',
+            'character_scheherazade'
+        ];
         
         initialIds.forEach(id => {
             const dbChar = charactersDb[id];

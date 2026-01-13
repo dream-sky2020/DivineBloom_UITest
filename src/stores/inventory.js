@@ -3,20 +3,20 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { itemsDb } from '@/data/items';
 
-const INITIAL_ITEMS = [
-  // Consumables (1001-1600)
-  { id: 1001, count: 5 }, // 调整初始数量为合理值，方便测试
-  { id: 1002, count: 2 },
-  { id: 2001, count: 1 },
-];
+function getAllDefinedItems(count = 10) {
+  return Object.keys(itemsDb).map(id => ({
+    id,
+    count
+  }));
+}
 
 export const useInventoryStore = defineStore('inventory', () => {
   // State
-  const inventoryState = ref(JSON.parse(JSON.stringify(INITIAL_ITEMS)));
+  const inventoryState = ref(getAllDefinedItems());
 
   // Actions
   function reset() {
-    inventoryState.value = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+    inventoryState.value = getAllDefinedItems();
   }
 
   function serialize() {
@@ -71,13 +71,15 @@ export const useInventoryStore = defineStore('inventory', () => {
 
   // Helper: 映射数据类型到 Tabs
   function mapTypeToCategory(type) {
-    switch (type) {
-      case 'Consumable': return 'Consumables';
-      case 'Weapon': return 'Weapons';
-      case 'Armor': return 'Armor';
-      case 'Key Item': return 'Key Items';
-      default: return 'Others';
-    }
+    // 处理 data/items 中定义的 itemTypes.* 类型
+    if (type === 'itemTypes.consumable' || type === 'Consumable') return 'Consumables';
+    if (type === 'itemTypes.weapon' || type === 'Weapon') return 'Weapons';
+    if (type === 'itemTypes.armor' || type === 'Armor') return 'Armor';
+    if (type === 'itemTypes.accessory' || type === 'Accessory') return 'Accessories';
+    if (type === 'itemTypes.material' || type === 'Material') return 'Materials';
+    if (type === 'itemTypes.ammo' || type === 'Ammo') return 'Ammo';
+    if (type === 'itemTypes.keyItem' || type === 'Key Item') return 'Key Items';
+    return 'Others';
   }
 
   // 按分类获取物品
@@ -97,4 +99,3 @@ export const useInventoryStore = defineStore('inventory', () => {
     loadState
   };
 });
-

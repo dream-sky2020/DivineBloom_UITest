@@ -48,7 +48,7 @@ export const village = {
     spawners: [
         {
             // 村庄里只有一些温和的史莱姆
-            enemyIds: [201],
+            enemyIds: ['character_slime'],
             count: 3,
             area: { x: 200, y: 400, w: 400, h: 200 },
             options: { aiType: 'wander', visionRadius: 80, speed: 40, scale: 0.6 }

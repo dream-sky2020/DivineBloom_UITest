@@ -100,7 +100,7 @@ const getLocalizedText = (input) => {
   return t(input);
 };
 
-const tabs = ['All', 'Consumables', 'Weapons', 'Armor', 'Key Items'];
+const tabs = ['All', 'Consumables', 'Weapons', 'Armor', 'Accessories', 'Materials', 'Ammo', 'Key Items'];
 const currentTab = ref('All');
 
 const getTabLabel = (tab) => {
@@ -109,6 +109,9 @@ const getTabLabel = (tab) => {
     'Consumables': 'itemTypes.consumable',
     'Weapons': 'itemTypes.weapon',
     'Armor': 'itemTypes.armor',
+    'Accessories': 'itemTypes.accessory',
+    'Materials': 'itemTypes.material',
+    'Ammo': 'itemTypes.ammo',
     'Key Items': 'itemTypes.keyItem'
   };
   return map[tab] ? t(map[tab]) : tab;

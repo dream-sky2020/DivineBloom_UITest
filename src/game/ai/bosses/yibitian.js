@@ -10,7 +10,7 @@ export const yibitianAI = (context) => {
         // Target the first dead player found
         const target = deadPlayers[0];
         return act()
-            .skill(205) // Revives enemy with curse
+            .skill('skill_magic_living_hell') // Revives enemy with curse
             .targetUnit(target) // Use targetUnit to avoid overriding 'deadEnemy' type
             .build();
     }
@@ -22,14 +22,14 @@ export const yibitianAI = (context) => {
         // Even turns: Equal Plague Rain (204)
         // Target type in skill is "allUnits"
         return act()
-            .skill(204)
+            .skill('skill_magic_equal_plague_rain')
             .targetAll()
             .build();
     } else {
         // Odd turns: Emerald Spike Explosion (103)
         // Target type in skill is "allOtherUnits"
         return act()
-            .skill(103)
+            .skill('skill_physical_emerald_spike')
             .targetAll()
             .build();
     }

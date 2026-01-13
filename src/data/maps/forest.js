@@ -39,13 +39,13 @@ export const forest = {
     spawners: [
         {
             // 森林里有狼和卫兵
-            enemyIds: [203],
+            enemyIds: ['character_wasteland_wolf'],
             count: 2,
             area: { x: 300, y: 300, w: 400, h: 300 },
             options: { aiType: 'chase', visionRadius: 200, speed: 100, scale: 0.8 }
         },
         {
-            enemyIds: [204],
+            enemyIds: ['character_heavy_guard'],
             count: 1,
             area: { x: 500, y: 300, w: 200, h: 200 },
             options: { aiType: 'chase', visionType: 'cone', visionAngle: 60, visionRadius: 250, speed: 80, scale: 0.9 }
