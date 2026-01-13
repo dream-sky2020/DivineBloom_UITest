@@ -1,7 +1,7 @@
 export default {
   // --- HP Recovery (1001-1100) ---
-  1001: {
-    id: 1001,
+  item_consumable_potion: {
+    id: "item_consumable_potion",
     name: {
       zh: '回复药水',
       'zh-TW': '回復藥水',
@@ -31,8 +31,8 @@ export default {
       ko: 'HP를 소량 회복하는 물약.'
     }
   },
-  1002: {
-    id: 1002,
+  item_consumable_hi_potion: {
+    id: "item_consumable_hi_potion",
     name: {
       zh: '高级回复药水',
       'zh-TW': '高級回復藥水',
@@ -62,8 +62,8 @@ export default {
       ko: 'HP를 중량 회복하는 물약.'
     }
   },
-  1003: {
-    id: 1003,
+  item_consumable_splash_potion: {
+    id: "item_consumable_splash_potion",
     name: {
       zh: '大范围喷溅治疗药水',
       'zh-TW': '大範圍噴濺治療藥水',
@@ -95,8 +95,8 @@ export default {
   },
 
   // --- MP Recovery (1101-1200) ---
-  1101: {
-    id: 1101,
+  item_consumable_ether: {
+    id: "item_consumable_ether",
     name: {
       zh: '魔法药水',
       'zh-TW': '魔法藥水',
@@ -128,8 +128,8 @@ export default {
   },
 
   // --- Status Cure (1201-1300) ---
-  1201: {
-    id: 1201,
+  item_consumable_antidote: {
+    id: "item_consumable_antidote",
     name: {
       zh: '解毒草',
       'zh-TW': '解毒草',
@@ -159,8 +159,8 @@ export default {
       ko: '중독 상태를 해제하는 약초.'
     }
   },
-  1202: {
-    id: 1202,
+  item_consumable_splash_holy_water: {
+    id: "item_consumable_splash_holy_water",
     name: {
       zh: '大范围喷溅净化圣水',
       'zh-TW': '大範圍噴濺淨化聖水',
@@ -192,8 +192,8 @@ export default {
   },
 
   // --- Revive (1301-1400) ---
-  1301: {
-    id: 1301,
+  item_consumable_phoenix_down: {
+    id: "item_consumable_phoenix_down",
     name: {
       zh: '凤凰之羽',
       'zh-TW': '鳳凰之羽',
@@ -223,8 +223,8 @@ export default {
       ko: '전투 불능이 된 동료를 부활시킨다.'
     }
   },
-  1302: {
-    id: 1302,
+  item_consumable_phoenix_down_all: {
+    id: "item_consumable_phoenix_down_all",
     name: {
       zh: '凤凰之尾·群',
       'zh-TW': '鳳凰之尾·群',
@@ -256,8 +256,8 @@ export default {
   },
 
   // --- Offensive Items (1401-1500) ---
-  1401: {
-    id: 1401,
+  item_consumable_fire_bomb: {
+    id: "item_consumable_fire_bomb",
     name: {
       zh: '火焰炸弹',
       'zh-TW': '火焰炸彈',
@@ -288,8 +288,8 @@ export default {
       ko: '적 한 명에게 화염 피해를 주고 화상 상태로 만든다.'
     }
   },
-  1402: {
-    id: 1402,
+  item_consumable_super_fire_bomb: {
+    id: "item_consumable_super_fire_bomb",
     name: {
       zh: '超级火焰炸弹',
       'zh-TW': '超級火焰炸彈',
@@ -320,8 +320,8 @@ export default {
       ko: '적 전체에게 화염 피해를 주고 화상 상태로 만든다.'
     }
   },
-  1403: {
-    id: 1403,
+  item_consumable_ice_bomb: {
+    id: "item_consumable_ice_bomb",
     name: {
       zh: '冰冻炸弹',
       'zh-TW': '冰凍炸彈',
@@ -352,8 +352,8 @@ export default {
       ko: '적 한 명에게 얼음 피해를 주고 동결 상태로 만든다.'
     }
   },
-  1404: {
-    id: 1404,
+  item_consumable_super_ice_bomb: {
+    id: "item_consumable_super_ice_bomb",
     name: {
       zh: '超级冰冻炸弹',
       'zh-TW': '超級冰凍炸彈',
@@ -386,8 +386,8 @@ export default {
   },
 
   // --- Special / Full Restore (1501-1600) ---
-  1501: {
-    id: 1501,
+  item_consumable_tent: {
+    id: "item_consumable_tent",
     name: {
       zh: '野营帐篷',
       'zh-TW': '野營帳篷',

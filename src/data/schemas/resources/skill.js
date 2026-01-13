@@ -8,7 +8,7 @@ const SkillEffectSchema = z.object({
     value: z.number().optional(),
     scaling: z.string().optional(), // e.g. "atk", "mag"
     element: z.string().optional(),
-    status: z.union([z.number(), z.string()]).optional(), // ID of status to apply
+    status: ID.optional(), // ID of status to apply
     chance: z.number().optional(), // 0.0 - 1.0
     duration: z.number().optional(),
     minOffset: z.number().optional(),
@@ -22,7 +22,7 @@ const SkillEffectSchema = z.object({
 
 const SkillCostSchema = z.object({
     type: z.enum(['mp', 'hp', 'status_duration', 'item']),
-    id: z.number().optional(), // Item ID or Status ID
+    id: ID.optional(), // Item ID or Status ID
     amount: z.number()
 });
 

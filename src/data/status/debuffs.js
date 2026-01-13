@@ -1,6 +1,6 @@
 export default {
-  1: {
-    id: 1,
+  'status_poison': {
+    id: 'status_poison',
     name: {
       zh: '中毒',
       'zh-TW': '中毒',
@@ -28,8 +28,8 @@ export default {
       { trigger: 'turnStart', type: 'damage', value: 0.05, scaling: 'maxHp' }
     ]
   },
-  2: {
-    id: 2,
+  'status_burn': {
+    id: 'status_burn',
     name: {
       zh: '烧伤',
       'zh-TW': '燒傷',
@@ -58,8 +58,8 @@ export default {
       { trigger: 'passive', type: 'statMod', stat: 'def', value: 0.8 }
     ]
   },
-  3: {
-    id: 3,
+  'status_freeze': {
+    id: 'status_freeze',
     name: {
       zh: '冻结',
       'zh-TW': '凍結',
@@ -87,8 +87,8 @@ export default {
       { trigger: 'checkAction', type: 'stun', chance: 1.0 }
     ]
   },
-  4: {
-    id: 4,
+  'status_paralysis': {
+    id: 'status_paralysis',
     name: {
       zh: '麻痹',
       'zh-TW': '麻痺',
@@ -116,8 +116,8 @@ export default {
       { trigger: 'checkAction', type: 'stun', chance: 0.5 }
     ]
   },
-  5: {
-    id: 5,
+  'status_bleed': {
+    id: 'status_bleed',
     name: {
       zh: '流血',
       'zh-TW': '流血',
@@ -145,8 +145,8 @@ export default {
       { trigger: 'turnStart', type: 'damage', value: 0.1, scaling: 'maxHp' }
     ]
   },
-  6: {
-    id: 6,
+  'status_slow': {
+    id: 'status_slow',
     name: {
       zh: '减速',
       'zh-TW': '減速',
@@ -174,8 +174,8 @@ export default {
       { trigger: 'passive', type: 'statMod', stat: 'spd', value: 0.7 }
     ]
   },
-  7: {
-    id: 7,
+  'status_defense_down': {
+    id: 'status_defense_down',
     name: {
       zh: '防御降低',
       'zh-TW': '防禦降低',
@@ -203,8 +203,8 @@ export default {
       { trigger: 'passive', type: 'statMod', stat: 'def', value: 0.7 }
     ]
   },
-  8: {
-    id: 8,
+  'status_attack_down': {
+    id: 'status_attack_down',
     name: {
       zh: '攻击降低',
       'zh-TW': '攻擊降低',

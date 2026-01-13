@@ -1,7 +1,7 @@
 export default {
   // --- Standard Ammo (6001-6099) ---
-  6001: {
-    id: 6001,
+  item_ammo_standard: {
+    id: "item_ammo_standard",
     name: {
       zh: '通用子弹',
       'zh-TW': '通用子彈',
@@ -27,8 +27,8 @@ export default {
       ko: '대부분의 총기에 적합한 표준 탄약.'
     }
   },
-  6002: {
-    id: 6002,
+  item_ammo_accelerated: {
+    id: "item_ammo_accelerated",
     name: {
       zh: '二次推进加速子弹',
       'zh-TW': '二次推進加速子彈',
@@ -56,8 +56,8 @@ export default {
   },
 
   // --- Elemental Ammo (6100-6199) ---
-  6101: {
-    id: 6101,
+  item_ammo_flame: {
+    id: "item_ammo_flame",
     name: {
       zh: '火焰子弹',
       'zh-TW': '火焰子彈',
@@ -85,8 +85,8 @@ export default {
   },
 
   // --- Effect Ammo (6200-6299) ---
-  6201: {
-    id: 6201,
+  item_ammo_cursed: {
+    id: "item_ammo_cursed",
     name: {
       zh: '诅咒子弹',
       'zh-TW': '詛咒子彈',
@@ -112,8 +112,8 @@ export default {
       ko: '저주 룬이 새겨진 탄약, 적의 능력을 약화시킨다.'
     }
   },
-  6202: {
-    id: 6202,
+  item_ammo_explosive: {
+    id: "item_ammo_explosive",
     name: {
       zh: '爆炸子弹',
       'zh-TW': '爆炸子彈',
@@ -139,8 +139,8 @@ export default {
       ko: '탄두에 소형 폭약이 장착되어 소범위 폭발 피해를 준다.'
     }
   },
-  6203: {
-    id: 6203,
+  item_ammo_homing: {
+    id: "item_ammo_homing",
     name: {
       zh: '追踪子弹',
       'zh-TW': '追蹤子彈',
@@ -166,8 +166,8 @@ export default {
       ko: '탄도를 자동으로 수정하여 목표를 추적하는 스마트 탄약.'
     }
   },
-  6204: {
-    id: 6204,
+  item_ammo_armor_piercing: {
+    id: "item_ammo_armor_piercing",
     name: {
       zh: '穿甲子弹',
       'zh-TW': '穿甲子彈',
@@ -193,8 +193,8 @@ export default {
       ko: '중장갑을 뚫기 위해 설계된 강화 탄심 탄약.'
     }
   },
-  6205: {
-    id: 6205,
+  item_ammo_corrosive: {
+    id: "item_ammo_corrosive",
     name: {
       zh: '腐蚀子弹',
       'zh-TW': '腐蝕子彈',
@@ -222,8 +222,8 @@ export default {
   },
 
   // --- Magic Ammo (6300-6399) ---
-  6301: {
-    id: 6301,
+  item_ammo_enchanted: {
+    id: "item_ammo_enchanted",
     name: {
       zh: '魔化子弹',
       'zh-TW': '魔化子彈',
@@ -249,8 +249,8 @@ export default {
       ko: '마력을 주입한 탄약, 마법 속성 피해를 준다.'
     }
   },
-  6302: {
-    id: 6302,
+  item_ammo_purifying: {
+    id: "item_ammo_purifying",
     name: {
       zh: '净化子弹',
       'zh-TW': '淨化子彈',

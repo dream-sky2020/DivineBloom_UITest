@@ -1,7 +1,7 @@
 export default {
   // Magic Skills
-  201: {
-    id: 201,
+  'skill_magic_fireball': {
+    id: 'skill_magic_fireball',
     name: {
       zh: '火球术',
       'zh-TW': '火球術',
@@ -33,8 +33,8 @@ export default {
       ko: '화염구를 발사하여 적 한 명을 공격한다. 화상 확률 있음.'
     }
   },
-  202: {
-    id: 202,
+  'skill_magic_ice_shard': {
+    id: 'skill_magic_ice_shard',
     name: {
       zh: '冰锥术',
       'zh-TW': '冰錐術',
@@ -48,8 +48,8 @@ export default {
     targetType: "enemy",
     effects: [
       { type: "damage", value: 1.2, scaling: "mag", element: "elements.ice", minOffset: -0.1, maxOffset: 0.1 },
-      { type: "applyStatus", status: 3, chance: 0.2, duration: 1 }, // Freeze
-      { type: "applyStatus", status: 6, chance: 0.3, duration: 3 }  // Slow
+      { type: "applyStatus", status: 'status_freeze', chance: 0.2, duration: 1 }, // Freeze
+      { type: "applyStatus", status: 'status_slow', chance: 0.3, duration: 3 }  // Slow
     ],
     icon: "icon_ice",
     cost: "12 MP",
@@ -68,8 +68,8 @@ export default {
       ko: '날카로운 얼음 조각을 소환하여 공격한다. 동결 또는 속도 감소 확률이 있다.'
     }
   },
-  203: {
-    id: 203,
+  'skill_magic_chain_lightning': {
+    id: 'skill_magic_chain_lightning',
     name: {
       zh: '闪电链',
       'zh-TW': '閃電鏈',
@@ -86,7 +86,7 @@ export default {
     decay: 0.85, // 85% damage per bounce
     effects: [
       { type: "damage", value: 1.1, scaling: "mag", element: "elements.lightning", minOffset: -0.1, maxOffset: 0.1 },
-      { type: "applyStatus", status: 4, chance: 0.3, duration: 2 }
+      { type: "applyStatus", status: 'status_paralysis', chance: 0.3, duration: 2 }
     ],
     icon: "icon_lightning",
     cost: "25 MP",
@@ -105,8 +105,8 @@ export default {
       ko: '적들 사이를 튕겨 다니는 번개를 방출한다.'
     }
   },
-  204: {
-    id: 204,
+  'skill_magic_equal_plague_rain': {
+    id: 'skill_magic_equal_plague_rain',
     name: {
       zh: '平等的疫碧雨',
       'zh-TW': '平等的疫碧雨',
@@ -120,8 +120,8 @@ export default {
     targetType: "allUnits",
     effects: [
       { type: "plague_rain", value: 200, minOffset: -0.1, maxOffset: 0.1 }, // Heal effect
-      { type: "applyStatus", status: 1, duration: 3, chance: 0.5 },   // Poison
-      { type: "applyStatus", status: 101, duration: 3, chance: 0.5 }  // Regen
+      { type: "applyStatus", status: 'status_poison', duration: 3, chance: 0.5 },   // Poison
+      { type: "applyStatus", status: 'status_regen', duration: 3, chance: 0.5 }  // Regen
     ],
     icon: "icon_plague_rain",
     cost: "50 MP",
@@ -141,8 +141,8 @@ export default {
     }
   },
 
-  205: {
-    id: 205,
+  'skill_magic_living_hell': {
+    id: 'skill_magic_living_hell',
     name: {
       zh: '将神之敌困于人间地狱',
       'zh-TW': '將神之敵困於人間地獄',
@@ -156,13 +156,13 @@ export default {
     targetType: "deadEnemy",
     effects: [
       { type: "revive_enemy", value: 0.5 },
-      { type: "applyStatus", status: 1, duration: 3, chance: 0.2 }, // Poison
-      { type: "applyStatus", status: 2, duration: 3, chance: 0.2 }, // Burn
-      { type: "applyStatus", status: 3, duration: 3, chance: 0.2 }, // Freeze
-      { type: "applyStatus", status: 4, duration: 3, chance: 0.2 }, // Paralysis
-      { type: "applyStatus", status: 5, duration: 3, chance: 0.2 }, // Bleed
-      { type: "applyStatus", status: 7, duration: 3, chance: 0.2 }, // Def Down
-      { type: "applyStatus", status: 8, duration: 3, chance: 0.2 }  // Atk Down
+      { type: "applyStatus", status: 'status_poison', duration: 3, chance: 0.2 }, // Poison
+      { type: "applyStatus", status: 'status_burn', duration: 3, chance: 0.2 }, // Burn
+      { type: "applyStatus", status: 'status_freeze', duration: 3, chance: 0.2 }, // Freeze
+      { type: "applyStatus", status: 'status_paralysis', duration: 3, chance: 0.2 }, // Paralysis
+      { type: "applyStatus", status: 'status_bleed', duration: 3, chance: 0.2 }, // Bleed
+      { type: "applyStatus", status: 'status_defense_down', duration: 3, chance: 0.2 }, // Def Down
+      { type: "applyStatus", status: 'status_attack_down', duration: 3, chance: 0.2 }  // Atk Down
     ],
     icon: "icon_hell_revival",
     cost: "100 MP",
@@ -182,8 +182,8 @@ export default {
     }
   },
 
-  206: {
-    id: 206,
+  'skill_magic_meteor_shower': {
+    id: 'skill_magic_meteor_shower',
     name: {
       zh: '流星火雨',
       'zh-TW': '流星火雨',
@@ -206,7 +206,7 @@ export default {
         minOffset: -0.1,
         maxOffset: 0.1
       },
-      { type: "applyStatus", status: 2, duration: 3, chance: 0.7 } // Burn
+      { type: "applyStatus", status: 'status_burn', duration: 3, chance: 0.7 } // Burn
     ],
     icon: "icon_fire_rain", // 假设有这个图标，如果没有可以回退到 icon_fire
     cost: "60 MP",

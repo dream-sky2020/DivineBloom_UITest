@@ -1,6 +1,6 @@
 export default {
-  2001: {
-    id: 2001,
+  item_weapon_iron_sword: {
+    id: "item_weapon_iron_sword",
     name: {
       zh: '铁剑',
       'zh-TW': '鐵劍',
@@ -26,8 +26,8 @@ export default {
       ko: '초보자에게 적합한 평범한 철검.'
     }
   },
-  2002: {
-    id: 2002,
+  item_weapon_mythril_dagger: {
+    id: "item_weapon_mythril_dagger",
     name: {
       zh: '秘银匕首',
       'zh-TW': '秘銀匕首',
@@ -53,8 +53,8 @@ export default {
       ko: '가벼운 미스릴로 만들어진 단검.'
     }
   },
-  2003: {
-    id: 2003,
+  item_weapon_hero_sword: {
+    id: "item_weapon_hero_sword",
     name: {
       zh: '勇者之剑',
       'zh-TW': '勇者之劍',
@@ -80,8 +80,8 @@ export default {
       ko: '전설의 용사가 사용했던 성검.'
     }
   },
-  2004: {
-    id: 2004,
+  item_weapon_elder_staff: {
+    id: "item_weapon_elder_staff",
     name: {
       zh: '古木法杖',
       'zh-TW': '古木法杖',
@@ -109,8 +109,8 @@ export default {
   },
 
   // --- G1L0 Series (2100-2199) ---
-  2101: {
-    id: 2101,
+  item_weapon_g1l0_sniper: {
+    id: "item_weapon_g1l0_sniper",
     name: {
       zh: 'G1L0 狙击枪',
       'zh-TW': 'G1L0 狙擊槍',
@@ -136,8 +136,8 @@ export default {
       ko: 'G1L0 시리즈의 고정밀 스나이퍼 라이플, 초장거리에서 목표를 제거할 수 있다.'
     }
   },
-  2102: {
-    id: 2102,
+  item_weapon_g1l0_machine_gun: {
+    id: "item_weapon_g1l0_machine_gun",
     name: {
       zh: 'G1L0 机关枪',
       'zh-TW': 'G1L0 機關槍',
@@ -163,8 +163,8 @@ export default {
       ko: 'G1L0 시리즈의 중기관총, 지속적인 화력 제압을 제공한다.'
     }
   },
-  2103: {
-    id: 2103,
+  item_weapon_g1l0_pistol: {
+    id: "item_weapon_g1l0_pistol",
     name: {
       zh: 'G1L0 手枪',
       'zh-TW': 'G1L0 手槍',
@@ -190,8 +190,8 @@ export default {
       ko: 'G1L0 시리즈의 전술 권총, 가볍고 신뢰할 수 있다.'
     }
   },
-  2104: {
-    id: 2104,
+  item_weapon_g1l0_shotgun: {
+    id: "item_weapon_g1l0_shotgun",
     name: {
       zh: 'G1L0 霰弹枪',
       'zh-TW': 'G1L0 霰彈槍',
@@ -217,8 +217,8 @@ export default {
       ko: 'G1L0 시리즈의 근접 산탄총, 강력한 파괴력을 지녔다.'
     }
   },
-  2105: {
-    id: 2105,
+  item_weapon_g1l0_smg: {
+    id: "item_weapon_g1l0_smg",
     name: {
       zh: 'G1L0 冲锋枪',
       'zh-TW': 'G1L0 衝鋒槍',

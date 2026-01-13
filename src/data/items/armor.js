@@ -1,6 +1,6 @@
 export default {
-  3001: {
-    id: 3001,
+  item_armor_leather: {
+    id: "item_armor_leather",
     name: {
       zh: '皮甲',
       'zh-TW': '皮甲',
@@ -26,8 +26,8 @@ export default {
       ko: '움직이기 편한 기초적인 방어구.'
     }
   },
-  3002: {
-    id: 3002,
+  item_armor_iron_shield: {
+    id: "item_armor_iron_shield",
     name: {
       zh: '铁盾',
       'zh-TW': '鐵盾',
@@ -53,8 +53,8 @@ export default {
       ko: '튼튼한 철제 방패.'
     }
   },
-  3003: {
-    id: 3003,
+  item_armor_silk_robe: {
+    id: "item_armor_silk_robe",
     name: {
       zh: '丝绸法袍',
       'zh-TW': '絲綢法袍',

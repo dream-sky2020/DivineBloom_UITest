@@ -1,7 +1,7 @@
 export default {
     // Physical Skills
-    101: {
-        id: 101,
+    'skill_physical_power_slash': {
+        id: 'skill_physical_power_slash',
         name: {
             zh: '强力斩击',
             'zh-TW': '強力斬擊',
@@ -14,7 +14,7 @@ export default {
         targetType: "enemy",
         effects: [
             { type: "damage", value: 1.5, scaling: "atk", minOffset: -0.1, maxOffset: 0.1 },
-            { type: "applyStatus", status: 5, chance: 0.3, duration: 3 }
+            { type: "applyStatus", status: 'status_bleed', chance: 0.3, duration: 3 }
         ],
         icon: "icon_sword",
         cost: "5 MP",
@@ -33,8 +33,8 @@ export default {
             ko: '적 한 명에게 강력한 물리 피해를 주고 출혈을 일으킬 수 있다.'
         }
     },
-    102: {
-        id: 102,
+    'skill_physical_spinning_slash': {
+        id: 'skill_physical_spinning_slash',
         name: {
             zh: '回旋斩',
             'zh-TW': '迴旋斬',
@@ -47,7 +47,7 @@ export default {
         targetType: "allEnemies",
         effects: [
             { type: "damage", value: 0.8, scaling: "atk", minOffset: -0.1, maxOffset: 0.1 },
-            { type: "applyStatus", status: 5, chance: 0.2, duration: 2 }
+            { type: "applyStatus", status: 'status_bleed', chance: 0.2, duration: 2 }
         ],
         icon: "icon_impact",
         cost: "15 MP",
@@ -66,8 +66,8 @@ export default {
             ko: '무기를 휘둘러 적 전체를 공격한다. 낮은 확률로 출혈을 일으킨다.'
         }
     },
-    103: {
-        id: 103,
+    'skill_physical_emerald_spike': {
+        id: 'skill_physical_emerald_spike',
         name: {
             zh: '碧绿的尖刺爆炸',
             'zh-TW': '碧綠的尖刺爆炸',
@@ -80,9 +80,9 @@ export default {
         targetType: "allOtherUnits",
         effects: [
             { type: "damage", value: 1.2, scaling: "atk", minOffset: -0.1, maxOffset: 0.1 },
-            { type: "applyStatus", status: 1, chance: 0.4, duration: 3 }, // Poison
-            { type: "applyStatus", status: 6, chance: 0.4, duration: 3 }, // Slow
-            { type: "applyStatus", status: 5, chance: 0.4, duration: 3 }  // Bleed
+            { type: "applyStatus", status: 'status_poison', chance: 0.4, duration: 3 }, // Poison
+            { type: "applyStatus", status: 'status_slow', chance: 0.4, duration: 3 }, // Slow
+            { type: "applyStatus", status: 'status_bleed', chance: 0.4, duration: 3 }  // Bleed
         ],
         icon: "icon_spike_explosion",
         cost: "40 MP",
@@ -101,8 +101,8 @@ export default {
             ko: '자신을 제외한 모든 아군과 적에게 물리 피해를 입히고, 확률적으로 중독, 감속, 출혈 상태를 부여한다.'
         }
     },
-    104: {
-        id: 104,
+    'skill_physical_flurry': {
+        id: 'skill_physical_flurry',
         name: {
             zh: '狂风骤雨',
             'zh-TW': '狂風驟雨',
@@ -140,8 +140,8 @@ export default {
             ko: '폭풍우처럼 적에게 5회 연속 공격을 가한다.'
         }
     },
-    105: {
-        id: 105,
+    'skill_physical_mayflower_slash': {
+        id: 'skill_physical_mayflower_slash',
         name: {
             zh: '五月花乱斩',
             'zh-TW': '五月花亂斬',
@@ -180,8 +180,8 @@ export default {
             ko: '적 하나에게 5~10회의 무작위 물리 피해를 입힌다.'
         }
     },
-    106: {
-        id: 106,
+    'skill_physical_concentrated_fire': {
+        id: 'skill_physical_concentrated_fire',
         name: {
             zh: '密集火网',
             'zh-TW': '密集火網',

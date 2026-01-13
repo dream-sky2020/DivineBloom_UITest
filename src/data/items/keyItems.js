@@ -1,7 +1,7 @@
 export default {
   // --- Key Items (9000-9999) ---
-  9001: {
-    id: 9001,
+  item_key_world_map: {
+    id: "item_key_world_map",
     name: {
       zh: '世界地图',
       'zh-TW': '世界地圖',
@@ -27,8 +27,8 @@ export default {
       ko: '전 세계의 지리가 그려진 지도.'
     }
   },
-  9002: {
-    id: 9002,
+  item_key_ruins_key: {
+    id: "item_key_ruins_key",
     name: {
       zh: '遗迹钥匙',
       'zh-TW': '遺跡鑰匙',

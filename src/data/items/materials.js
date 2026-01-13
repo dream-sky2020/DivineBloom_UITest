@@ -1,7 +1,7 @@
 export default {
     // --- Common Materials (5000-5099) ---
-    5001: {
-        id: 5001,
+    item_material_slime_gel: {
+        id: "item_material_slime_gel",
         name: { zh: '史莱姆凝胶', 'zh-TW': '史萊姆凝膠', en: 'Slime Gel', ja: 'スライムジェル', ko: '슬라임 젤' },
         type: 'itemTypes.material',
         icon: 'icon_material_gel',
@@ -10,8 +10,8 @@ export default {
         price: 10,
         description: { zh: '史莱姆留下的粘稠液体。', en: 'Sticky liquid left by a slime.' }
     },
-    5002: {
-        id: 5002,
+    item_material_bat_fang: {
+        id: "item_material_bat_fang",
         name: { zh: '蝙蝠牙', 'zh-TW': '蝙蝠牙', en: 'Bat Fang', ja: 'コウモリの牙', ko: '박쥐 송곳니' },
         type: 'itemTypes.material',
         icon: 'icon_material_fang',
@@ -20,8 +20,8 @@ export default {
         price: 15,
         description: { zh: '锋利的小尖牙。', en: 'A small, sharp fang.' }
     },
-    5003: {
-        id: 5003,
+    item_material_wolf_pelt: {
+        id: "item_material_wolf_pelt",
         name: { zh: '狼皮', 'zh-TW': '狼皮', en: 'Wolf Pelt', ja: '狼の皮', ko: '늑대 가죽' },
         type: 'itemTypes.material',
         icon: 'icon_material_pelt',
@@ -30,8 +30,8 @@ export default {
         price: 30,
         description: { zh: '粗糙但保暖的毛皮。', en: 'Rough but warm fur.' }
     },
-    5004: {
-        id: 5004,
+    item_material_iron_scrap: {
+        id: "item_material_iron_scrap",
         name: { zh: '铁块', 'zh-TW': '鐵塊', en: 'Iron Scrap', ja: '鉄くず', ko: '철 조각' },
         type: 'itemTypes.material',
         icon: 'icon_material_metal',
@@ -42,8 +42,8 @@ export default {
     },
 
     // --- Rare Materials (5100-5199) ---
-    5101: {
-        id: 5101,
+    item_material_divine_shard: {
+        id: "item_material_divine_shard",
         name: { zh: '神圣碎片', 'zh-TW': '神聖碎片', en: 'Divine Shard', ja: '神聖な欠片', ko: '신성한 조각' },
         type: 'itemTypes.material',
         icon: 'icon_material_shard',
@@ -52,8 +52,8 @@ export default {
         price: 500,
         description: { zh: '蕴含微弱神力的碎片。', en: 'A shard containing faint divine power.' }
     },
-    5102: {
-        id: 5102,
+    item_material_void_dust: {
+        id: "item_material_void_dust",
         name: { zh: '虚空粉尘', 'zh-TW': '虛空粉塵', en: 'Void Dust', ja: '虚空の塵', ko: '공허의 먼지' },
         type: 'itemTypes.material',
         icon: 'icon_material_dust',
@@ -62,8 +62,8 @@ export default {
         price: 500,
         description: { zh: '来自虚空的神秘物质。', en: 'Mysterious substance from the void.' }
     },
-    5103: {
-        id: 5103,
+    item_material_chaos_crystal: {
+        id: "item_material_chaos_crystal",
         name: { zh: '混沌结晶', 'zh-TW': '混沌結晶', en: 'Chaos Crystal', ja: '混沌の結晶', ko: '혼돈의 결정' },
         type: 'itemTypes.material',
         icon: 'icon_material_crystal',
@@ -72,8 +72,8 @@ export default {
         price: 800,
         description: { zh: '充满混乱能量的晶体。', en: 'A crystal filled with chaotic energy.' }
     },
-    5104: {
-        id: 5104,
+    item_material_plague_essence: {
+        id: "item_material_plague_essence",
         name: { zh: '瘟疫精华', 'zh-TW': '瘟疫精華', en: 'Plague Essence', ja: '疫病のエッセンス', ko: '역병의 정수' },
         type: 'itemTypes.material',
         icon: 'icon_material_essence',

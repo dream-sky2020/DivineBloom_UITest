@@ -1,6 +1,6 @@
 export default {
-  1: {
-    id: 1,
+  'character_flame_swordsman': {
+    id: 'character_flame_swordsman',
     name: {
       zh: '烈焰剑士',
       'zh-TW': '烈焰劍士',
@@ -19,7 +19,7 @@ export default {
       mag: 8,
       spd: 10
     },
-    skills: [101, 104, 105, 106, 206, 306],
+    skills: ['skill_physical_power_slash', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies'],
     description: {
       zh: '擅长使用火焰剑技的战士。',
       'zh-TW': '擅長使用火焰劍技的戰士。',
@@ -28,8 +28,8 @@ export default {
       ko: '화염 검 기술에 능숙한 전사.'
     }
   },
-  2: {
-    id: 2,
+  'character_blaze_gunner': {
+    id: 'character_blaze_gunner',
     name: {
       zh: '烈火枪手',
       'zh-TW': '烈火槍手',
@@ -48,7 +48,7 @@ export default {
       mag: 20,
       spd: 14
     },
-    skills: [102, 105, 106, 206, 306, 2001, 2002, 2003, 2004],
+    skills: ['skill_physical_spinning_slash', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo'],
     description: {
       zh: '拥有爆炸性火力的远程攻击者。',
       'zh-TW': '擁有爆炸性火力的遠程攻擊者。',
@@ -57,8 +57,8 @@ export default {
       ko: '폭발적인 화력을 가진 원거리 공격자.'
     }
   },
-  3: {
-    id: 3,
+  'character_tempest_mage': {
+    id: 'character_tempest_mage',
     name: {
       zh: '风暴贤者',
       'zh-TW': '風暴賢者',
@@ -77,7 +77,7 @@ export default {
       mag: 25,
       spd: 12
     },
-    skills: [203, 204, 206, 306],
+    skills: ['skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo'],
     description: {
       zh: '精通风与光属性魔法的大师。',
       'zh-TW': '精通風與光屬性魔法的大師。',
@@ -86,8 +86,8 @@ export default {
       ko: '바람과 빛의 마법을 마스터한 현자.'
     }
   },
-  4: {
-    id: 4,
+  'character_holy_brawler': {
+    id: 'character_holy_brawler',
     name: {
       zh: '圣光斗士',
       'zh-TW': '聖光鬥士',
@@ -106,7 +106,7 @@ export default {
       mag: 5,
       spd: 18
     },
-    skills: [101, 103, 104, 105, 106, 302, 305, 306],
+    skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_support_shield', 'skill_support_mass_heal', 'skill_support_forward_allies'],
     description: {
       zh: '受到光之祝福的近战格斗家。',
       'zh-TW': '受到光之祝福的近戰格鬥家。',
@@ -115,8 +115,8 @@ export default {
       ko: '빛의 축복을 받은 근접 격투가.'
     }
   },
-  5: {
-    id: 5,
+  'character_don_quixote': {
+    id: 'character_don_quixote',
     name: {
       zh: '堂吉诃德',
       'zh-TW': '堂吉訶德',
@@ -135,7 +135,7 @@ export default {
       mag: 5,
       spd: 16
     },
-    skills: [101, 103, 104, 105, 106, 206, 306, 401],
+    skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_passive_attack_up'],
     description: {
       zh: '为赎罪而战的堂吉诃德家族末裔，能够使用“绯红日花”的力量。',
       'zh-TW': '為贖罪而戰的堂吉訶德家族末裔，能夠使用“緋紅日花”的力量。',
@@ -144,8 +144,8 @@ export default {
       ko: '속죄를 위해 싸우는 돈키호테 가문의 후예, "진홍빛 해바라기"의 힘을 사용한다.'
     }
   },
-  6: {
-    id: 6,
+  'character_jia_baoyu': {
+    id: 'character_jia_baoyu',
     name: {
       zh: '贾宝玉',
       'zh-TW': '賈寶玉',
@@ -164,7 +164,7 @@ export default {
       mag: 18,
       spd: 12
     },
-    skills: [101, 102, 103, 104, 105, 106, 201, 202, 203, 204, 206, 301, 302, 303, 304, 305, 306, 401, 402, 2001, 2002, 2003, 2004],
+    skills: ['skill_physical_power_slash', 'skill_physical_spinning_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_shield', 'skill_support_resurrection', 'skill_support_mass_resurrection', 'skill_support_mass_heal', 'skill_support_forward_allies', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo'],
     description: {
       zh: '通过通灵宝玉重获新生的少年，拥有兼容一切力量的体质。',
       'zh-TW': '通過通靈寶玉重獲新生的少年，擁有兼容一切力量的體質。',
@@ -173,8 +173,8 @@ export default {
       ko: '통령보옥을 통해 다시 태어난 소년, 모든 힘과 호환되는 체질을 가졌다.'
     }
   },
-  7: {
-    id: 7,
+  'character_scheherazade': {
+    id: 'character_scheherazade',
     name: {
       zh: '山鲁佐德',
       'zh-TW': '山魯佐德',
@@ -193,7 +193,7 @@ export default {
       mag: 26,
       spd: 15
     },
-    skills: [103, 104, 105, 106, 201, 202, 203, 204, 206, 301, 303, 306,],
+    skills: ['skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_resurrection', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo'],
     description: {
       zh: '“虚假生命”的守护者，手持轮回书卷，守护着空心人的幸福。',
       'zh-TW': '“虛假生命”的守護者，手持輪迴書卷，守護著空心人的幸福。',

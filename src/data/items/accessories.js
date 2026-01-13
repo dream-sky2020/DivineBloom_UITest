@@ -1,6 +1,6 @@
 export default {
-  4001: {
-    id: 4001,
+  item_accessory_power_ring: {
+    id: "item_accessory_power_ring",
     name: {
       zh: '力量戒指',
       'zh-TW': '力量戒指',
@@ -26,8 +26,8 @@ export default {
       ko: '착용자의 힘을 높여주는 마법의 반지.'
     }
   },
-  4002: {
-    id: 4002,
+  item_accessory_protection_amulet: {
+    id: "item_accessory_protection_amulet",
     name: {
       zh: '守护护符',
       'zh-TW': '守護護符',

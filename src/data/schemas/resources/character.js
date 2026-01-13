@@ -25,7 +25,7 @@ export const CharacterSchema = z.object({
         mag: z.number(),
         spd: z.number()
     }),
-    skills: z.array(z.number()).optional().default([]),
+    skills: z.array(ID).optional().default([]),
     description: LocalizedStringSchema.optional(),
 
     // 掉落物配置

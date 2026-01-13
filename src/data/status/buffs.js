@@ -1,6 +1,6 @@
 export default {
-  101: {
-    id: 101,
+  'status_regen': {
+    id: 'status_regen',
     name: {
       zh: '再生',
       'zh-TW': '再生',
@@ -28,8 +28,8 @@ export default {
       { trigger: 'turnStart', type: 'heal', value: 0.1, scaling: 'maxHp' }
     ]
   },
-  102: {
-    id: 102,
+  'status_attack_up': {
+    id: 'status_attack_up',
     name: {
       zh: '攻击提升',
       'zh-TW': '攻擊提升',
@@ -57,8 +57,8 @@ export default {
       { trigger: 'passive', type: 'statMod', stat: 'atk', value: 1.2 }
     ]
   },
-  103: {
-    id: 103,
+  'status_haste': {
+    id: 'status_haste',
     name: {
       zh: '加速',
       'zh-TW': '加速',
@@ -86,8 +86,8 @@ export default {
       { trigger: 'passive', type: 'statMod', stat: 'spd', value: 1.3 }
     ]
   },
-  104: {
-    id: 104,
+  'status_defense_up': {
+    id: 'status_defense_up',
     name: {
       zh: '防御提升',
       'zh-TW': '防禦提升',
@@ -115,8 +115,8 @@ export default {
       { trigger: 'passive', type: 'statMod', stat: 'def', value: 1.5 }
     ]
   },
-  105: {
-    id: 105,
+  'status_ammo_count': {
+    id: 'status_ammo_count',
     name: {
       zh: '残弹余数',
       'zh-TW': '殘彈餘數',
@@ -151,8 +151,8 @@ export default {
     },
     effects: []
   },
-  106: {
-    id: 106,
+  'status_chambered_count': {
+    id: 'status_chambered_count',
     name: {
       zh: '弦上余数',
       'zh-TW': '弦上餘數',

@@ -1,7 +1,7 @@
 export default {
     // Passive Skills
-    401: {
-        id: 401,
+    'skill_passive_attack_up': {
+        id: 'skill_passive_attack_up',
         name: {
             zh: '攻击强化',
             'zh-TW': '攻擊強化',
@@ -28,8 +28,8 @@ export default {
             ko: '캐릭터의 물리 공격력을 영구적으로 상승시킨다.'
         }
     },
-    402: {
-        id: 402,
+    'skill_passive_mana_regen': {
+        id: 'skill_passive_mana_regen',
         name: {
             zh: '法力再生',
             'zh-TW': '法力再生',

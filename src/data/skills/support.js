@@ -1,7 +1,7 @@
 export default {
     // Support Skills
-    301: {
-        id: 301,
+    'skill_support_heal': {
+        id: 'skill_support_heal',
         name: {
             zh: '治愈术',
             'zh-TW': '治癒術',
@@ -32,8 +32,8 @@ export default {
             ko: '아군 한 명의 HP를 회복시킨다.'
         }
     },
-    302: {
-        id: 302,
+    'skill_support_shield': {
+        id: 'skill_support_shield',
         name: {
             zh: '护盾术',
             'zh-TW': '護盾術',
@@ -45,7 +45,7 @@ export default {
         category: "skillCategories.support",
         targetType: "allAllies",
         effects: [
-            { type: "applyStatus", status: 104, duration: 3 }
+            { type: "applyStatus", status: 'status_defense_up', duration: 3 }
         ],
         icon: "icon_shield",
         cost: "30 MP",
@@ -64,8 +64,8 @@ export default {
             ko: '短い時間、味方全員の防御力を高める。'
         }
     },
-    303: {
-        id: 303,
+    'skill_support_resurrection': {
+        id: 'skill_support_resurrection',
         name: {
             zh: '复活术',
             'zh-TW': '復活術',
@@ -97,8 +97,8 @@ export default {
         }
     },
 
-    304: {
-        id: 304,
+    'skill_support_mass_resurrection': {
+        id: 'skill_support_mass_resurrection',
         name: {
             zh: '群体复活',
             'zh-TW': '群體復活',
@@ -129,8 +129,8 @@ export default {
             ko: '쓰러진 아군 전원을 부활시키고 중량의 HP를 회복시킨다.'
         }
     },
-    305: {
-        id: 305,
+    'skill_support_mass_heal': {
+        id: 'skill_support_mass_heal',
         name: {
             zh: '群体治疗术',
             'zh-TW': '群體治療術',
@@ -161,8 +161,8 @@ export default {
             ko: '아군 전원의 HP를 회복시킨다.'
         }
     },
-    306: {
-        id: 306,
+    'skill_support_forward_allies': {
+        id: 'skill_support_forward_allies',
         name: {
             zh: '前进吧我的盟友',
             'zh-TW': '前進吧我的盟友',
@@ -174,7 +174,7 @@ export default {
         category: "skillCategories.support",
         targetType: "allOtherAllies",
         effects: [
-            { type: "applyStatus", status: 103, duration: 3 } // Haste
+            { type: "applyStatus", status: 'status_haste', duration: 3 } // Haste
         ],
         icon: "icon_forward_allies",
         cost: "30 MP",
