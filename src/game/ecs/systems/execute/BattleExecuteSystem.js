@@ -1,4 +1,7 @@
 import { world } from '@/game/ecs/world'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('BattleExecuteSystem')
 
 export const BattleExecuteSystem = {
   handle(entity, callbacks) {
@@ -6,18 +9,18 @@ export const BattleExecuteSystem = {
       const { group, uuid } = entity.actionBattle
 
       if (!group) {
-        console.warn('[BattleExecuteSystem] Missing enemy group in actionBattle')
+        logger.warn('Missing enemy group in actionBattle')
         world.removeComponent(entity, 'actionBattle')
         return
       }
 
-      console.log(`[BattleExecuteSystem] Requesting battle with group:`, group)
+      logger.info(`Requesting battle with group:`, group)
 
       // Directly trigger the encounter callback (managed by GameManager)
       if (callbacks && callbacks.onEncounter) {
         callbacks.onEncounter(group, uuid)
       } else {
-        console.warn('[BattleExecuteSystem] onEncounter callback missing!')
+        logger.warn('onEncounter callback missing!')
       }
 
       // 如果是 Enemy (配置数据)，则保留组件；如果是临时 Action (如 Player 主动发起)，则移除

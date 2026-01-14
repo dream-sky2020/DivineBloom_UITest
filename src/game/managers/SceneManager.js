@@ -2,6 +2,9 @@ import { world, clearWorld } from '@/game/ecs/world'
 import { ScenarioLoader } from '@/game/utils/ScenarioLoader'
 import { EntityManager } from '@/game/entities/EntityManager'
 import { getMapData } from '@/data/maps'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('SceneManager')
 
 /**
  * 场景管理器 (中间层)
@@ -60,14 +63,14 @@ export class SceneManager {
             this.currentScene.isTransitioning = true
         }
 
-        console.log(`[SceneManager] Executing transition:`, request)
+        logger.info(`Executing transition:`, request)
 
         try {
             if (request.type === 'MAP') {
                 await this._handleMapSwitch(request)
             }
         } catch (e) {
-            console.error(`[SceneManager] Transition failed:`, e)
+            logger.error(`Transition failed:`, e)
         } finally {
             this.isTransitioning = false
             // Unpause scene
@@ -80,7 +83,7 @@ export class SceneManager {
     async _handleMapSwitch({ mapId, entryId }) {
         // 1. 保存当前状态 (CRITICAL: 必须在 clearWorld 之前)
         if (this.currentScene) {
-            console.log(`[SceneManager] Saving state for ${this.worldStore.currentMapId}`)
+            logger.info(`Saving state for ${this.worldStore.currentMapId}`)
             this.worldStore.saveState(this.currentScene)
         }
 
@@ -118,7 +121,7 @@ export class SceneManager {
         // 策略：如果存在有效的存档（且包含实体），则恢复；否则加载默认
         // 增加健壮性检查：如果 entities 为空数组，视为无效存档，回退到默认
         if (persistedState && persistedState.entities && persistedState.entities.length > 0) {
-            console.log(`[SceneManager] Restoring state for ${mapId}`)
+            logger.info(`Restoring state for ${mapId}`)
             const result = ScenarioLoader.restore(this.engine, persistedState, mapData)
             player = result.player
 
@@ -129,7 +132,7 @@ export class SceneManager {
                 player.position.y = spawn.y
             }
         } else {
-            console.log(`[SceneManager] Loading default scenario for ${mapId}`)
+            logger.info(`Loading default scenario for ${mapId}`)
             const result = ScenarioLoader.load(this.engine, mapData, entryId)
             player = result.player
 
@@ -149,7 +152,7 @@ export class SceneManager {
         // 从 Store 或之前的 Scene 实例中获取跨场景数据
         // TODO: 如果需要保留上一张图的血量，需要在 saveState 时保存到全局 Store，这里再读出来
 
-        console.log(`[SceneManager] Transition complete.`)
+        logger.info(`Transition complete.`)
     }
 }
 

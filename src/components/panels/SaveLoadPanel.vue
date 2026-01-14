@@ -84,7 +84,9 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { createLogger } from '@/utils/logger';
 
+const logger = createLogger('SaveLoadPanel');
 const selectedSlot = ref(0);
 
 // 模拟存档数据，生成更多槽位以展示网格效果
@@ -137,7 +139,7 @@ const saveGame = () => {
 };
 
 const loadGame = () => {
-  console.log(`Loading slot ${selectedSlot.value + 1}...`);
+  logger.info(`Loading slot ${selectedSlot.value + 1}...`);
 };
 
 const deleteSave = () => {

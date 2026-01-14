@@ -5,7 +5,7 @@
     height: 100%;
 }
 
-/* Character Tabs (Reused style) */
+/* Character Tabs */
 .character-tabs {
     height: 4rem;
     display: flex;
@@ -103,11 +103,11 @@
 
 /* Active Skill Slot Styles */
 .skill-slot:not(.rounded-circle) {
-    width: 5rem;
-    height: 5rem;
+    width: 4rem;
+    height: 4rem;
     border-radius: 0.25rem;
     border-width: 2px;
-    font-size: 2.25rem;
+    font-size: 2rem;
 }
 
 .equipped-active {
@@ -119,11 +119,6 @@
 .equipped-active:hover {
     border-color: var(--yellow-400);
     box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
-}
-
-.equipped-normal {
-    background-color: var(--slate-800);
-    border-color: var(--slate-600);
 }
 
 .skill-slot.empty {
@@ -159,16 +154,6 @@
     color: #eab308;
 }
 
-.equipped-normal .slot-badge {
-    border: 1px solid var(--slate-600);
-    color: var(--slate-400);
-}
-
-.equipped-normal:hover .slot-badge {
-    color: white;
-    border-color: rgba(255, 255, 255, 0.5);
-}
-
 .empty-badge {
     border: 1px solid var(--slate-700);
     color: var(--slate-600);
@@ -188,11 +173,11 @@
 
 /* Passive Skill Slot Styles */
 .rounded-circle {
-    width: 4rem;
-    height: 4rem;
+    width: 3.5rem;
+    height: 3.5rem;
     border-radius: 50%;
     border-width: 2px;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
 }
 
 .passive-active {
@@ -204,11 +189,6 @@
 .passive-active:hover {
     border-color: var(--blue-400);
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-}
-
-.passive-normal {
-    background-color: var(--slate-800);
-    border-color: var(--slate-600);
 }
 
 .passive-empty {
@@ -270,195 +250,9 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.skills-grid {
+.flex-grow-grid {
     flex: 1;
     overflow-y: auto;
-    padding: 1.5rem;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-}
-
-/* Skill Card */
-.skill-card {
-    position: relative;
-    background-color: rgba(30, 41, 59, 0.5);
-    /* slate-800/50 */
-    border: 1px solid var(--slate-600);
-    padding: 0.75rem;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.skill-card:hover {
-    background-color: var(--slate-700);
-    border-color: rgba(255, 255, 255, 0.5);
-}
-
-.skill-card.active-equipped {
-    background-color: rgba(30, 58, 138, 0.4);
-    /* blue-900/40 */
-    border: 2px solid rgba(234, 179, 8, 0.5);
-}
-
-.skill-card.active-equipped:hover {
-    background-color: rgba(30, 58, 138, 0.5);
-}
-
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.card-icon-box {
-    width: 2.5rem;
-    height: 2.5rem;
-    background-color: rgba(0, 0, 0, 0.4);
-    border-radius: 0.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-}
-
-.card-info {
-    flex: 1;
-    overflow: hidden;
-}
-
-.card-title {
-    font-weight: 700;
-    color: var(--slate-300);
-    font-size: 1.125rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.skill-card:hover .card-title {
-    color: white;
-}
-
-.card-sub {
-    font-size: 0.75rem;
-    color: var(--slate-500);
-}
-
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding-top: 0.5rem;
-}
-
-.skill-card:hover .card-footer {
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.type-text {
-    font-size: 0.75rem;
-    color: var(--slate-500);
-}
-
-.cost-text {
-    font-family: monospace;
-    font-size: 0.875rem;
-    color: var(--blue-400);
-    font-weight: 700;
-}
-
-.text-yellow {
-    color: #fef08a;
-    /* yellow-100 */
-}
-
-.text-blue {
-    color: var(--blue-300);
-}
-
-.text-blue-bold {
-    color: var(--blue-400);
-}
-
-.text-green {
-    color: var(--green-500);
-}
-
-.text-slate {
-    color: var(--slate-500);
-}
-
-.equipped-tag {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    font-size: 0.625rem;
-    font-weight: 700;
-    border: 1px solid currentColor;
-    padding: 0 0.25rem;
-    border-radius: 0.125rem;
-}
-
-/* Locked Card */
-.skill-card.locked {
-    background-color: rgba(30, 41, 59, 0.3);
-    border-color: var(--slate-700);
-    opacity: 0.7;
-}
-
-.locked-text {
-    color: var(--slate-600) !important;
-}
-
-.grayscale {
-    filter: grayscale(1);
-}
-
-.lock-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.25rem;
-    opacity: 0.2;
-}
-
-/* Placeholder */
-.skill-card.placeholder {
-    background-color: rgba(30, 41, 59, 0.2);
-    border-color: var(--slate-700);
-    cursor: default;
-}
-
-.skill-card.placeholder:hover {
-    background-color: rgba(30, 41, 59, 0.2);
-    border-color: var(--slate-700);
-}
-
-.placeholder-icon {
-    background-color: rgba(30, 41, 59, 0.5);
-    opacity: 0.2;
-    color: var(--slate-400);
-}
-
-.placeholder-line {
-    height: 0.75rem;
-    background-color: var(--slate-800);
-    border-radius: 0.25rem;
-    margin-bottom: 0.25rem;
-}
-
-.w-60 {
-    width: 60%;
-}
-
-.w-30 {
-    width: 30%;
 }
 
 /* Description Panel */
@@ -469,6 +263,12 @@
     padding: 1.5rem;
     display: flex;
     gap: 1.5rem;
+}
+
+.description-panel.empty {
+    justify-content: center;
+    align-items: center;
+    color: var(--slate-500);
 }
 
 .desc-icon-box {
@@ -505,13 +305,6 @@
     margin: 0;
 }
 
-.desc-level {
-    font-size: 0.75rem;
-    color: var(--slate-400);
-    font-weight: 400;
-    margin-left: 0.5rem;
-}
-
 .desc-cost {
     font-size: 0.875rem;
     color: var(--blue-300);
@@ -529,15 +322,6 @@
     line-height: 1.5;
     font-size: 0.875rem;
     margin: 0;
-}
-
-.highlight-yellow {
-    color: var(--yellow-400);
-}
-
-.highlight-red {
-    color: #f87171;
-    /* red-400 */
 }
 
 .desc-actions {
@@ -577,20 +361,9 @@
     background-color: var(--slate-600);
 }
 
-/* Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
+/* Helpers */
+.text-yellow { color: #fef08a; }
+.text-blue { color: var(--blue-300); }
+.text-blue-bold { color: var(--blue-400); }
+.text-green { color: var(--green-500); }
+.text-slate { color: var(--slate-500); }

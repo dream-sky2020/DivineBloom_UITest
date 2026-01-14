@@ -36,6 +36,13 @@ export default {
     ja: '外す',
     ko: '해제'
   },
+  equip: {
+    zh: '装备',
+    'zh-TW': '裝備',
+    en: 'Equip',
+    ja: '装備',
+    ko: '장착'
+  },
   upgrade: {
     zh: '升级',
     'zh-TW': '升級',

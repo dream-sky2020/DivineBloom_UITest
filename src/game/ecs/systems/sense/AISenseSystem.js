@@ -1,5 +1,8 @@
 import { world } from '@/game/ecs/world'
 import { canSeePlayer } from '@/game/ai/utils'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('AISenseSystem')
 
 /**
  * AI Sense System
@@ -33,7 +36,7 @@ export const AISenseSystem = {
 
         if (globalEntity) {
             const { uuid, result } = globalEntity.battleResult
-            console.log(`[AISenseSystem] 🚨 Sensed Battle Result for UUID: ${uuid}`, result)
+            logger.info(`🚨 Sensed Battle Result for UUID: ${uuid}`, result)
 
             // DEBUG: 打印所有 AI 实体的 UUID，看看能否匹配上
             const debugEntities = [...aiEntities].map(e => ({
@@ -41,7 +44,7 @@ export const AISenseSystem = {
                 hasEnemyTag: !!e.enemy,
                 hasVelocity: !!e.velocity
             }));
-            console.log('[AISenseSystem] Available AI Entities (Count):', debugEntities.length);
+            logger.debug('Available AI Entities (Count):', debugEntities.length);
 
             // 查找对应的 AI 实体
             const entity = [...aiEntities].find(e =>
@@ -50,11 +53,11 @@ export const AISenseSystem = {
             )
 
             if (entity) {
-                console.log(`[AISenseSystem] ✅ Found entity match. Keys:`, Object.keys(entity))
+                logger.debug(`✅ Found entity match. Keys:`, Object.keys(entity))
 
                 // 确保 aiSensory 存在
                 if (!entity.aiSensory) {
-                    console.log('[AISenseSystem] Creating new aiSensory component');
+                    logger.debug('Creating new aiSensory component');
                     world.addComponent(entity, 'aiSensory', {
                         distSqToPlayer: Infinity,
                         playerPos: { x: 0, y: 0 },
@@ -70,10 +73,10 @@ export const AISenseSystem = {
                 entity.aiSensory.lastBattleResult = result;
 
                 // 立即验证写入是否成功
-                console.log('[AISenseSystem] Wrote result to entity.aiSensory:', entity.aiSensory.lastBattleResult);
+                logger.debug('Wrote result to entity.aiSensory:', entity.aiSensory.lastBattleResult);
 
             } else {
-                console.error(`[AISenseSystem] ❌ Target entity for battle result ${uuid} NOT FOUND in aiEntities query!`)
+                logger.error(`❌ Target entity for battle result ${uuid} NOT FOUND in aiEntities query!`)
             }
 
             // 消费掉结果 (移除组件)
@@ -133,7 +136,7 @@ export const AISenseSystem = {
                 const isVisible = canSeePlayer(entity, sensory.distSqToPlayer, playerPos)
                 sensory.canSeePlayer = isVisible
             } catch (e) {
-                console.error(`[AISenseSystem] Error in canSeePlayer for Entity ${entity.id || 'N/A'}:`, e);
+                logger.error(`Error in canSeePlayer for Entity ${entity.id || 'N/A'}:`, e);
                 sensory.canSeePlayer = false;
             }
 

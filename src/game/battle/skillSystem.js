@@ -1,4 +1,5 @@
 import { statusDb } from '@/data/status';
+import { skillsDb } from '@/data/skills';
 
 /**
  * 解析连锁技能 (Chain Skill) 的命中序列
@@ -297,4 +298,35 @@ export const paySkillCost = (actor, skill, context) => {
             }
         }
     }
+};
+
+/**
+ * 处理被动技能触发
+ * @param {Object} unit 
+ * @param {String} triggerName 
+ * @param {Object} context 
+ */
+export const processPassiveTrigger = (unit, triggerName, context) => {
+    if (!unit || !unit.skills) return;
+
+    // 引入 processEffect 需要避免循环依赖，建议将 effect 处理逻辑放在 effectSystem 或单独的处理器中。
+    // 但为了方便，我们可以动态导入或在此处简单实现基本效果，或要求 context 传入处理函数。
+    // 在这里，我们假设 processEffect 可以在外部调用，或者我们只处理被动特有的逻辑。
+    // 更好的方式是：返回需要执行的效果列表，由调用者执行。或者 context 提供 executeEffect。
+    
+    // 这里我们直接查找技能并收集效果
+    unit.skills.forEach(skillId => {
+        const skill = skillsDb[skillId];
+        if (skill && skill.type === 'skillTypes.passive' && skill.effects) {
+            skill.effects.forEach(effect => {
+                if (effect.trigger === triggerName) {
+                    if (context.executeEffect) {
+                        context.executeEffect(effect, unit, unit, skill);
+                    } else {
+                        console.warn("processPassiveTrigger: context.executeEffect is missing");
+                    }
+                }
+            });
+        }
+    });
 };

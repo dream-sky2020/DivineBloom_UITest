@@ -1,4 +1,7 @@
 import { world, actionQueue } from '@/game/ecs/world'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('TriggerSystem')
 
 let debugDumped = false
 
@@ -14,26 +17,26 @@ export const TriggerSystem = {
 
     // Debug System Heartbeat (Low frequency)
     if (Math.random() < 0.005) {
-      console.log(`[TriggerSystem] Heartbeat. Triggers count: ${[...triggers].length}`)
+      logger.debug(`Heartbeat. Triggers count: ${[...triggers].length}`)
     }
 
     // ONCE PER SESSION DEBUG DUMP
     if (!debugDumped && [...triggers].length > 0) {
-      console.group('[TriggerSystem] INITIAL TRIGGER DUMP');
+      // logger.debug('[TriggerSystem] INITIAL TRIGGER DUMP');
       for (const entity of triggers) {
         // Defensive check inside debug loop
         if (!entity.trigger) {
-          console.error(`[TriggerSystem] Entity ${entity.id} has 'trigger' tag but component is missing!`);
+          logger.error(`Entity ${entity.id} has 'trigger' tag but component is missing!`);
           continue;
         }
         const t = entity.trigger;
-        console.log(`Entity [${entity.type}] ID:${entity.id || 'N/A'}`);
+        // logger.debug(`Entity [${entity.type}] ID:${entity.id || 'N/A'}`);
         // Direct access to flat properties
-        console.log(`  State: Active=${t.active}, Cooldown=${t.cooldownTimer}, OneShotExec=${t.oneShotExecuted}`);
-        console.log(`  Rules:`, JSON.stringify(t.rules));
-        console.log(`  Actions:`, JSON.stringify(t.actions));
+        // logger.debug(`  State: Active=${t.active}, Cooldown=${t.cooldownTimer}, OneShotExec=${t.oneShotExecuted}`);
+        // logger.debug(`  Rules:`, JSON.stringify(t.rules));
+        // logger.debug(`  Actions:`, JSON.stringify(t.actions));
       }
-      console.groupEnd();
+      // console.groupEnd();
       debugDumped = true;
     }
 
@@ -42,7 +45,7 @@ export const TriggerSystem = {
 
       // Defensive Check: Component Existence
       if (!trigger) {
-        console.warn(`[TriggerSystem] Missing trigger component on entity ${entity.id || 'N/A'}`);
+        logger.warn(`Missing trigger component on entity ${entity.id || 'N/A'}`);
         continue;
       }
 
@@ -56,7 +59,7 @@ export const TriggerSystem = {
 
       // Defensive Check: Rules Array
       if (!trigger.rules || !Array.isArray(trigger.rules)) {
-        console.warn(`[TriggerSystem] Invalid 'rules' array for Entity: ${entity.type} (ID: ${entity.id})`);
+        logger.warn(`Invalid 'rules' array for Entity: ${entity.type} (ID: ${entity.id})`);
         trigger.rules = []; // Patch it to prevent crash
         continue;
       }
@@ -76,7 +79,7 @@ export const TriggerSystem = {
 
       // 3. 执行决策
       if (shouldTrigger) {
-        console.log(`[TriggerSystem] Trigger Activated! Type: ${entity.type}, ID: ${entity.id}, Rule: ${triggeredRule?.type}, Actions: ${trigger.actions?.join(', ')}`)
+        logger.info(`Trigger Activated! Type: ${entity.type}, ID: ${entity.id}, Rule: ${triggeredRule?.type}, Actions: ${trigger.actions?.join(', ')}`)
 
         // 标记状态 (Direct Access)
         if (trigger.oneShot) {
@@ -85,17 +88,17 @@ export const TriggerSystem = {
 
         // Defensive Check: Actions Array
         if (!trigger.actions || !Array.isArray(trigger.actions)) {
-          console.error(`[TriggerSystem] Invalid 'actions' array for Entity: ${entity.type} (ID: ${entity.id})`);
+          logger.error(`Invalid 'actions' array for Entity: ${entity.type} (ID: ${entity.id})`);
           trigger.actions = [];
         }
 
         // 收集所有 Actions 并推送到队列
         if (trigger.actions.length === 0) {
-          console.warn(`[TriggerSystem] Trigger activated but no actions defined for Entity: ${entity.type} (ID: ${entity.id})!`)
+          logger.warn(`Trigger activated but no actions defined for Entity: ${entity.type} (ID: ${entity.id})!`)
         }
 
         for (const actionType of trigger.actions) {
-          console.log(`[TriggerSystem] Pushing Action: ${actionType} for Entity: ${entity.type} (ID: ${entity.id})`)
+          logger.info(`Pushing Action: ${actionType} for Entity: ${entity.type} (ID: ${entity.id})`)
           actionQueue.push({
             source: entity,
             type: actionType,
@@ -135,7 +138,7 @@ export const TriggerSystem = {
         const isInside = detectArea.results.length > 0
 
         if (isInside && Math.random() < 0.01) {
-          console.log(`[TriggerSystem] 'onEnter' rule met for Entity: ${entity.type}`)
+          logger.debug(`'onEnter' rule met for Entity: ${entity.type}`)
         }
 
         if (rule.requireEnterOnly) {
@@ -158,19 +161,19 @@ export const TriggerSystem = {
       case 'onPress':
         // 需要 DetectInput
         if (!detectInput) {
-          console.warn(`[TriggerSystem] Rule 'onPress' requires DetectInput component. Entity: ${entity.type}`)
+          logger.warn(`Rule 'onPress' requires DetectInput component. Entity: ${entity.type}`)
           return false
         }
 
         if (detectInput.isPressed || detectInput.justPressed) {
-          console.log(`[TriggerSystem] Checking 'onPress' rule for Entity: ${entity.type}. IsPressed: ${detectInput.isPressed}, JustPressed: ${detectInput.justPressed}`)
+          logger.debug(`Checking 'onPress' rule for Entity: ${entity.type}. IsPressed: ${detectInput.isPressed}, JustPressed: ${detectInput.justPressed}`)
         }
 
         // 如果需要同时在区域内
         if (rule.requireArea) {
           if (!detectArea || !detectArea.results || detectArea.results.length === 0) {
             if (detectInput.isPressed || detectInput.justPressed) {
-              console.log(`[TriggerSystem] 'onPress' rule failed: Not in Area. Entity: ${entity.type}`)
+              logger.debug(`'onPress' rule failed: Not in Area. Entity: ${entity.type}`)
             }
             return false
           }
@@ -178,12 +181,12 @@ export const TriggerSystem = {
 
         const triggered = detectInput.justPressed || detectInput.isPressed
         if (triggered) {
-          console.log(`[TriggerSystem] 'onPress' rule met! Entity: ${entity.type}`)
+          logger.info(`'onPress' rule met! Entity: ${entity.type}`)
         }
         return triggered
 
       default:
-        console.warn(`[TriggerSystem] Unknown rule type: ${rule.type}`)
+        logger.warn(`Unknown rule type: ${rule.type}`)
         return false
     }
   },

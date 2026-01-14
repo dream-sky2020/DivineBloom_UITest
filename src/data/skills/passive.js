@@ -13,6 +13,14 @@ export default {
         category: "skillCategories.passive",
         icon: "icon_strength",
         cost: "--",
+        effects: [
+            { 
+                type: "stat_boost", 
+                stat: "atk", 
+                value: 0.15, // +15%
+                trigger: "battle_start" 
+            }
+        ],
         subText: {
             zh: '被动效果',
             'zh-TW': '被動效果',
@@ -41,6 +49,13 @@ export default {
         category: "skillCategories.passive",
         icon: "icon_mana",
         cost: "--",
+        effects: [
+            { 
+                type: "recover_mp", 
+                value: 10,
+                trigger: "turn_start" 
+            }
+        ],
         subText: {
             zh: '被动效果',
             'zh-TW': '被動效果',
@@ -69,6 +84,13 @@ export default {
         category: "skillCategories.passive",
         icon: "icon_limit_break", // 假设复用或新加图标
         cost: "--",
+        effects: [
+            { 
+                type: "applyStatus", 
+                status: "status_shattered_prison", 
+                trigger: "on_cc_skip" 
+            }
+        ],
         subText: {
             zh: '控制抵抗',
             'zh-TW': '控制抵抗',
@@ -85,4 +107,3 @@ export default {
         }
     }
 }
-

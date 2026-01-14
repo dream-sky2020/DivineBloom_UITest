@@ -40,9 +40,10 @@ export class WorldScene {
      * @param {string} [entryId]
      * @param {Function} [onSwitchMap]
      * @param {Function} [onInteract]
+     * @param {Function} [onOpenMenu]
      * @param {Object} [stateProvider]
      */
-    constructor(engine, onEncounter, initialState = null, mapData = null, entryId = 'default', onSwitchMap = null, onInteract = null, stateProvider = null) {
+    constructor(engine, onEncounter, initialState = null, mapData = null, entryId = 'default', onSwitchMap = null, onInteract = null, onOpenMenu = null, stateProvider = null) {
         // Clear ECS world on scene init to prevent stale entities
         clearWorld()
 
@@ -50,6 +51,7 @@ export class WorldScene {
         this.onEncounter = onEncounter
         this.onSwitchMap = onSwitchMap
         this.onInteract = onInteract
+        this.onOpenMenu = onOpenMenu
         this.stateProvider = stateProvider || {}
 
         this.mapData = mapData || {}
@@ -239,7 +241,8 @@ export class WorldScene {
             ExecuteSystem.update({
                 onEncounter: this.onEncounter,
                 onSwitchMap: null, // SceneSystem handles this now
-                onInteract: this.onInteract
+                onInteract: this.onInteract,
+                onOpenMenu: this.onOpenMenu
             })
         }
 

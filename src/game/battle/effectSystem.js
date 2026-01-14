@@ -68,6 +68,33 @@ const _executeSingleEffect = (effect, target, actor, skill, context, silent, pre
                 return amount;
             }
             break;
+        case 'recover_mp':
+            if (target) {
+                const amount = Number(effect.value) || 0;
+                target.currentMp = Math.min(target.maxMp, target.currentMp + amount);
+                if (!silent && log) log('battle.recoveredMp', { target: target.name, amount });
+                return amount;
+            }
+            break;
+        case 'stat_boost':
+            // Permanent stat boost (battle runtime only)
+            if (target && effect.stat) {
+                const statName = effect.stat; // 'atk', 'def', etc.
+                const pct = Number(effect.value) || 0;
+                
+                // Base stat value should be preserved if we want additive stacking properly,
+                // but for now we just multiply current value. 
+                // Better: Check if we have baseStats, otherwise assume current is base.
+                // Or: This is a runtime modification that persists until battle end.
+                
+                if (typeof target[statName] === 'number') {
+                    const increase = Math.floor(target[statName] * pct);
+                    target[statName] += increase;
+                    if (!silent && log) log('battle.statBoost', { target: target.name, stat: statName, amount: increase });
+                    return increase;
+                }
+            }
+            break;
         case 'revive':
             if (target && target.currentHp <= 0) {
                 const pct = Number(effect.value) || 0.1;

@@ -1,7 +1,10 @@
-import { actionQueue, eventQueue } from '@/game/ecs/world'
+import { actionQueue, eventQueue, world } from '@/game/ecs/world'
 import { BattleExecuteSystem } from '@/game/ecs/systems/execute/BattleExecuteSystem'
 import { DialogueExecuteSystem } from '@/game/ecs/systems/execute/DialogueExecuteSystem'
 import { TeleportExecuteSystem } from '@/game/ecs/systems/execute/TeleportExecuteSystem'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('ExecuteSystem')
 
 /**
  * 遗留事件处理器
@@ -28,8 +31,19 @@ export const ExecuteSystem = {
     // 1. 处理 ActionQueue (ECS 内部产生)
     // Defensive check: ensure queue exists (though imported)
     if (!actionQueue) {
-      console.error('[ExecuteSystem] ActionQueue is undefined!');
+      logger.error('ActionQueue is undefined!');
       return;
+    }
+    
+    // Check Global Player Intents (Directly from entities, not actions)
+    // This is a bit of a hybrid approach, but Menu is a global system action
+    const playerEntity = world.with('player', 'playerIntent').first;
+    if (playerEntity && playerEntity.playerIntent.wantsToOpenMenu) {
+       if (callbacks.onOpenMenu) {
+           callbacks.onOpenMenu();
+           // Reset intent to prevent multiple triggers (though pause should handle it)
+           playerEntity.playerIntent.wantsToOpenMenu = false;
+       }
     }
 
     const queueLength = actionQueue.length
@@ -39,13 +53,13 @@ export const ExecuteSystem = {
 
       // Type Guard: Validate request structure
       if (!request.source || !request.type) {
-        console.error('[ExecuteSystem] Invalid request structure:', request);
+        logger.error('Invalid request structure:', request);
         continue;
       }
 
       const { source, type } = request
 
-      // console.log(`[ExecuteSystem] Processing action: ${type}`, source.type)
+      // logger.debug(`Processing action: ${type}`, source.type)
 
       switch (type) {
         case 'BATTLE':
@@ -61,7 +75,7 @@ export const ExecuteSystem = {
           break
 
         default:
-          console.warn(`[ExecuteSystem] Unknown action type: ${type}`, source)
+          logger.warn(`Unknown action type: ${type}`, source)
       }
     }
 
@@ -71,7 +85,7 @@ export const ExecuteSystem = {
     const events = eventQueue.drain()
     for (const event of events) {
       if (!event.type || !event.payload) {
-        console.warn('[ExecuteSystem] Invalid legacy event format:', event);
+        logger.warn('Invalid legacy event format:', event);
         continue;
       }
 
@@ -80,7 +94,7 @@ export const ExecuteSystem = {
         try {
           handler(event.payload, callbacks)
         } catch (e) {
-          console.error(`[ExecuteSystem] Error handling legacy event ${event.type}:`, e);
+          logger.error(`Error handling legacy event ${event.type}:`, e);
         }
       } else {
         // Optional: warn about unhandled legacy events if strict

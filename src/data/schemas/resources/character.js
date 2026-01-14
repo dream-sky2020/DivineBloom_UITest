@@ -25,7 +25,14 @@ export const CharacterSchema = z.object({
         mag: z.number(),
         spd: z.number()
     }),
-    skills: z.array(ID).optional().default([]),
+    
+    // Skill System
+    skills: z.array(ID).optional().default([]), // All skills learned/owned
+    equippedActiveSkills: z.array(ID).optional().default([]), // Currently equipped active skills
+    equippedPassiveSkills: z.array(ID).optional().default([]), // Currently equipped passive skills
+    activeSkillLimit: z.number().int().min(1).default(6), // Max active slots
+    passiveSkillLimit: z.number().int().min(1).default(4), // Max passive slots
+    
     description: LocalizedStringSchema.optional(),
 
     // 掉落物配置

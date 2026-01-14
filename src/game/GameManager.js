@@ -5,6 +5,9 @@ import { WorldScene } from './scenes/WorldScene'
 import { useGameStore } from '@/stores/game'
 import { dialoguesDb } from '@/data/dialogues'
 import { getMapData } from '@/data/maps'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('GameManager')
 
 class GameManager {
     constructor() {
@@ -38,7 +41,7 @@ class GameManager {
             return
         }
 
-        console.log('[GameManager] Initializing Engine')
+        logger.info('Initializing Engine')
         this.engine = new GameEngine(canvas)
 
         // Bind Main Loop
@@ -72,7 +75,7 @@ class GameManager {
      * Switch to World Map Mode
      */
     async startWorldMap() {
-        console.log('[GameManager] Switching to World Map')
+        logger.info('Switching to World Map')
 
         const gameStore = useGameStore()
         const worldStore = gameStore.world
@@ -132,6 +135,7 @@ class GameManager {
             entryId,
             (targetMapId) => { worldStore.currentMapId = targetMapId },
             this._onInteract.bind(this),
+            () => { this.state.system = 'list-menu' }, // onOpenMenu
             { worldStore, sceneManager: this.sceneManager }
         )
 
@@ -145,7 +149,7 @@ class GameManager {
      * Switch to Battle Mode
      */
     startBattle() {
-        console.log('[GameManager] Switching to Battle Mode')
+        logger.info('Switching to Battle Mode')
         this.state.system = 'battle'
         // We do NOT destroy the WorldScene.
         // We pause the World Update, but keep Draw (so map appears as background)
@@ -155,7 +159,7 @@ class GameManager {
     // --- Callbacks ---
 
     _onEncounter(enemyGroup, enemyUuid) {
-        console.log('[GameManager] Encounter:', enemyGroup)
+        logger.info('Encounter:', enemyGroup)
         const gameStore = useGameStore()
         const battleStore = gameStore.battle
         const worldStore = gameStore.world
@@ -183,7 +187,7 @@ class GameManager {
         }
 
         if (!scriptFn) {
-            console.warn(`No dialogue script found: ${scriptId}`)
+            logger.warn(`No dialogue script found: ${scriptId}`)
             return
         }
 

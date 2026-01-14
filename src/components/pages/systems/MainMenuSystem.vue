@@ -33,7 +33,9 @@
 <script setup>
 import { inject, onMounted } from 'vue';
 import { useGameStore } from '@/stores/game';
+import { createLogger } from '@/utils/logger';
 
+const logger = createLogger('MainMenu');
 const emit = defineEmits(['change-system']);
 const gameStore = useGameStore();
 const audioStore = gameStore.audio;
@@ -57,7 +59,7 @@ const menuItems = [
 const handleMenuClick = (item) => {
   if (item.disabled) return;
   audioStore.playClick(); // 播放点击音效
-  console.log(`Menu selected: ${item.id}`);
+  logger.info(`Menu selected: ${item.id}`);
   
   if (item.target) {
     emit('change-system', item.target);

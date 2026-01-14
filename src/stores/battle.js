@@ -10,13 +10,16 @@ import { calculateDamage, applyDamage, applyHeal } from '@/game/battle/damageSys
 import { processEffect, processTurnStatuses } from '@/game/battle/effectSystem';
 import { applyStatus, removeStatus, checkCrowdControl } from '@/game/battle/statusSystem';
 import { resolveTargets, findPartyMember } from '@/game/battle/targetSystem';
-import { resolveChainSequence, resolveRandomSequence, canUseSkill, paySkillCost } from '@/game/battle/skillSystem';
+import { resolveChainSequence, resolveRandomSequence, canUseSkill, paySkillCost, processPassiveTrigger } from '@/game/battle/skillSystem';
 import { calculateAtbTick } from '@/game/battle/timeSystem';
 import { calculateDrops, mergeDrops } from '@/game/battle/lootSystem';
 
 // ECS Integration
 import { world } from '@/game/ecs/world';
 import { BattleResult } from '@/game/entities/components/BattleResult';
+import { createLogger } from '@/utils/logger';
+
+const logger = createLogger('BattleStore');
 
 export const useBattleStore = defineStore('battle', () => {
     const inventoryStore = useInventoryStore();
@@ -93,6 +96,10 @@ export const useBattleStore = defineStore('battle', () => {
         },
         consumeItem: (itemId, amount) => {
             inventoryStore.removeItem(itemId, amount);
+        },
+        // Passive Effect Executor
+        executeEffect: (effect, target, actor, skill) => {
+            processEffect(effect, target, actor, skill, getContext(), true);
         }
     });
 
@@ -184,6 +191,12 @@ export const useBattleStore = defineStore('battle', () => {
 
         battleState.value = 'active';
         log('battle.started');
+
+        // Process Battle Start Passives
+        const context = getContext();
+        [...partySlots.value.map(s => s.front), ...partySlots.value.map(s => s.back), ...enemies.value].forEach(unit => {
+            if (unit) processPassiveTrigger(unit, 'battle_start', context);
+        });
     };
 
     // ATB Tick
@@ -239,8 +252,13 @@ export const useBattleStore = defineStore('battle', () => {
         unit.isDefending = false; // Reset Defend at start of turn
         boostLevel.value = 0; // Reset Boost Level on new turn
 
+        const context = getContext();
+
+        // Process Turn Start Passives (e.g. Mana Regen)
+        processPassiveTrigger(unit, 'turn_start', context);
+
         // Process Turn Start Statuses (DoT, HoT)
-        processTurnStatuses(unit, getContext());
+        processTurnStatuses(unit, context);
 
         // Check if unit died from status
         if (unit.currentHp <= 0) {
@@ -252,6 +270,10 @@ export const useBattleStore = defineStore('battle', () => {
         const cannotMove = checkCrowdControl(unit);
         if (cannotMove) {
             log('battle.cannotMove', { name: unit.name });
+            
+            // Process CC Skip Passives (e.g. Heroic Will)
+            processPassiveTrigger(unit, 'on_cc_skip', context);
+
             setTimeout(() => {
                 endTurn(unit);
             }, 1000);
@@ -657,7 +679,7 @@ export const useBattleStore = defineStore('battle', () => {
                     exp: 0     // TODO: Collect actual exp
                 };
 
-                console.log('[BattleStore] Setting BattleResult on GlobalEntity:', triggeredEnemyUuid.value, resultData);
+                logger.info('Setting BattleResult on GlobalEntity:', triggeredEnemyUuid.value, resultData);
 
                 // 直接添加 BattleResult 组件
                 // 如果已存在会覆盖，这正是我们想要的（最新的结果覆盖旧的）
@@ -667,10 +689,10 @@ export const useBattleStore = defineStore('battle', () => {
                 });
 
             } else {
-                console.warn('[BattleStore] GlobalEntity not found, cannot push battle result!');
+                logger.warn('GlobalEntity not found, cannot push battle result!');
             }
         } catch (e) {
-            console.error('[BattleStore] Failed to create external event:', e);
+            logger.error('Failed to create external event:', e);
         }
     };
 

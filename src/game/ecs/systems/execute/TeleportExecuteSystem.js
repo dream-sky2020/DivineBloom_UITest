@@ -1,5 +1,8 @@
 import { world } from '@/game/ecs/world'
 import { SceneTransition } from '@/game/entities/components/Requests'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('TeleportSystem')
 
 /**
  * Teleport System
@@ -7,18 +10,18 @@ import { SceneTransition } from '@/game/entities/components/Requests'
  */
 export const TeleportExecuteSystem = {
   handle(entity, callbacks) {
-    console.log('[TeleportSystem] Handle called for entity:', entity.type)
+    logger.info('Handle called for entity:', entity.type)
 
     if (entity.actionTeleport) {
       const { mapId, entryId } = entity.actionTeleport
 
       if (!mapId) {
-        console.warn('[TeleportExecuteSystem] Missing mapId in actionTeleport')
+        logger.warn('Missing mapId in actionTeleport')
         world.removeComponent(entity, 'actionTeleport')
         return
       }
 
-      console.log(`[TeleportSystem] Triggering transition to ${mapId}:${entryId}`)
+      logger.info(`Triggering transition to ${mapId}:${entryId}`)
 
       // 给实体添加切换场景请求，交由 SceneSystem 处理
       world.addComponent(entity, 'sceneTransition', SceneTransition({
@@ -32,9 +35,9 @@ export const TeleportExecuteSystem = {
         world.removeComponent(entity, 'actionTeleport')
       }
 
-      console.log(`[TeleportExecuteSystem] Requesting transition to map: ${mapId}, entry: ${entryId}`)
+      logger.info(`Requesting transition to map: ${mapId}, entry: ${entryId}`)
     } else {
-      console.warn('[TeleportSystem] Entity missing actionTeleport component!', entity)
+      logger.warn('Entity missing actionTeleport component!', entity)
     }
   }
 }

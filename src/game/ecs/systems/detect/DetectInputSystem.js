@@ -1,4 +1,7 @@
 import { world } from '@/game/ecs/world'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('DetectInputSystem')
 
 /**
  * DetectInputSystem
@@ -34,7 +37,7 @@ export const DetectInputSystem = {
 
         // Debug Log
         if (wantsToInteract) {
-          console.log(`[DetectInputSystem] Input Detected on EntityType: ${entity.type}, ID: ${entity.id || entity.uuid}. IsPressed: ${input.isPressed} -> true`)
+          logger.debug(`Input Detected on EntityType: ${entity.type}, ID: ${entity.id || entity.uuid}. IsPressed: ${input.isPressed} -> true`)
         }
 
         input.justPressed = wantsToInteract && !input.isPressed // 简单模拟 justPressed

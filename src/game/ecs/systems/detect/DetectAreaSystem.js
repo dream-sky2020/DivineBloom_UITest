@@ -1,4 +1,7 @@
 import { world } from '@/game/ecs/world'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('DetectAreaSystem')
 
 /**
  * DetectAreaSystem
@@ -21,7 +24,7 @@ export const DetectAreaSystem = {
     for (const entity of detectors) {
       // Defensive Check
       if (!entity.detectArea) {
-        console.warn(`[DetectAreaSystem] Entity ${entity.id || 'N/A'} missing detectArea component!`);
+        logger.warn(`Entity ${entity.id || 'N/A'} missing detectArea component!`);
         continue;
       }
 
@@ -36,14 +39,14 @@ export const DetectAreaSystem = {
       if (detect.target === 'player' || detect.includeTags.includes('player')) {
         if (player && this.checkCollision(entity, player, detect)) {
           // General Debug Log
-          console.log(`[DetectArea] Collision Detected! EntityType: ${entity.type}, ID: ${entity.id}, Target: Player`)
+          logger.debug(`Collision Detected! EntityType: ${entity.type}, ID: ${entity.id}, Target: Player`)
 
           if (entity.type === 'portal') {
-            console.log(`[DetectArea] Portal Details - Player: (${player.position.x.toFixed(2)}, ${player.position.y.toFixed(2)}), Center: (${(entity.position.x + detect.offset.x).toFixed(2)}, ${(entity.position.y + detect.offset.y).toFixed(2)})`)
+            logger.debug(`Portal Details - Player: (${player.position.x.toFixed(2)}, ${player.position.y.toFixed(2)}), Center: (${(entity.position.x + detect.offset.x).toFixed(2)}, ${(entity.position.y + detect.offset.y).toFixed(2)})`)
           } else if (entity.type === 'enemy') {
-            console.log(`[DetectArea] Enemy Sight Triggered! ID: ${entity.id}`)
+            logger.debug(`Enemy Sight Triggered! ID: ${entity.id}`)
           } else if (entity.type === 'npc') {
-            console.log(`[DetectArea] NPC Interaction Range! ID: ${entity.id}`)
+            logger.debug(`NPC Interaction Range! ID: ${entity.id}`)
           }
 
           detect.results.push(player)
@@ -57,15 +60,15 @@ export const DetectAreaSystem = {
   checkCollision(detectorEntity, targetEntity, config) {
     // Type Guards & Defensive Checks
     if (!detectorEntity.position) {
-      console.error(`[DetectAreaSystem] Detector entity missing position! ID: ${detectorEntity.id}`);
+      logger.error(`Detector entity missing position! ID: ${detectorEntity.id}`);
       return false;
     }
     if (!targetEntity.position) {
-      console.error(`[DetectAreaSystem] Target entity missing position! ID: ${targetEntity.id}`);
+      logger.error(`Target entity missing position! ID: ${targetEntity.id}`);
       return false;
     }
     if (!config) {
-      console.error(`[DetectAreaSystem] Missing config for checkCollision!`);
+      logger.error(`Missing config for checkCollision!`);
       return false;
     }
 

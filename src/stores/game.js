@@ -9,6 +9,9 @@ import { useBattleStore } from './battle';
 import { useDialogueStore } from './dialogue';
 import { useSettingsStore } from './settings';
 import { useAudioStore } from './audio';
+import { createLogger } from '@/utils/logger';
+
+const logger = createLogger('GameStore');
 
 export const useGameStore = defineStore('game', () => {
     // 引用所有子 Store
@@ -74,7 +77,7 @@ export const useGameStore = defineStore('game', () => {
         // 实际写入存储 (这里用 localStorage 模拟)
         const key = `save_slot_${slotId}`;
         localStorage.setItem(key, JSON.stringify(saveData));
-        console.log(`[GameStore] Game saved to ${key}`);
+        logger.info(`Game saved to ${key}`);
 
         return saveData;
     };
@@ -88,7 +91,7 @@ export const useGameStore = defineStore('game', () => {
         const json = localStorage.getItem(key);
 
         if (!json) {
-            console.warn(`[GameStore] No save data found in slot ${slotId}`);
+            logger.warn(`No save data found in slot ${slotId}`);
             return false;
         }
 
@@ -110,10 +113,10 @@ export const useGameStore = defineStore('game', () => {
 
             isGameRunning.value = true;
             startGameTimer();
-            console.log(`[GameStore] Game loaded from slot ${slotId}`);
+            logger.info(`Game loaded from slot ${slotId}`);
             return true;
         } catch (e) {
-            console.error('[GameStore] Failed to load game:', e);
+            logger.error('Failed to load game:', e);
             return false;
         }
     };

@@ -18,6 +18,10 @@ const SkillEffectSchema = z.object({
     maxTimes: z.number().optional(),
     target: z.string().optional(), // Self heal etc
     mode: z.string().optional(), // "add_stack", "refresh", etc.
+
+    // Passive / Trigger fields
+    trigger: z.string().optional(), // e.g. "battle_start", "turn_start", "on_cc_skip"
+    stat: z.string().optional(), // e.g. "atk", "def"
 });
 
 const SkillCostSchema = z.object({

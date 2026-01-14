@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { charactersDb } from '@/data/characters';
+import { skillsDb } from '@/data/skills';
 
 export const usePartyStore = defineStore('party', () => {
     // 存储队伍成员的运行时状态
@@ -59,16 +60,77 @@ export const usePartyStore = defineStore('party', () => {
         initialIds.forEach(id => {
             const dbChar = charactersDb[id];
             if (dbChar) {
+                // Initialize skills logic
+                // If DB has empty equipped lists, try to auto-equip from skills pool
+                let equippedActive = dbChar.equippedActiveSkills ? [...dbChar.equippedActiveSkills] : [];
+                let equippedPassive = dbChar.equippedPassiveSkills ? [...dbChar.equippedPassiveSkills] : [];
+                
+                if (equippedActive.length === 0 && equippedPassive.length === 0 && dbChar.skills && dbChar.skills.length > 0) {
+                     // Auto-equip logic
+                     const activeLimit = dbChar.activeSkillLimit || 6;
+                     const passiveLimit = dbChar.passiveSkillLimit || 4;
+                     
+                     for (const skillId of dbChar.skills) {
+                        const skill = skillsDb[skillId];
+                        if (!skill) continue;
+                        
+                        if (skill.type === 'skillTypes.passive' || (skillId >= 400 && skillId < 500)) {
+                            if (equippedPassive.length < passiveLimit) {
+                                equippedPassive.push(skillId);
+                            }
+                        } else {
+                            if (equippedActive.length < activeLimit) {
+                                equippedActive.push(skillId);
+                            }
+                        }
+                     }
+                }
+
                 members.value[id] = {
                     id: id,
                     currentHp: dbChar.initialStats.hp,
                     currentMp: dbChar.initialStats.mp,
-                    // 可以扩展更多运行时属性，如经验值、等级等
                     level: 1,
-                    exp: 0
+                    exp: 0,
+                    equippedActiveSkills: equippedActive,
+                    equippedPassiveSkills: equippedPassive
                 };
             }
         });
+    };
+
+    // Equip/Unequip Actions
+    const equipSkill = (characterId, skillId, isPassive = false) => {
+        const member = members.value[characterId];
+        const dbChar = charactersDb[characterId];
+        if (!member || !dbChar) return false;
+
+        const targetList = isPassive ? member.equippedPassiveSkills : member.equippedActiveSkills;
+        const limit = isPassive ? (dbChar.passiveSkillLimit || 4) : (dbChar.activeSkillLimit || 6);
+
+        // Check if already equipped
+        if (targetList.includes(skillId)) return true; // Already equipped
+
+        // Check limit
+        if (targetList.length >= limit) return false; // Full
+
+        // Check if own the skill
+        const allSkills = dbChar.skills || [];
+        if (!allSkills.includes(skillId)) return false; // Don't own it
+
+        targetList.push(skillId);
+        return true;
+    };
+
+    const unequipSkill = (characterId, skillId, isPassive = false) => {
+        const member = members.value[characterId];
+        if (!member) return;
+
+        const targetList = isPassive ? member.equippedPassiveSkills : member.equippedActiveSkills;
+        const index = targetList.indexOf(skillId);
+        if (index > -1) {
+            targetList.splice(index, 1);
+        }
     };
 
     // 获取完整的战斗用角色对象（合并 DB 数据和运行时状态）
@@ -82,6 +144,10 @@ export const usePartyStore = defineStore('party', () => {
         const db = charactersDb[id];
         
         if (!runtime || !db) return null;
+
+        // Merge equipped skills from runtime, fallback to DB if runtime missing (shouldn't happen after init)
+        const equippedActive = runtime.equippedActiveSkills || db.equippedActiveSkills || [];
+        const equippedPassive = runtime.equippedPassiveSkills || db.equippedPassiveSkills || [];
 
         return {
             ...db,
@@ -97,7 +163,12 @@ export const usePartyStore = defineStore('party', () => {
             spd: db.initialStats.spd || 10,
             mag: db.initialStats.mag || 10,
             
-            skills: db.skills || []
+            skills: db.skills || [], // All learned skills
+            equippedActiveSkills: equippedActive,
+            equippedPassiveSkills: equippedPassive,
+            // For backward compatibility or ease of use in battle, we might want to expose a combined 'battleSkills'
+            // or let the battle system handle the split. 
+            // The battle system currently uses .skills. We should probably update BattleSystem to use equippedActiveSkills.
         };
     };
 
@@ -124,6 +195,8 @@ export const usePartyStore = defineStore('party', () => {
         initParty,
         getCharacterState,
         updatePartyAfterBattle,
+        equipSkill,
+        unequipSkill,
         reset,
         serialize,
         loadState

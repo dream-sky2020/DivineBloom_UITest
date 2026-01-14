@@ -137,8 +137,14 @@ const canSwitch = computed(() => {
 });
 
 const characterSkills = computed(() => {
-  if (!activeCharacter.value || !activeCharacter.value.skills) return [];
-  return activeCharacter.value.skills.map(id => {
+  if (!activeCharacter.value) return [];
+  
+  // Use equipped active skills for players if available, otherwise fallback to all skills (enemies)
+  const skillIds = (activeCharacter.value.equippedActiveSkills && activeCharacter.value.equippedActiveSkills.length > 0) 
+      ? activeCharacter.value.equippedActiveSkills 
+      : (activeCharacter.value.skills || []);
+
+  return skillIds.map(id => {
       const skill = skillsDb[id];
       if (!skill) return null;
       // Parse cost "10 MP" -> 10

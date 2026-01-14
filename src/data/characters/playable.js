@@ -19,6 +19,10 @@ export default {
       mag: 8,
       spd: 10
     },
+    activeSkillLimit: 6,
+    passiveSkillLimit: 4,
+    equippedActiveSkills: [],
+    equippedPassiveSkills: [],
     skills: ['skill_physical_power_slash', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies'],
     description: {
       zh: '擅长使用火焰剑技的战士。',
@@ -48,6 +52,10 @@ export default {
       mag: 20,
       spd: 14
     },
+    activeSkillLimit: 6,
+    passiveSkillLimit: 4,
+    equippedActiveSkills: [],
+    equippedPassiveSkills: [],
     skills: [
       'skill_physical_spinning_slash',
       'skill_physical_mayflower_slash',
@@ -88,6 +96,10 @@ export default {
       mag: 25,
       spd: 12
     },
+    activeSkillLimit: 6,
+    passiveSkillLimit: 4,
+    equippedActiveSkills: [],
+    equippedPassiveSkills: [],
     skills: ['skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo'],
     description: {
       zh: '精通风与光属性魔法的大师。',
@@ -117,6 +129,10 @@ export default {
       mag: 5,
       spd: 18
     },
+    activeSkillLimit: 6,
+    passiveSkillLimit: 4,
+    equippedActiveSkills: [],
+    equippedPassiveSkills: [],
     skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_support_shield', 'skill_support_mass_heal', 'skill_support_forward_allies'],
     description: {
       zh: '受到光之祝福的近战格斗家。',
@@ -146,6 +162,10 @@ export default {
       mag: 5,
       spd: 16
     },
+    activeSkillLimit: 6,
+    passiveSkillLimit: 4,
+    equippedActiveSkills: [],
+    equippedPassiveSkills: [],
     skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_passive_attack_up'],
     description: {
       zh: '为赎罪而战的堂吉诃德家族末裔，能够使用“绯红日花”的力量。',
@@ -175,6 +195,10 @@ export default {
       mag: 18,
       spd: 12
     },
+    activeSkillLimit: 6,
+    passiveSkillLimit: 4,
+    equippedActiveSkills: [],
+    equippedPassiveSkills: [],
     skills: [
       'skill_physical_power_slash',
       'skill_physical_spinning_slash',
@@ -229,6 +253,10 @@ export default {
       mag: 26,
       spd: 15
     },
+    activeSkillLimit: 6,
+    passiveSkillLimit: 4,
+    equippedActiveSkills: [],
+    equippedPassiveSkills: [],
     skills: ['skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_resurrection', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo'],
     description: {
       zh: '“虚假生命”的守护者，手持轮回书卷，守护着空心人的幸福。',

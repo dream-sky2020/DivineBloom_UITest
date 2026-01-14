@@ -140,6 +140,8 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGameStore } from '@/stores/game';
 import { gameManager } from '@/game/GameManager';
+import { createLogger } from '@/utils/logger';
+
 import MainMenuSystem from '@/components/pages/systems/MainMenuSystem.vue';
 import ListMenuSystem from '@/components/pages/systems/ListMenuSystem.vue';
 import ListMenuPreviewsSystem from '@/components/pages/systems/ListMenuPreviewsSystem.vue';
@@ -149,6 +151,7 @@ import WorldMapSystem from '@/components/pages/systems/WorldMapSystem.vue';
 import BattleSystem from '@/components/pages/systems/BattleSystem.vue';
 import DialogueSystem from '@/components/pages/systems/DialogueSystem.vue';
 
+const logger = createLogger('GameUI');
 const { locale } = useI18n();
 const gameStore = useGameStore();
 const settingsStore = gameStore.settings;
@@ -203,7 +206,7 @@ const canvasStyle = computed(() => {
 });
 
 const handleSystemChange = (systemId) => {
-  console.log('System change requested:', systemId);
+  logger.info('System change requested:', systemId);
   // Update local state (for immediate feedback if needed)
   currentSystem.value = systemId;
   // Also update GameManager state to keep them in sync
@@ -252,12 +255,12 @@ onUnmounted(() => {
 
 // Debug Actions
 const addGold = () => {
-  console.log('Adding gold...');
+  logger.info('Adding gold...');
   // In real implementation, call store.addGold(1000)
 };
 
 const logState = () => {
-  console.log('Current System:', currentSystem.value);
+  logger.info('Current System:', currentSystem.value);
 };
 
 const setLanguage = (lang) => {

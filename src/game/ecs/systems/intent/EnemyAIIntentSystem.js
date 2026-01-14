@@ -3,6 +3,9 @@ import { WanderState } from '@/game/ai/states/WanderState'
 import { ChaseState } from '@/game/ai/states/ChaseState'
 import { FleeState } from '@/game/ai/states/FleeState'
 import { StunnedState } from '@/game/ai/states/StunnedState'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('EnemyAIIntentSystem')
 
 /**
  * Enemy AI Intent System (Formerly EnemyAISystem)
@@ -39,7 +42,7 @@ export const EnemyAIIntentSystem = {
       // --------------------------------------------------------
       if (aiSensory && aiSensory.lastBattleResult) {
         const result = aiSensory.lastBattleResult
-        console.error(`[EnemyAIIntentSystem] 🚨 Processing Battle Result for Entity ${entity.id}:`, result);
+        logger.debug(`Processing Battle Result for Entity ${entity.id}:`, result);
 
         // Clear it immediately so we don't process it twice
         aiSensory.lastBattleResult = null
@@ -47,13 +50,13 @@ export const EnemyAIIntentSystem = {
         if (result.win) {
           // Player Won -> Enemy Defeated
           // For now, simply remove the entity
-          console.log(`[EnemyAIIntentSystem] Enemy ${entity.id} defeated. Removing.`)
+          logger.info(`Enemy ${entity.id} defeated. Removing.`)
           world.remove(entity)
           continue; // Stop processing this entity
         }
         else if (result.fled) {
           // Player Fled -> Enemy Stunned
-          console.log(`[EnemyAIIntentSystem] Player fled. Stunning enemy ${entity.id}.`)
+          logger.info(`Player fled. Stunning enemy ${entity.id}.`)
           aiState.state = 'stunned'
           aiState.timer = 5 // Stun for 5 seconds
         }
@@ -69,7 +72,7 @@ export const EnemyAIIntentSystem = {
             currentState.update(entity, dt)
           }
         } catch (e) {
-          console.error(`[EnemyAIIntentSystem] Error in AI State '${aiState.state}'`, e);
+          logger.error(`Error in AI State '${aiState.state}'`, e);
           aiState.state = 'wander';
         }
       } else {

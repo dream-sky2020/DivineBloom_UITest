@@ -1,4 +1,7 @@
 import { world } from '@/game/ecs/world'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('PlayerIntentSystem')
 
 /**
  * Player Intent System
@@ -22,7 +25,7 @@ export const PlayerIntentSystem = {
         for (const entity of intentEntities) {
             // Defensive Check
             if (!entity.rawInput) {
-                console.error(`[PlayerIntentSystem] Entity ${entity.id || 'N/A'} has rawInput tag but no component!`);
+                logger.error(`Entity ${entity.id || 'N/A'} has rawInput tag but no component!`);
                 continue;
             }
 
@@ -32,7 +35,8 @@ export const PlayerIntentSystem = {
                 world.addComponent(entity, 'playerIntent', {
                     move: { x: 0, y: 0 },
                     wantsToRun: false,
-                    wantsToInteract: false
+                    wantsToInteract: false,
+                    wantsToOpenMenu: false
                 })
             }
 
@@ -41,7 +45,7 @@ export const PlayerIntentSystem = {
             
             // Validate Raw Input Structure
             if (!raw.axes || !raw.buttons) {
-                console.warn(`[PlayerIntentSystem] Invalid rawInput structure for Entity ${entity.id || 'N/A'}`);
+                logger.warn(`Invalid rawInput structure for Entity ${entity.id || 'N/A'}`);
                 // Reset intent
                 intent.move.x = 0; intent.move.y = 0;
                 intent.wantsToRun = false;
@@ -68,10 +72,11 @@ export const PlayerIntentSystem = {
             // 2. Process Action Intents
             intent.wantsToRun = !!raw.buttons.run
             intent.wantsToInteract = !!raw.buttons.interact
-            
+            intent.wantsToOpenMenu = !!raw.buttons.menu
+
             // Debug Log (Optional)
             if (intent.wantsToInteract) {
-                console.log(`[PlayerIntentSystem] Interaction Intent Registered! Entity: ${entity.id}`);
+                logger.debug(`Interaction Intent Registered! Entity: ${entity.id}`);
             }
         }
     }
