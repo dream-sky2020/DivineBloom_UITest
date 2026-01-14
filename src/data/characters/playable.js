@@ -23,7 +23,7 @@ export default {
     passiveSkillLimit: 4,
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
-    skills: ['skill_physical_power_slash', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies'],
+    skills: ['skill_physical_power_slash', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '擅长使用火焰剑技的战士。',
       'zh-TW': '擅長使用火焰劍技的戰士。',
@@ -67,6 +67,9 @@ export default {
       'skill_firearm_reload',
       'skill_firearm_quick_reload',
       'skill_magic_projection_ammo',
+      'skill_passive_attack_up',
+      'skill_passive_mana_regen',
+      'skill_passive_heroic_will_shattered_prison',
     ],
     description: {
       zh: '拥有爆炸性火力的远程攻击者。',
@@ -100,7 +103,7 @@ export default {
     passiveSkillLimit: 4,
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
-    skills: ['skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo'],
+    skills: ['skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '精通风与光属性魔法的大师。',
       'zh-TW': '精通風與光屬性魔法的大師。',
@@ -133,7 +136,7 @@ export default {
     passiveSkillLimit: 4,
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
-    skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_support_shield', 'skill_support_mass_heal', 'skill_support_forward_allies'],
+    skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_support_shield', 'skill_support_mass_heal', 'skill_support_forward_allies', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '受到光之祝福的近战格斗家。',
       'zh-TW': '受到光之祝福的近戰格鬥家。',
@@ -166,7 +169,7 @@ export default {
     passiveSkillLimit: 4,
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
-    skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_passive_attack_up'],
+    skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '为赎罪而战的堂吉诃德家族末裔，能够使用“绯红日花”的力量。',
       'zh-TW': '為贖罪而戰的堂吉訶德家族末裔，能夠使用“緋紅日花”的力量。',
@@ -219,6 +222,7 @@ export default {
       'skill_support_forward_allies',
       'skill_passive_attack_up',
       'skill_passive_mana_regen',
+      'skill_passive_heroic_will_shattered_prison',
       'skill_firearm_shoot',
       'skill_firearm_quick_shot',
       'skill_firearm_reload',
@@ -257,7 +261,7 @@ export default {
     passiveSkillLimit: 4,
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
-    skills: ['skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_resurrection', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo'],
+    skills: ['skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_resurrection', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '“虚假生命”的守护者，手持轮回书卷，守护着空心人的幸福。',
       'zh-TW': '“虛假生命”的守護者，手持輪迴書卷，守護著空心人的幸福。',
