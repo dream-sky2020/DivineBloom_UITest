@@ -9,19 +9,19 @@
     <template v-if="viewMode === 'default' || viewMode === 'avatar'">
       <div class="card front-card" v-if="slot.front" 
            :class="{ 
-               'dead': hasStatus(slot.front, 'status_dead'),
-               'dying': hasStatus(slot.front, 'status_dying'),
-               'selectable': canSelect(slot.front)
+               'dead': slot.front.isDead,
+               'dying': slot.front.isDying,
+               'selectable': slot.front.isSelectable
            }"
            @click.stop="onCharacterClick(slot.front)"
       >
         <div class="card-header">
-          <span class="char-name" :class="{ 'name-dead': hasStatus(slot.front, 'status_dead') || hasStatus(slot.front, 'status_dying') }">{{ getLocalizedName(slot.front.name) }}</span>
+          <span class="char-name" :class="{ 'name-dead': slot.front.isDead || slot.front.isDying }">{{ getLocalizedName(slot.front.name) }}</span>
           <GameIcon class="element-icon" name="icon_fire" />
         </div>
         <div class="card-avatar-container">
            <!-- Placeholder Avatar -->
-           <div class="avatar-placeholder" :style="{ backgroundColor: getRoleColor(slot.front.role) }">
+           <div class="avatar-placeholder" :style="{ backgroundColor: slot.front.roleColor }">
              {{ slot.front.name.en.charAt(0) }}
            </div>
         </div>
@@ -29,22 +29,22 @@
           <div class="stat-row hp">
             <label>HP</label>
             <div class="bar-container">
-              <div class="bar-fill" :style="{ width: (slot.front.currentHp / slot.front.maxHp * 100) + '%' }"></div>
-              <span class="bar-text">{{ slot.front.currentHp }}/{{ slot.front.maxHp }}</span>
+              <div class="bar-fill" :style="{ width: slot.front.hpPercent + '%' }"></div>
+              <span class="bar-text">{{ slot.front.hp }}/{{ slot.front.maxHp }}</span>
             </div>
           </div>
           <div class="stat-row mp">
             <label>MP</label>
             <div class="bar-container">
-              <div class="bar-fill" :style="{ width: (slot.front.currentMp / slot.front.maxMp * 100) + '%' }"></div>
-               <span class="bar-text">{{ slot.front.currentMp }}/{{ slot.front.maxMp }}</span>
+              <div class="bar-fill" :style="{ width: slot.front.mpPercent + '%' }"></div>
+               <span class="bar-text">{{ slot.front.mp }}/{{ slot.front.maxMp }}</span>
             </div>
           </div>
           <!-- ATB Bar -->
            <div class="stat-row atb">
             <label>ATB</label>
             <div class="bar-container">
-              <div class="bar-fill atb-fill" :class="{ 'no-transition': (slot.front.atb || 0) < 5 }" :style="{ width: ((slot.front.atb > 0 ? slot.front.atb : 0) || 0) + '%' }"></div>
+              <div class="bar-fill atb-fill" :class="{ 'no-transition': slot.front.atbNoTransition }" :style="{ width: (slot.front.atbPercent || 0) + '%' }"></div>
             </div>
           </div>
           
@@ -53,10 +53,10 @@
             <label>BP</label>
             <div class="bp-pills">
                 <div 
-                  v-for="n in 6" 
-                  :key="n" 
+                  v-for="(filled, i) in slot.front.energyPills" 
+                  :key="i" 
                   class="bp-pill" 
-                  :class="{ 'filled': (slot.front.energy || 0) >= n }"
+                  :class="{ 'filled': filled }"
                 ></div>
             </div>
           </div>
@@ -66,10 +66,10 @@
               v-for="st in slot.front.statusEffects" 
               :key="st.id" 
               class="status-icon"
-              :class="getStatusClass(st.id)" 
-              :title="getStatusTooltip(st)"
+              :class="st.class" 
+              :title="st.tooltip"
             >
-                <GameIcon :name="getStatusIcon(st.id)" />
+                <GameIcon :name="st.icon" />
                 <span class="status-duration">{{ st.duration }}</span>
             </div>
           </div>
@@ -80,20 +80,20 @@
           v-if="viewMode === 'avatar' && slot.back"
           class="avatar-badge"
           :class="{ 
-            'selectable': canSelect(slot.back),
-            'dead': hasStatus(slot.back, 'status_dead'),
-            'dying': hasStatus(slot.back, 'status_dying')
+            'selectable': slot.back.isSelectable,
+            'dead': slot.back.isDead,
+            'dying': slot.back.isDying
           }"
           @click.stop="onCharacterClick(slot.back)"
           :title="getLocalizedName(slot.back.name)"
         >
-          <div class="badge-avatar" :style="{ backgroundColor: getRoleColor(slot.back.role) }">
+          <div class="badge-avatar" :style="{ backgroundColor: slot.back.roleColor }">
             {{ slot.back.name.en.charAt(0) }}
           </div>
           <!-- Tiny HP Bar Ring or Underline -->
           <div class="badge-bars">
-            <div class="badge-bar hp" :style="{ width: (slot.back.currentHp / slot.back.maxHp * 100) + '%' }"></div>
-            <div class="badge-bar mp" :style="{ width: (slot.back.currentMp / slot.back.maxMp * 100) + '%' }"></div>
+            <div class="badge-bar hp" :style="{ width: slot.back.hpPercent + '%' }"></div>
+            <div class="badge-bar mp" :style="{ width: slot.back.mpPercent + '%' }"></div>
           </div>
         </div>
 
@@ -105,41 +105,41 @@
     <template v-else>
       <div class="card back-card front-compact" v-if="slot.front"
            :class="{ 
-               'dead': hasStatus(slot.front, 'status_dead'),
-               'dying': hasStatus(slot.front, 'status_dying'),
-               'selectable': canSelect(slot.front)
+               'dead': slot.front.isDead,
+               'dying': slot.front.isDying,
+               'selectable': slot.front.isSelectable
            }"
            @click.stop="onCharacterClick(slot.front)"
       >
          <div class="back-card-header">
-             <span class="char-name" :class="{ 'name-dead': hasStatus(slot.front, 'status_dead') || hasStatus(slot.front, 'status_dying') }">{{ getLocalizedName(slot.front.name) }}</span>
+             <span class="char-name" :class="{ 'name-dead': slot.front.isDead || slot.front.isDying }">{{ getLocalizedName(slot.front.name) }}</span>
          </div>
          <div class="back-card-main-content">
              <div class="back-card-avatar">
-                <div class="mini-avatar large" :style="{ backgroundColor: getRoleColor(slot.front.role) }">
+                <div class="mini-avatar large" :style="{ backgroundColor: slot.front.roleColor }">
                    {{ slot.front.name.en ? slot.front.name.en.charAt(0) : '' }}
                 </div>
              </div>
              <div class="back-card-info">
                 <div class="back-card-stats">
-                  <div class="mini-bar hp" :style="{ width: (slot.front.currentHp / slot.front.maxHp * 100) + '%' }"></div>
-                  <div class="mini-bar mp" :style="{ width: (slot.front.currentMp / slot.front.maxMp * 100) + '%' }"></div>
-                  <div class="mini-bar-container atb-container" :class="getATBContainerClass(slot.front.atb)">
+                  <div class="mini-bar hp" :style="{ width: slot.front.hpPercent + '%' }"></div>
+                  <div class="mini-bar mp" :style="{ width: slot.front.mpPercent + '%' }"></div>
+                  <div class="mini-bar-container atb-container" :class="slot.front.atbContainerClass">
                       <div 
                          class="mini-bar atb" 
                          :class="[
-                             getATBColorClass(slot.front.atb), 
+                             slot.front.atbColorClass, 
                              { 
                                  'glow-effect': (slot.front.atb || 0) >= 100,
-                                 'no-transition': (slot.front.atb || 0) < 5
+                                 'no-transition': slot.front.atbNoTransition
                              }
                          ]"
-                         :style="{ width: getATBWidth(slot.front.atb) + '%' }"
+                         :style="{ width: slot.front.atbPercent + '%' }"
                        ></div>
                   </div>
                   <!-- Mini BP -->
                   <div class="mini-bp-row">
-                     <div v-for="n in 6" :key="n" class="mini-bp-dot" :class="{ 'filled': (slot.front.energy || 0) >= n }"></div>
+                     <div v-for="(filled, i) in slot.front.energyPills" :key="i" class="mini-bp-dot" :class="{ 'filled': filled }"></div>
                   </div>
                 </div>
              </div>
@@ -149,10 +149,10 @@
               v-for="st in slot.front.statusEffects" 
               :key="st.id" 
               class="status-icon mini"
-              :class="getStatusClass(st.id)" 
-              :title="getStatusTooltip(st)"
+              :class="st.class" 
+              :title="st.tooltip"
             >
-                <GameIcon :name="getStatusIcon(st.id)" />
+                <GameIcon :name="st.icon" />
                 <span class="status-duration">{{ st.duration }}</span>
             </div>
          </div>
@@ -173,21 +173,21 @@
     
     <div class="card back-card" v-if="slot.back && viewMode !== 'avatar'"
          :class="{ 
-             'dead': hasStatus(slot.back, 'status_dead'),
-             'dying': hasStatus(slot.back, 'status_dying'),
-             'selectable': canSelect(slot.back) 
+             'dead': slot.back.isDead,
+             'dying': slot.back.isDying,
+             'selectable': slot.back.isSelectable 
          }"
          @click.stop="onCharacterClick(slot.back)"
     >
        <!-- Top Row: Name -->
        <div class="back-card-header">
-           <span class="char-name" :class="{ 'name-dead': hasStatus(slot.back, 'status_dead') || hasStatus(slot.back, 'status_dying') }">{{ getLocalizedName(slot.back.name) }}</span>
+           <span class="char-name" :class="{ 'name-dead': slot.back.isDead || slot.back.isDying }">{{ getLocalizedName(slot.back.name) }}</span>
        </div>
 
        <div class="back-card-main-content">
            <!-- Left: Avatar -->
            <div class="back-card-avatar">
-              <div class="mini-avatar large" :style="{ backgroundColor: getRoleColor(slot.back.role) }">
+              <div class="mini-avatar large" :style="{ backgroundColor: slot.back.roleColor }">
                  {{ slot.back.name.en ? slot.back.name.en.charAt(0) : '' }}
               </div>
            </div>
@@ -196,25 +196,25 @@
            <div class="back-card-info">
               <!-- Stats -->
               <div class="back-card-stats">
-                <div class="mini-bar hp" :style="{ width: (slot.back.currentHp / slot.back.maxHp * 100) + '%' }"></div>
-                <div class="mini-bar mp" :style="{ width: (slot.back.currentMp / slot.back.maxMp * 100) + '%' }"></div>
+                <div class="mini-bar hp" :style="{ width: slot.back.hpPercent + '%' }"></div>
+                <div class="mini-bar mp" :style="{ width: slot.back.mpPercent + '%' }"></div>
                 <!-- Back Row ATB Bar (Overcharge) -->
-                <div class="mini-bar-container atb-container" :class="getATBContainerClass(slot.back.atb)">
+                <div class="mini-bar-container atb-container" :class="slot.back.atbContainerClass">
                     <div 
                        class="mini-bar atb" 
                        :class="[
-                           getATBColorClass(slot.back.atb), 
+                           slot.back.atbColorClass, 
                            { 
                                'glow-effect': (slot.back.atb || 0) >= 100,
-                               'no-transition': (slot.back.atb || 0) > 0 && (slot.back.atb || 0) % 100 < 10
+                               'no-transition': slot.back.atbNoTransition
                            }
                        ]"
-                       :style="{ width: getATBWidth(slot.back.atb) + '%' }"
+                       :style="{ width: slot.back.atbPercent + '%' }"
                      ></div>
                 </div>
                 <!-- Mini BP -->
                  <div class="mini-bp-row">
-                     <div v-for="n in 6" :key="n" class="mini-bp-dot" :class="{ 'filled': (slot.back.energy || 0) >= n }"></div>
+                     <div v-for="(filled, i) in slot.back.energyPills" :key="i" class="mini-bp-dot" :class="{ 'filled': filled }"></div>
                   </div>
               </div>
            </div>
@@ -226,10 +226,10 @@
             v-for="st in slot.back.statusEffects" 
             :key="st.id" 
             class="status-icon mini"
-            :class="getStatusClass(st.id)" 
-            :title="getStatusTooltip(st)"
+            :class="st.class" 
+            :title="st.tooltip"
           >
-              <GameIcon :name="getStatusIcon(st.id)" />
+              <GameIcon :name="st.icon" />
               <span class="status-duration">{{ st.duration }}</span>
           </div>
        </div>
@@ -241,15 +241,6 @@
 </template>
 
 <script setup>
-import { 
-  getRoleColor,
-  getStatusClass, 
-  getStatusTooltip, 
-  getStatusIcon,
-  getATBWidth,
-  getATBColorClass,
-  getATBContainerClass
-} from '@/utils/battleUIUtils';
 import GameIcon from '@/components/ui/GameIcon.vue';
 import { useI18n } from 'vue-i18n';
 
@@ -261,10 +252,6 @@ const props = defineProps({
   isActiveTurn: {
     type: Boolean,
     default: false
-  },
-  validTargetIds: {
-    type: Array,
-    default: () => []
   },
   viewMode: {
     type: String,
@@ -280,16 +267,6 @@ const getLocalizedName = (nameObj) => {
     if (!nameObj) return '';
     if (typeof nameObj === 'string') return nameObj;
     return nameObj[locale.value] || nameObj.en || nameObj.zh || '';
-};
-
-const hasStatus = (character, statusId) => {
-    if (!character || !character.statusEffects) return false;
-    return character.statusEffects.some(s => s.id === statusId);
-};
-
-const canSelect = (character) => {
-    if (!character) return false;
-    return props.validTargetIds.includes(character.uuid);
 };
 
 const onCharacterClick = (character) => {

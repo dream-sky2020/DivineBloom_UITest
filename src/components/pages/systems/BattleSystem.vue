@@ -21,10 +21,9 @@
     <!-- Enemies Area -->
     <div class="enemy-zone">
       <BattleEnemyUnit 
-        v-for="enemy in enemies" 
+        v-for="enemy in enemiesDisplay" 
         :key="enemy.uuid" 
         :enemy="enemy"
-        :is-selectable="validTargetIds.includes(enemy.uuid)"
         @click="onEnemyClick"
       />
     </div>
@@ -55,13 +54,12 @@
     <!-- Party Area -->
     <div class="party-zone">
       <BattlePartySlot 
-        v-for="(slot, index) in partySlots" 
+        v-for="(slot, index) in partySlotsDisplay" 
         :key="index" 
         :slot="slot"
         :compact="compactPartyMode"
         :view-mode="partyViewMode"
         :is-active-turn="isSlotActive(slot)"
-        :valid-target-ids="validTargetIds"
         @click-character="onCharacterClick"
       />
     </div>
@@ -88,8 +86,8 @@ const battleStore = gameStore.battle;
 const settingsStore = gameStore.settings;
 // removed activeSlotIndex
 const { 
-    enemies, 
-    partySlots, 
+    enemiesDisplay,
+    partySlotsDisplay,
     activeCharacter, 
     battleLog, 
     battleState, 
@@ -133,15 +131,15 @@ const isSelectingTarget = computed(() => !!pendingAction.value);
 const isSlotActive = (slot) => {
     if (!activeCharacter.value) return false;
     // Check if slot.front matches activeCharacter
-    return slot.front && slot.front.id === activeCharacter.value.id;
+    return slot.front && slot.front.uuid === activeCharacter.value.uuid;
 };
 
 const canSwitch = computed(() => {
     if (!activeCharacter.value) return false;
     // Find slot for active character
-    const slot = partySlots.value.find(s => s.front && s.front.id === activeCharacter.value.id);
+    const slot = partySlotsDisplay.value.find(s => s.front && s.front.uuid === activeCharacter.value.uuid);
     // Can switch if back row exists AND is alive
-    return slot && slot.back && slot.back.currentHp > 0;
+    return slot && slot.back && slot.back.hp > 0;
 });
 
 const characterSkills = computed(() => {

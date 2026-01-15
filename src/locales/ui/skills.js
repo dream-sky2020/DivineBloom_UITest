@@ -63,6 +63,20 @@ export default {
     en: 'EQUIPPED',
     ja: '装備中',
     ko: '장착됨'
+  },
+  fixed: {
+    zh: '固定',
+    'zh-TW': '固定',
+    en: 'FIXED',
+    ja: '固定',
+    ko: '고정'
+  },
+  fixed_passives: {
+    zh: '固有能力',
+    'zh-TW': '固有能力',
+    en: 'Fixed Passives',
+    ja: '固有アビリティ',
+    ko: '고유 능력'
   }
 }
 

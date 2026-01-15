@@ -20,8 +20,10 @@ export const resolveChainSequence = (skill, initialTarget, allEnemies) => {
     let currentTarget = initialTarget;
 
     // 如果初始目标无效，尝试找一个替补
-    if (!currentTarget || currentTarget.currentHp <= 0) {
-        currentTarget = allEnemies.find(e => e.currentHp > 0);
+    const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
+
+    if (!currentTarget || isDead(currentTarget)) {
+        currentTarget = allEnemies.find(e => !isDead(e));
     }
 
     for (let i = 0; i < bounceCount; i++) {
@@ -40,7 +42,7 @@ export const resolveChainSequence = (skill, initialTarget, allEnemies) => {
 
         // 寻找下一个目标 (随机一个没被击中过的活着的目标)
         const candidates = allEnemies.filter(e =>
-            e.currentHp > 0 && !hitIds.has(e.uuid)
+            !isDead(e) && !hitIds.has(e.uuid)
         );
 
         if (candidates.length === 0) break;
@@ -62,9 +64,11 @@ export const resolveRandomSequence = (skill, allEnemies) => {
     const hits = [];
     const count = skill.randomHits || 1;
 
+    const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
+
     for (let i = 0; i < count; i++) {
         // 每次都重新筛选存活的敌人
-        const candidates = allEnemies.filter(e => e.currentHp > 0);
+        const candidates = allEnemies.filter(e => !isDead(e));
         if (candidates.length === 0) break;
 
         const target = candidates[Math.floor(Math.random() * candidates.length)];
@@ -101,7 +105,9 @@ const accumulateCosts = (costs, initialReqs = null) => {
 };
 
 const checkResources = (actor, reqs, context) => {
+    const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
     if (actor.currentMp < reqs.mp) return false;
+    if (isDead(actor)) return false; // Dead cannot pay HP or act
     if (actor.currentHp <= reqs.hp) return false;
 
     for (const [statusId, amount] of Object.entries(reqs.statuses)) {

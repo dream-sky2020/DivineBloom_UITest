@@ -22,14 +22,16 @@
         <h3 class="section-title" v-t="'skillTypes.active'">Active Skills</h3>
         <div class="skills-row">
           <div 
-            v-for="(skill, index) in activeCharacter.equippedActiveSkills" 
+            v-for="(skillId, index) in activeCharacter.equippedActiveSkills" 
             :key="'active-' + index"
             class="skill-slot equipped-active group hover-effect"
-            @click="handleUnequip(skill, false)"
-            :title="getLocalizedName(getSkill(skill)?.name)"
+            :class="{ selected: selectedSkillId === skillId }"
+            @click="selectSkill(skillId)"
+            @dblclick="handleUnequip(skillId, false)"
+            :title="getLocalizedName(getSkill(skillId)?.name)"
           >
             <span class="skill-icon">
-                <GameIcon :name="getSkill(skill)?.icon || 'icon_unknown'" />
+                <GameIcon :name="getSkill(skillId)?.icon || 'icon_unknown'" />
             </span>
             <div class="slot-badge">{{ index + 1 }}</div>
           </div>
@@ -38,6 +40,8 @@
             v-for="i in (activeCharacter.activeSkillLimit - activeCharacter.equippedActiveSkills.length)" 
             :key="'empty-active-' + i"
             class="skill-slot empty group hover-effect"
+            :class="{ 'valid-target': selectedSkill && !isPassive(selectedSkill) && !isEquipped(selectedSkill.id) }"
+            @click="handleEmptySlotClick(false)"
           >
             <span class="empty-plus">+</span>
             <div class="slot-badge empty-badge">{{ activeCharacter.equippedActiveSkills.length + i }}</div>
@@ -48,28 +52,62 @@
       <!-- 分隔线 -->
       <div class="divider"></div>
 
-      <!-- 被动技能槽 -->
+      <!-- 被动技能槽 (可装备) -->
       <div class="loadout-section">
         <h3 class="section-title" v-t="'skillTypes.passive'">Passive Skills</h3>
         <div class="skills-row">
+          <!-- 已装备被动技能 (Equipped) -->
           <div 
-            v-for="(skill, index) in activeCharacter.equippedPassiveSkills" 
+            v-for="(skillId, index) in activeCharacter.equippedPassiveSkills" 
             :key="'passive-' + index"
             class="skill-slot passive-active rounded-circle group hover-effect"
-            @click="handleUnequip(skill, true)"
-             :title="getLocalizedName(getSkill(skill)?.name)"
+            :class="{ selected: selectedSkillId === skillId }"
+            @click="selectSkill(skillId)"
+            @dblclick="handleUnequip(skillId, true)"
+             :title="getLocalizedName(getSkill(skillId)?.name)"
           >
             <span class="skill-icon">
-                <GameIcon :name="getSkill(skill)?.icon || 'icon_unknown'" />
+                <GameIcon :name="getSkill(skillId)?.icon || 'icon_unknown'" />
             </span>
           </div>
           <!-- Empty Slots -->
           <div 
-            v-for="i in (activeCharacter.passiveSkillLimit - activeCharacter.equippedPassiveSkills.length)" 
+            v-for="i in Math.max(0, activeCharacter.passiveSkillLimit - activeCharacter.equippedPassiveSkills.length)" 
             :key="'empty-passive-' + i"
             class="skill-slot passive-empty rounded-circle group hover-effect"
+            :class="{ 'valid-target': selectedSkill && isPassive(selectedSkill) && !isEquipped(selectedSkill.id) }"
+            @click="handleEmptySlotClick(true)"
           >
             <span class="empty-plus">+</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分隔线 -->
+      <div class="divider"></div>
+
+      <!-- 固定被动 (Intrinsic/Fixed) -->
+      <div class="loadout-section fixed-section">
+        <h3 class="section-title" v-t="'skills.fixed_passives'">Fixed Passives</h3>
+        <div class="skills-row">
+          <div 
+            v-for="(skillId, index) in activeCharacter.fixedPassiveSkills" 
+            :key="'fixed-passive-' + index"
+            class="skill-slot passive-active fixed-skill rounded-circle group"
+            :class="{ selected: selectedSkillId === skillId }"
+            @click="selectSkill(skillId)"
+            :title="getLocalizedName(getSkill(skillId)?.name) + ' (Fixed)'"
+          >
+            <span class="skill-icon">
+                <GameIcon :name="getSkill(skillId)?.icon || 'icon_unknown'" />
+            </span>
+            <div class="lock-overlay">
+                <i class="fas fa-lock"></i>
+            </div>
+          </div>
+          <!-- 占位符提示，如果没有任何固定技能 -->
+          <div v-if="!activeCharacter.fixedPassiveSkills || activeCharacter.fixedPassiveSkills.length === 0" class="no-fixed-hint">
+            None
           </div>
         </div>
       </div>
@@ -94,7 +132,8 @@
         mode="detailed" 
         :columns="5" 
         v-model="selectedSkillIndex"
-        @select="toggleEquip"
+        @select="selectSkill($event.id)"
+        @dblclick="handleToggleEquip"
       />
 
       <!-- 底部描述区域 -->
@@ -124,8 +163,10 @@
           <button 
             v-if="isEquipped(selectedSkill.id)"
             class="action-btn btn-red" 
+            :class="{ 'btn-disabled': isFixed(selectedSkill.id) }"
+            :disabled="isFixed(selectedSkill.id)"
             @click="handleUnequip(selectedSkill.id, isPassive(selectedSkill))"
-            v-t="'skills.unequip'"
+            v-t="isFixed(selectedSkill.id) ? 'skills.fixed' : 'skills.unequip'"
           >Unequip</button>
           <button 
             v-else
@@ -224,37 +265,92 @@ const isPassive = (skill) => {
 const isEquipped = (skillId) => {
     if (!activeCharacter.value) return false;
     return activeCharacter.value.equippedActiveSkills.includes(skillId) || 
-           activeCharacter.value.equippedPassiveSkills.includes(skillId);
+           activeCharacter.value.equippedPassiveSkills.includes(skillId) ||
+           (activeCharacter.value.fixedPassiveSkills && activeCharacter.value.fixedPassiveSkills.includes(skillId));
+};
+
+const isFixed = (skillId) => {
+    if (!activeCharacter.value) return false;
+    return activeCharacter.value.fixedPassiveSkills && activeCharacter.value.fixedPassiveSkills.includes(skillId);
 };
 
 // Filtered Skills
 const filteredSkills = computed(() => {
     if (!activeCharacter.value || !activeCharacter.value.skills) return [];
     
-    return activeCharacter.value.skills.map(id => skillsDb[id]).filter(skill => {
+    // Add fixed skills to the pool of all skills if they aren't already there
+    // This ensures they appear in the list
+    const allSkillIds = [...activeCharacter.value.skills];
+    if (activeCharacter.value.fixedPassiveSkills) {
+        activeCharacter.value.fixedPassiveSkills.forEach(id => {
+            if (!allSkillIds.includes(id)) allSkillIds.push(id);
+        });
+    }
+
+    return allSkillIds.map(id => skillsDb[id]).filter(skill => {
         if (!skill) return false;
         if (filterType.value === 'all') return true;
         const passive = isPassive(skill);
         if (filterType.value === 'passive') return passive;
         if (filterType.value === 'active') return !passive;
         return true;
-    }).map(skill => ({
-        ...skill,
-        highlight: isEquipped(skill.id),
-        footerLeft: isPassive(skill) ? 'skillTypes.passive' : 'skillTypes.active',
-        footerLeftClass: isPassive(skill) ? 'text-green' : 'text-blue',
-        footerRight: isPassive(skill) ? '--' : (skill.cost || '--'),
-        footerRightClass: isPassive(skill) ? '' : 'text-blue-bold',
-        tag: isEquipped(skill.id) ? 'EQUIPPED' : null
-    }));
+    }).map(skill => {
+        const fixed = isFixed(skill.id);
+        const equipped = isEquipped(skill.id);
+        
+        let tag = null;
+        if (fixed) tag = 'FIXED';
+        else if (equipped) tag = 'EQUIPPED';
+
+        return {
+            ...skill,
+            highlight: equipped,
+            footerLeft: isPassive(skill) ? 'skillTypes.passive' : 'skillTypes.active',
+            footerLeftClass: isPassive(skill) ? 'text-green' : 'text-blue',
+            footerRight: isPassive(skill) ? '--' : (skill.cost || '--'),
+            footerRightClass: isPassive(skill) ? '' : 'text-blue-bold',
+            tag: tag,
+            isFixed: fixed
+        };
+    });
 });
 
 // Actions
+const selectSkill = (id) => {
+    selectedSkillId.value = id;
+};
+
+const handleEmptySlotClick = (isPassiveSlot) => {
+    if (!selectedSkill.value) return;
+    
+    const skillIsPassive = isPassive(selectedSkill.value);
+    
+    // Type mismatch check
+    if (skillIsPassive !== isPassiveSlot) return;
+    
+    // Already equipped check
+    if (isEquipped(selectedSkill.value.id)) return;
+    
+    // Capacity check
+    if (canEquip(selectedSkill.value)) {
+        handleEquip(selectedSkill.value.id, skillIsPassive);
+    }
+};
+
+const handleToggleEquip = (skill) => {
+    if (!skill || isFixed(skill.id)) return;
+    
+    const passive = isPassive(skill);
+    if (isEquipped(skill.id)) {
+        handleUnequip(skill.id, passive);
+    } else if (canEquip(skill)) {
+        handleEquip(skill.id, passive);
+    }
+};
+
 const toggleEquip = (skill) => {
     if (!skill) return;
-    selectedSkillId.value = skill.id;
-    // Optional: Double click to equip/unequip?
-    // For now just select. The equip button is in description panel.
+    selectSkill(skill.id);
 };
 
 const canEquip = (skill) => {

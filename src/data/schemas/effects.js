@@ -31,6 +31,7 @@ export const EffectType = {
     REVIVE: 'revive',
     REVIVE_ENEMY: 'revive_enemy',
     FULL_RESTORE: 'fullRestore',
+    DEATH_HANDLER: 'death_handler',
 
     // Custom/Special
     PLAGUE_RAIN: 'plague_rain',
@@ -59,6 +60,7 @@ export const TriggerType = {
     ON_CC_SKIP: 'on_cc_skip',
     ON_DEATH: 'on_death',
     ON_REVIVE: 'on_revive',
+    ON_HP_ZERO: 'onHpZero',
 
     // Passive (Always Active)
     PASSIVE: 'passive',
@@ -203,6 +205,9 @@ export const EffectSchema = z.object({
     times: z.number().int().min(1).optional(), // 固定触发次数
     minTimes: z.number().int().min(1).optional(), // 最小触发次数
     maxTimes: z.number().int().min(1).optional(), // 最大触发次数
+
+    // ===== 变体/版本 =====
+    variant: z.string().optional(), // 用于区分同类效果的不同实现 (如 death_handler 的不同变体)
 
     // ===== 堆叠相关 =====
     maxStack: z.number().int().min(1).optional(), // 最大堆叠层数

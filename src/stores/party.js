@@ -64,6 +64,12 @@ export const usePartyStore = defineStore('party', () => {
                 // If DB has empty equipped lists, try to auto-equip from skills pool
                 let equippedActive = dbChar.equippedActiveSkills ? [...dbChar.equippedActiveSkills] : [];
                 let equippedPassive = dbChar.equippedPassiveSkills ? [...dbChar.equippedPassiveSkills] : [];
+                let fixedPassive = dbChar.fixedPassiveSkills ? [...dbChar.fixedPassiveSkills] : [];
+                
+                // Force include core death passives as fixed if not present
+                if (!fixedPassive.includes('skill_passive_hollow_will')) {
+                    fixedPassive.push('skill_passive_hollow_will');
+                }
                 
                 if (equippedActive.length === 0 && equippedPassive.length === 0 && dbChar.skills && dbChar.skills.length > 0) {
                      // Auto-equip logic
@@ -93,7 +99,8 @@ export const usePartyStore = defineStore('party', () => {
                     level: 1,
                     exp: 0,
                     equippedActiveSkills: equippedActive,
-                    equippedPassiveSkills: equippedPassive
+                    equippedPassiveSkills: equippedPassive,
+                    fixedPassiveSkills: fixedPassive
                 };
             }
         });
@@ -126,6 +133,11 @@ export const usePartyStore = defineStore('party', () => {
         const member = members.value[characterId];
         if (!member) return;
 
+        // Cannot unequip fixed skills
+        if (isPassive && member.fixedPassiveSkills && member.fixedPassiveSkills.includes(skillId)) {
+            return;
+        }
+
         const targetList = isPassive ? member.equippedPassiveSkills : member.equippedActiveSkills;
         const index = targetList.indexOf(skillId);
         if (index > -1) {
@@ -148,6 +160,7 @@ export const usePartyStore = defineStore('party', () => {
         // Merge equipped skills from runtime, fallback to DB if runtime missing (shouldn't happen after init)
         const equippedActive = runtime.equippedActiveSkills || db.equippedActiveSkills || [];
         const equippedPassive = runtime.equippedPassiveSkills || db.equippedPassiveSkills || [];
+        const fixedPassive = runtime.fixedPassiveSkills || db.fixedPassiveSkills || [];
 
         return {
             ...db,
@@ -166,6 +179,7 @@ export const usePartyStore = defineStore('party', () => {
             skills: db.skills || [], // All learned skills
             equippedActiveSkills: equippedActive,
             equippedPassiveSkills: equippedPassive,
+            fixedPassiveSkills: fixedPassive,
             // For backward compatibility or ease of use in battle, we might want to expose a combined 'battleSkills'
             // or let the battle system handle the split. 
             // The battle system currently uses .skills. We should probably update BattleSystem to use equippedActiveSkills.

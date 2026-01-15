@@ -1,4 +1,5 @@
 import { statusDb } from '@/data/status';
+import { skillsDb } from '@/data/skills';
 import { applyStatus, removeStatus } from '@/game/battle/statusSystem';
 
 /**
@@ -140,32 +141,64 @@ export const applyDamage = (target, amount, context, silent = false) => {
     const currentHp = target.currentHp;
     target.currentHp = Math.max(0, currentHp - safeAmount);
 
-    // Dying/Death Logic
+    // HP-Zero/Death Logic via Passive Skills
     if (target.currentHp === 0) {
-        const isDying = target.statusEffects && target.statusEffects.some(s => s.id === 'status_dying');
         const isDead = target.statusEffects && target.statusEffects.some(s => s.id === 'status_dead');
+        const isDying = target.statusEffects && target.statusEffects.some(s => s.id === 'status_dying');
 
         if (!isDead) {
-            if (target.isPlayer || target.isBoss) {
-                if (!isDying) {
-                    applyStatus(target, 'status_dying', 999, null, context);
-                    if (!silent && log) log('battle.enteredDying', { target: target.name });
-                } else if (safeAmount > 0) {
-                    // Roll for death when taking damage while dying
-                    const deathChance = 0.35;
-                    if (Math.random() < deathChance) {
-                        applyStatus(target, 'status_dead', 999, null, context);
-                        removeStatus(target, 'status_dying', context, true);
-                        target.atb = 0; // Clear ATB on death
-                        if (!silent && log) log('battle.death', { target: target.name });
-                    } else {
-                        if (!silent && log) log('battle.struggling', { target: target.name });
+            // Find passives that trigger on HP Zero
+            const deathHandlers = [];
+            if (target.skills) {
+                target.skills.forEach(skillId => {
+                    const skill = skillsDb[skillId];
+                    if (skill && skill.type === 'skillTypes.passive' && skill.effects) {
+                        skill.effects.forEach(eff => {
+                            if (eff.trigger === 'onHpZero' && eff.type === 'death_handler') {
+                                deathHandlers.push({ skill, effect: eff });
+                            }
+                        });
                     }
-                }
+                });
+            }
+
+            if (deathHandlers.length > 0) {
+                // Prioritize "will_to_live" over "hollow_will"
+                const hasWillToLive = deathHandlers.some(h => h.effect.variant === 'will_to_live');
+                const prioritizedHandlers = hasWillToLive 
+                    ? deathHandlers.filter(h => h.effect.variant === 'will_to_live')
+                    : deathHandlers;
+
+                // Execute death handlers
+                prioritizedHandlers.forEach(({ skill, effect }) => {
+                    if (effect.variant === 'will_to_live') {
+                        if (!isDying) {
+                            applyStatus(target, 'status_dying', 999, null, context);
+                            if (!silent && log) log('battle.enteredDying', { target: target.name });
+                        } else if (safeAmount > 0) {
+                            // Roll for death when taking damage while dying
+                            const deathChance = effect.chance || 0.35;
+                            if (Math.random() < deathChance) {
+                                applyStatus(target, 'status_dead', 999, null, context);
+                                removeStatus(target, 'status_dying', context, true);
+                                target.atb = 0;
+                                if (!silent && log) log('battle.death', { target: target.name });
+                            } else {
+                                if (!silent && log) log('battle.struggling', { target: target.name });
+                            }
+                        }
+                    } else if (effect.variant === 'hollow_will') {
+                        applyStatus(target, 'status_dead', 999, null, context);
+                        if (isDying) removeStatus(target, 'status_dying', context, true);
+                        target.atb = 0;
+                        if (!silent && log) log('battle.death', { target: target.name });
+                    }
+                });
             } else {
-                // Minions die immediately
+                // Fallback: Default Hollow Will behavior if no handlers found
                 applyStatus(target, 'status_dead', 999, null, context);
-                target.atb = 0; // Clear ATB on death
+                if (isDying) removeStatus(target, 'status_dying', context, true);
+                target.atb = 0;
                 if (!silent && log) log('battle.death', { target: target.name });
             }
         }
@@ -180,7 +213,8 @@ export const applyDamage = (target, amount, context, silent = false) => {
     }
 
     // Check if a front-row party member is incapacitated and needs switching
-    const isIncapacitated = target.currentHp <= 0 || (target.statusEffects && target.statusEffects.some(s => s.id === 'status_dead'));
+    const isDead = target.statusEffects && target.statusEffects.some(s => s.id === 'status_dead');
+    const isIncapacitated = isDead;
 
     if (isIncapacitated && performSwitch && partySlots) {
         const slotIndex = partySlots.findIndex(s => s.front && s.front.id === target.id);
@@ -209,15 +243,13 @@ export const applyHeal = (target, amount, context, silent = false) => {
 
     if (!target) return 0;
 
-    // Ensure currentHp is valid
-    if (typeof target.currentHp !== 'number' || isNaN(target.currentHp)) {
-        target.currentHp = 0;
-    }
-
-    if (target.currentHp <= 0) {
+    const isDead = target.statusEffects && target.statusEffects.some(s => s.id === 'status_dead');
+    if (isDead) {
         if (!silent && log) log('battle.incapacitated', { target: target.name });
         return 0;
     }
+
+    // Ensure currentHp is valid
 
     let safeAmount = Number(amount);
     if (isNaN(safeAmount)) safeAmount = 0;

@@ -13,6 +13,7 @@ import { resolveTargets, findPartyMember, getValidTargetIds } from '@/game/battl
 import { resolveChainSequence, resolveRandomSequence, canUseSkill, paySkillCost, processPassiveTrigger } from '@/game/battle/skillSystem';
 import { calculateAtbTick } from '@/game/battle/timeSystem';
 import { calculateDrops, mergeDrops } from '@/game/battle/lootSystem';
+import { getUnitDisplayData } from '@/game/battle/displaySystem';
 
 // ECS Integration
 import { world } from '@/game/ecs/world';
@@ -51,6 +52,26 @@ export const useBattleStore = defineStore('battle', () => {
 
     const isPlayerTurn = computed(() => {
         return !!activeCharacter.value && atbPaused.value;
+    });
+
+    const enemiesDisplay = computed(() => {
+        return enemies.value.map(enemy => getUnitDisplayData(enemy, {
+            activeUnit: activeUnit.value,
+            validTargetIds: validTargetIds.value
+        }));
+    });
+
+    const partySlotsDisplay = computed(() => {
+        return partySlots.value.map(slot => ({
+            front: getUnitDisplayData(slot.front, {
+                activeUnit: activeUnit.value,
+                validTargetIds: validTargetIds.value
+            }),
+            back: getUnitDisplayData(slot.back, {
+                activeUnit: activeUnit.value,
+                validTargetIds: validTargetIds.value
+            })
+        }));
     });
 
     // Get Battle Items (Consumables only)
@@ -152,9 +173,25 @@ export const useBattleStore = defineStore('battle', () => {
 
     const hydrateUnit = (state, isPlayer) => {
         if (!state) return null;
+
+        // For players, we filter the skills list to only include equipped and fixed skills
+        let battleSkills = state.skills || [];
+        if (isPlayer) {
+            const equippedActive = state.equippedActiveSkills || [];
+            const equippedPassive = state.equippedPassiveSkills || [];
+            const fixedPassive = state.fixedPassiveSkills || [];
+            
+            // Combine all active and passive skills that should be available in battle
+            battleSkills = [...equippedActive, ...equippedPassive, ...fixedPassive];
+            
+            // Deduplicate to be safe
+            battleSkills = [...new Set(battleSkills)];
+        }
+
         return {
             ...state,
             uuid: generateUUID(),
+            skills: battleSkills,
             // Runtime state for battle
             statusEffects: [],
             isDefending: false,
@@ -222,14 +259,16 @@ export const useBattleStore = defineStore('battle', () => {
         const MAX_BP = 6;
         // Back row also cycles at 100 now to generate Energy
 
+        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
+
         // Collect all active units with metadata to avoid repeated lookups
         const unitEntries = [];
         enemies.value.forEach(e => {
-            if (e.currentHp > 0) unitEntries.push({ unit: e, isBackRow: false });
+            if (!isDead(e)) unitEntries.push({ unit: e, isBackRow: false });
         });
         partySlots.value.forEach(slot => {
-            if (slot.front && slot.front.currentHp > 0) unitEntries.push({ unit: slot.front, isBackRow: false });
-            if (slot.back && slot.back.currentHp > 0) unitEntries.push({ unit: slot.back, isBackRow: true });
+            if (slot.front && !isDead(slot.front)) unitEntries.push({ unit: slot.front, isBackRow: false });
+            if (slot.back && !isDead(slot.back)) unitEntries.push({ unit: slot.back, isBackRow: true });
         });
 
         // Increment ATB
@@ -268,6 +307,7 @@ export const useBattleStore = defineStore('battle', () => {
         boostLevel.value = 0; // Reset Boost Level on new turn
 
         const context = getContext();
+        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
 
         // Process Turn Start Passives (e.g. Mana Regen)
         processPassiveTrigger(unit, 'turn_start', context);
@@ -276,7 +316,7 @@ export const useBattleStore = defineStore('battle', () => {
         processTurnStatuses(unit, context);
 
         // Check if unit died from status
-        if (unit.currentHp <= 0) {
+        if (isDead(unit)) {
             endTurn(unit);
             return;
         }
@@ -316,9 +356,11 @@ export const useBattleStore = defineStore('battle', () => {
     };
 
     const processEnemyTurn = async (enemy) => {
+        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
+
         // Delay for dramatic effect
         setTimeout(() => {
-            if (enemy.currentHp <= 0) {
+            if (isDead(enemy)) {
                 endTurn(enemy);
                 return;
             }
@@ -820,6 +862,8 @@ export const useBattleStore = defineStore('battle', () => {
         waitingForInput,
         pendingAction,
         validTargetIds,
+        enemiesDisplay,
+        partySlotsDisplay,
 
         // Getters
         activeCharacter,

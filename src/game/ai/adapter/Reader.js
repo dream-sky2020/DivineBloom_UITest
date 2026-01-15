@@ -34,28 +34,32 @@ export class BattleReader {
 
     // Dynamic Team Resolution
     get opponents() {
+        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
+
         if (this.isPlayer) {
             // Player's opponents are Enemies
-            return this._enemies.filter(e => e.currentHp > 0);
+            return this._enemies.filter(e => !isDead(e));
         } else {
             // Enemy's opponents are Party (Front Row primarily)
             if (!this._party) return [];
             return this._party
-                .filter(slot => slot.front && slot.front.currentHp > 0)
+                .filter(slot => slot.front && !isDead(slot.front))
                 .map(slot => slot.front);
         }
     }
 
     get allies() {
+        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
+
         if (this.isPlayer) {
             // Player's allies are Party
             if (!this._party) return [];
             return this._party
-                .filter(slot => slot.front && slot.front.currentHp > 0)
+                .filter(slot => slot.front && !isDead(slot.front))
                 .map(slot => slot.front);
         } else {
             // Enemy's allies are Enemies
-            return this._enemies.filter(e => e.currentHp > 0);
+            return this._enemies.filter(e => !isDead(e));
         }
     }
 
@@ -66,14 +70,16 @@ export class BattleReader {
 
     // Get all dead players (front and back row) - or opponents
     getDeadPlayers() {
+        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
+
         if (this.isPlayer) {
-            return this._enemies.filter(e => e.currentHp <= 0);
+            return this._enemies.filter(e => isDead(e));
         } else {
             if (!this._party) return [];
             const dead = [];
             this._party.forEach(slot => {
-                if (slot.front && slot.front.currentHp <= 0) dead.push(slot.front);
-                if (slot.back && slot.back.currentHp <= 0) dead.push(slot.back);
+                if (slot.front && isDead(slot.front)) dead.push(slot.front);
+                if (slot.back && isDead(slot.back)) dead.push(slot.back);
             });
             return dead;
         }

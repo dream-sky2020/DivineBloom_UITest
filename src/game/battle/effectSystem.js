@@ -101,9 +101,11 @@ const _executeSingleEffect = (effect, target, actor, skill, context, silent, pre
             }
             break;
         case 'revive':
-            if (target && target.currentHp <= 0) {
+            if (target && target.statusEffects?.some(s => s.id === 'status_dead')) {
                 const pct = Number(effect.value) || 0.1;
                 target.currentHp = Math.floor(target.maxHp * pct);
+                removeStatus(target, 'status_dead', context, true);
+                removeStatus(target, 'status_dying', context, true);
                 if (!silent && log) log('battle.revived', { target: target.name });
                 return target.currentHp;
             } else {
@@ -112,9 +114,11 @@ const _executeSingleEffect = (effect, target, actor, skill, context, silent, pre
             }
             break;
         case 'revive_enemy':
-            if (target && target.currentHp <= 0) {
+            if (target && target.statusEffects?.some(s => s.id === 'status_dead')) {
                 const pct = Number(effect.value) || 0.1;
                 target.currentHp = Math.floor(target.maxHp * pct);
+                removeStatus(target, 'status_dead', context, true);
+                removeStatus(target, 'status_dying', context, true);
 
                 if (!silent && log) log('battle.revived', { target: target.name });
 

@@ -71,6 +71,8 @@ export const iconMap = {
   icon_revive_all: "🌟", // Mass Revive Skill
   icon_strength: "🦾",
   icon_mana: "💧",
+  icon_heart_pulse: "💓",
+  icon_skull: "💀",
   icon_plague_rain: "🌧️",
   icon_spike_explosion: "🌵",
   icon_forward_allies: "🎺",
