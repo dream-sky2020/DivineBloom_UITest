@@ -36,46 +36,45 @@ export const ExecuteSystem = {
     }
     
     // Check Global Player Intents (Directly from entities, not actions)
-    // This is a bit of a hybrid approach, but Menu is a global system action
     const playerEntity = world.with('player', 'playerIntent').first;
     if (playerEntity && playerEntity.playerIntent.wantsToOpenMenu) {
        if (callbacks.onOpenMenu) {
            callbacks.onOpenMenu();
-           // Reset intent to prevent multiple triggers (though pause should handle it)
            playerEntity.playerIntent.wantsToOpenMenu = false;
        }
     }
 
-    const queueLength = actionQueue.length
-    for (let i = 0; i < queueLength; i++) {
-      const request = actionQueue.shift()
-      if (!request) continue
+    // 优化：批量提取任务并清空原队列，避免 shift() 的 O(N) 位移开销和 GC 抖动
+    if (actionQueue.length > 0) {
+      const requests = actionQueue.splice(0, actionQueue.length);
+      
+      for (const request of requests) {
+        if (!request) continue;
 
-      // Type Guard: Validate request structure
-      if (!request.source || !request.type) {
-        logger.error('Invalid request structure:', request);
-        continue;
-      }
+        // Type Guard: Validate request structure
+        if (!request.source || !request.type) {
+          logger.error('Invalid request structure:', request);
+          continue;
+        }
 
-      const { source, type } = request
+        const { source, type } = request;
 
-      // logger.debug(`Processing action: ${type}`, source.type)
+        switch (type) {
+          case 'BATTLE':
+            BattleExecuteSystem.handle(source, callbacks);
+            break;
 
-      switch (type) {
-        case 'BATTLE':
-          BattleExecuteSystem.handle(source, callbacks)
-          break
+          case 'DIALOGUE':
+            DialogueExecuteSystem.handle(source, callbacks);
+            break;
 
-        case 'DIALOGUE':
-          DialogueExecuteSystem.handle(source, callbacks)
-          break
+          case 'TELEPORT':
+            TeleportExecuteSystem.handle(source, callbacks);
+            break;
 
-        case 'TELEPORT':
-          TeleportExecuteSystem.handle(source, callbacks)
-          break
-
-        default:
-          logger.warn(`Unknown action type: ${type}`, source)
+          default:
+            logger.warn(`Unknown action type: ${type}`, source);
+        }
       }
     }
 

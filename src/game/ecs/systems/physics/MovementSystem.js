@@ -1,16 +1,15 @@
 import { world } from '@/game/ecs/world'
 
 /**
- * Movement System Components Schema
+ * Movement System (Physics)
+ * 整合了位移计算与边界约束。
  * 
  * Required Components:
- * @property {object} position - 位置组件
- * @property {number} position.x
- * @property {number} position.y
+ * @property {object} position - 位置组件 {x, y}
+ * @property {object} velocity - 速度组件 {x, y}
  * 
- * @property {object} velocity - 速度组件
- * @property {number} velocity.x - X轴速度 (pixels/sec)
- * @property {number} velocity.y - Y轴速度 (pixels/sec)
+ * Optional Components:
+ * @property {object} bounds - 边界限制 {minX, maxX, minY, maxY}
  */
 
 const movingEntities = world.with('position', 'velocity')
@@ -18,27 +17,25 @@ const movingEntities = world.with('position', 'velocity')
 export const MovementSystem = {
   update(dt) {
     for (const entity of movingEntities) {
-      // Defensive checks
-      if (!entity.position) {
-        console.error(`[MovementSystem] Entity ${entity.id || 'N/A'} missing position component!`);
-        continue;
-      }
-      if (!entity.velocity) {
-        console.error(`[MovementSystem] Entity ${entity.id || 'N/A'} missing velocity component!`);
-        continue;
-      }
+      const { position, velocity, bounds } = entity
 
-      // Type guards for numeric values
-      if (typeof entity.velocity.x !== 'number' || typeof entity.velocity.y !== 'number') {
-        console.warn(`[MovementSystem] Invalid velocity values for Entity ${entity.id}:`, entity.velocity);
-        // Auto-fix or skip
-        entity.velocity.x = entity.velocity.x || 0;
-        entity.velocity.y = entity.velocity.y || 0;
-      }
+      // 1. 基础位移 (Euler integration)
+      // 注意：这里不再进行重复的 type guard，假设加载时已校验或在必要时由加载器处理
+      position.x += velocity.x * dt
+      position.y += velocity.y * dt
 
-      // Basic Euler integration
-      entity.position.x += entity.velocity.x * dt
-      entity.position.y += entity.velocity.y * dt
+      // 2. 立即执行边界约束 (Constraint)
+      // 合并逻辑可以显著减少对 bounds 组件的重复查询开销
+      if (bounds) {
+        const { minX, maxX, minY, maxY } = bounds
+        
+        // 只有在坐标超出边界时才进行赋值，减少内存写入
+        if (position.x < minX) position.x = minX
+        else if (position.x > maxX) position.x = maxX
+        
+        if (position.y < minY) position.y = minY
+        else if (position.y > maxY) position.y = maxY
+      }
     }
   }
 }

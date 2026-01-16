@@ -12,7 +12,6 @@ import { PlayerControlSystem } from '@/game/ecs/systems/control/PlayerControlSys
 import { EnemyAIIntentSystem } from '@/game/ecs/systems/intent/EnemyAIIntentSystem'
 import { EnemyControlSystem } from '@/game/ecs/systems/control/EnemyControlSystem'
 import { MovementSystem } from '@/game/ecs/systems/physics/MovementSystem'
-import { ConstraintSystem } from '@/game/ecs/systems/physics/ConstraintSystem'
 import { DetectAreaSystem } from '@/game/ecs/systems/detect/DetectAreaSystem'
 import { DetectInputSystem } from '@/game/ecs/systems/detect/DetectInputSystem'
 import { TriggerSystem } from '@/game/ecs/systems/event/TriggerSystem'
@@ -264,7 +263,6 @@ export class WorldScene {
 
             // 5. 物理 (Physics)
             MovementSystem.update(dt)
-            ConstraintSystem.update(dt)
 
             // 6. 执行 (Execute)
             ExecuteSystem.update({

@@ -28,8 +28,8 @@
         <div class="resize-handle right" @mousedown.stop="startResizing('left')"></div>
       </div>
 
-      <!-- Main Canvas Area -->
-      <div class="canvas-container">
+      <!-- Main Canvas Area (Isolated Absolute Layer) -->
+      <div class="canvas-container" :style="canvasContainerStyle">
         <div id="game-canvas">
             <!-- Global Game Canvas -->
             <canvas 
@@ -52,6 +52,9 @@
             </div>
         </div>
       </div>
+
+      <!-- Layout Spacer (Maintains flex flow and provides size reference) -->
+      <div class="layout-spacer"></div>
 
       <!-- Right Sidebar -->
       <div 
@@ -198,7 +201,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGameStore } from '@/stores/game';
 import { gameManager } from '@/game/GameManager';
@@ -228,9 +231,20 @@ const showDevTools = ref(false);
 const DEFAULT_SIDEBAR_WIDTH = 320;
 const leftSidebarWidth = ref(DEFAULT_SIDEBAR_WIDTH);
 const rightSidebarWidth = ref(DEFAULT_SIDEBAR_WIDTH);
-const isLeftCollapsed = ref(false);
+const isLeftCollapsed = ref(true);
 const isRightCollapsed = ref(false);
 const resizingSidebar = ref(null); // 'left' or 'right'
+
+const canvasContainerStyle = computed(() => {
+  const isEditMode = gameManager.editor.editMode;
+  const left = isEditMode ? (isLeftCollapsed.value ? 40 : leftSidebarWidth.value) : 0;
+  const right = isEditMode ? (isRightCollapsed.value ? 40 : rightSidebarWidth.value) : 0;
+  
+  return {
+    left: `${left}px`,
+    right: `${right}px`
+  };
+});
 
 const sidebarStyles = computed(() => {
   return {
@@ -267,7 +281,7 @@ const handleMouseMove = (e) => {
   }
   
   // Update canvas size during resize
-  resizeCanvas();
+  nextTick(resizeCanvas);
 };
 
 const stopResizing = () => {
@@ -276,7 +290,7 @@ const stopResizing = () => {
   document.removeEventListener('mouseup', stopResizing);
   document.body.style.cursor = '';
   // Final sync
-  resizeCanvas();
+  nextTick(resizeCanvas);
 };
 
 const resetSidebar = (side) => {
@@ -287,13 +301,13 @@ const resetSidebar = (side) => {
     rightSidebarWidth.value = DEFAULT_SIDEBAR_WIDTH;
     isRightCollapsed.value = false;
   }
-  resizeCanvas();
+  nextTick(resizeCanvas);
 };
 
 const toggleCollapse = (side) => {
   if (side === 'left') isLeftCollapsed.value = !isLeftCollapsed.value;
   else isRightCollapsed.value = !isRightCollapsed.value;
-  resizeCanvas();
+  nextTick(resizeCanvas);
 };
 
 // Sync with GameManager state
