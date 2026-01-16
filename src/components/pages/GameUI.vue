@@ -1,28 +1,80 @@
 <template>
   <div class="page-scroller">
     <!-- Viewport 1: Game Canvas (100vh) -->
-    <div class="viewport-section">
-      <div id="game-canvas">
-          <!-- Global Game Canvas -->
-          <canvas 
-            ref="gameCanvas" 
-            class="global-canvas"
-            :style="canvasStyle"
-          ></canvas>
+    <div class="viewport-section" :class="{ 'is-resizing': !!resizingSidebar }">
+      <!-- Left Sidebar -->
+      <div 
+        class="sidebar-container left-sidebar" 
+        v-if="gameManager.editor.editMode"
+        :class="{ 'is-collapsed': isLeftCollapsed }"
+        :style="sidebarStyles.left"
+      >
+        <div class="sidebar-controls">
+          <button @click="toggleCollapse('left')" class="control-btn collapse-btn" :title="isLeftCollapsed ? '展开' : '折叠'">
+            {{ isLeftCollapsed ? '▶' : '◀' }}
+          </button>
+          <button v-if="!isLeftCollapsed" @click="resetSidebar('left')" class="control-btn reset-btn" title="重置宽度">
+            ↺
+          </button>
+        </div>
 
-          <!-- Layer 1: Grid Overlay (Background/World Level) -->
-          <!-- Only show grid when we are in a system that needs it (like World Map) or isn't opaque -->
-          <div class="grid-overlay" v-show="showGrid"></div>
-
-          <!-- Layer 2: System UI (Top Level) -->
-          <div class="system-layer" :class="{ 'pass-through': currentSystem === 'world-map' }">
-            <transition name="fade" mode="out-in">
-              <component 
-                :is="activeSystemComponent" 
-                @change-system="handleSystemChange"
-              />
-            </transition>
+        <div class="sidebar-content" v-show="!isLeftCollapsed">
+          <div class="sidebar-placeholder">
+            <h3 style="padding: 16px; color: #94a3b8; font-size: 14px;">工具箱</h3>
           </div>
+        </div>
+
+        <!-- Resize Handle -->
+        <div class="resize-handle right" @mousedown.stop="startResizing('left')"></div>
+      </div>
+
+      <!-- Main Canvas Area -->
+      <div class="canvas-container">
+        <div id="game-canvas">
+            <!-- Global Game Canvas -->
+            <canvas 
+              ref="gameCanvas" 
+              class="global-canvas"
+              :style="canvasStyle"
+            ></canvas>
+
+            <!-- Layer 1: Grid Overlay (Background/World Level) -->
+            <div class="grid-overlay" v-show="showGrid"></div>
+
+            <!-- Layer 2: System UI (Top Level) -->
+            <div class="system-layer" :class="{ 'pass-through': currentSystem === 'world-map' }">
+              <transition name="fade" mode="out-in">
+                <component 
+                  :is="activeSystemComponent" 
+                  @change-system="handleSystemChange"
+                />
+              </transition>
+            </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div 
+        class="sidebar-container right-sidebar" 
+        v-if="gameManager.editor.editMode"
+        :class="{ 'is-collapsed': isRightCollapsed }"
+        :style="sidebarStyles.right"
+      >
+        <!-- Resize Handle -->
+        <div class="resize-handle left" @mousedown.stop="startResizing('right')"></div>
+
+        <div class="sidebar-controls">
+          <button v-if="!isRightCollapsed" @click="resetSidebar('right')" class="control-btn reset-btn" title="重置宽度">
+            ↺
+          </button>
+          <button @click="toggleCollapse('right')" class="control-btn collapse-btn" :title="isRightCollapsed ? '展开' : '折叠'">
+            {{ isRightCollapsed ? '◀' : '▶' }}
+          </button>
+        </div>
+
+        <div class="sidebar-content" v-show="!isRightCollapsed">
+          <EntityInspector />
+        </div>
       </div>
     </div>
 
@@ -162,6 +214,7 @@ import BattleSystem from '@/components/pages/systems/BattleSystem.vue';
 import DialogueSystem from '@/components/pages/systems/DialogueSystem.vue';
 import DevToolsSystem from '@/components/pages/systems/DevToolsSystem.vue';
 import DevTools from '@/components/pages/DevTools.vue';
+import EntityInspector from '@/components/pages/editor/EntityInspector.vue';
 
 const logger = createLogger('GameUI');
 const { locale } = useI18n();
@@ -171,11 +224,89 @@ const currentSystem = ref(gameManager.state.system); // Initialize from GameMana
 const gameCanvas = ref(null);
 const showDevTools = ref(false);
 
+// Sidebar Resize & Collapse State
+const DEFAULT_SIDEBAR_WIDTH = 320;
+const leftSidebarWidth = ref(DEFAULT_SIDEBAR_WIDTH);
+const rightSidebarWidth = ref(DEFAULT_SIDEBAR_WIDTH);
+const isLeftCollapsed = ref(false);
+const isRightCollapsed = ref(false);
+const resizingSidebar = ref(null); // 'left' or 'right'
+
+const sidebarStyles = computed(() => {
+  return {
+    left: {
+      width: isLeftCollapsed.value ? '40px' : `${leftSidebarWidth.value}px`,
+      transition: 'none'
+    },
+    right: {
+      width: isRightCollapsed.value ? '40px' : `${rightSidebarWidth.value}px`,
+      transition: 'none'
+    }
+  };
+});
+
+// Sidebar Interaction Handlers
+const startResizing = (side) => {
+  resizingSidebar.value = side;
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', stopResizing);
+  document.body.style.cursor = 'col-resize';
+};
+
+const handleMouseMove = (e) => {
+  if (!resizingSidebar.value) return;
+
+  if (resizingSidebar.value === 'left') {
+    const newWidth = Math.max(150, Math.min(600, e.clientX));
+    leftSidebarWidth.value = newWidth;
+    if (isLeftCollapsed.value && newWidth > 60) isLeftCollapsed.value = false;
+  } else {
+    const newWidth = Math.max(150, Math.min(600, window.innerWidth - e.clientX));
+    rightSidebarWidth.value = newWidth;
+    if (isRightCollapsed.value && newWidth > 60) isRightCollapsed.value = false;
+  }
+  
+  // Update canvas size during resize
+  resizeCanvas();
+};
+
+const stopResizing = () => {
+  resizingSidebar.value = null;
+  document.removeEventListener('mousemove', handleMouseMove);
+  document.removeEventListener('mouseup', stopResizing);
+  document.body.style.cursor = '';
+  // Final sync
+  resizeCanvas();
+};
+
+const resetSidebar = (side) => {
+  if (side === 'left') {
+    leftSidebarWidth.value = DEFAULT_SIDEBAR_WIDTH;
+    isLeftCollapsed.value = false;
+  } else {
+    rightSidebarWidth.value = DEFAULT_SIDEBAR_WIDTH;
+    isRightCollapsed.value = false;
+  }
+  resizeCanvas();
+};
+
+const toggleCollapse = (side) => {
+  if (side === 'left') isLeftCollapsed.value = !isLeftCollapsed.value;
+  else isRightCollapsed.value = !isRightCollapsed.value;
+  resizeCanvas();
+};
+
 // Sync with GameManager state
 watch(() => gameManager.state.system, (newSystem) => {
   if (newSystem && currentSystem.value !== newSystem) {
     currentSystem.value = newSystem;
   }
+});
+
+// Watch for edit mode changes to resize canvas
+watch(() => gameManager.editor.editMode, () => {
+  // Wait for DOM updates
+  setTimeout(resizeCanvas, 0);
 });
 
 const activeSystemComponent = computed(() => {
@@ -231,12 +362,14 @@ const handleSystemChange = (systemId) => {
 // Canvas Resizing Logic
 const resizeCanvas = () => {
   const canvas = document.getElementById('game-canvas');
-  if (!canvas) return;
+  const container = canvas?.parentElement;
+  if (!canvas || !container) return;
 
-  const windowWidth = window.innerWidth;
-  const windowHeight = window.innerHeight;
+  const rect = container.getBoundingClientRect();
+  const availableWidth = rect.width;
+  const availableHeight = rect.height;
   
-  if (windowWidth === 0 || windowHeight === 0) {
+  if (availableWidth === 0 || availableHeight === 0) {
       requestAnimationFrame(resizeCanvas);
       return;
   }
@@ -244,12 +377,12 @@ const resizeCanvas = () => {
   const targetWidth = 1920;
   const targetHeight = 1080;
   
-  const scaleX = windowWidth / targetWidth;
-  const scaleY = windowHeight / targetHeight;
+  const scaleX = availableWidth / targetWidth;
+  const scaleY = availableHeight / targetHeight;
   
   // Scale to fit within the viewport
   let scale = Math.min(scaleX, scaleY);
-  scale = scale * 0.95; // Margin
+  scale = scale * 0.98; // Slightly more margin for the new layout
 
   canvas.style.transform = `scale(${scale})`;
 }

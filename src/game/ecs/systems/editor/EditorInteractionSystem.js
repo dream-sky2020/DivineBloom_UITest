@@ -1,5 +1,6 @@
 import { world } from '@/game/ecs/world'
 import { Visuals } from '@/data/visuals'
+import { gameManager } from '@/game/GameManager'
 
 /**
  * Editor Interaction System
@@ -25,12 +26,14 @@ export const EditorInteractionSystem = {
       
       if (hit) {
         this.selectedEntity = hit;
+        gameManager.editor.selectedEntity = hit; // Sync with reactive state
         this.isDragging = true;
         this.dragOffset.x = hit.position.x - worldX;
         this.dragOffset.y = hit.position.y - worldY;
         console.log('[Editor] Selected:', hit.id || hit.uuid || 'unnamed');
       } else {
         this.selectedEntity = null;
+        gameManager.editor.selectedEntity = null; // Sync with reactive state
       }
     }
 

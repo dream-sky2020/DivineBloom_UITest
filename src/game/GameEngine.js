@@ -104,7 +104,8 @@ export class Renderer2D {
  * 输入管理
  */
 export class InputManager {
-    constructor() {
+    constructor(canvas = null) {
+        this.canvas = canvas
         this.keys = new Set()
         this.mouse = {
             x: 0,
@@ -146,6 +147,11 @@ export class InputManager {
     }
 
     onMouseDown(e) {
+        // Only trigger justPressed if clicking on the canvas or its descendants
+        // This prevents UI clicks from being interpreted as game world clicks
+        const isCanvasClick = this.canvas && (e.target === this.canvas || this.canvas.contains(e.target));
+        if (!isCanvasClick) return;
+
         if (e.button === 0) { // Left click
             this.mouse.isDown = true
             this.mouse.justPressed = true
@@ -194,7 +200,7 @@ export class GameEngine {
 
         // 初始化子系统
         this.assets = new AssetManager()
-        this.input = new InputManager()
+        this.input = new InputManager(this.canvas)
         this.renderer = new Renderer2D(this.ctx, this.assets)
 
         // 状态
@@ -237,6 +243,10 @@ export class GameEngine {
         // 2. Set new canvas and context
         this.canvas = canvas
         this.ctx = canvas.getContext('2d', { alpha: false })
+        
+        if (this.input) {
+            this.input.canvas = canvas
+        }
 
         // 3. Update renderer context
         if (this.renderer) {

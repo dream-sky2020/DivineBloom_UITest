@@ -23,6 +23,12 @@ class GameManager {
             system: 'main-menu', // main-menu, world-map, battle, etc.
             isPaused: false
         })
+
+        // Editor State (Reactive for UI)
+        this.editor = reactive({
+            selectedEntity: null,
+            editMode: false
+        })
     }
 
     /**
@@ -165,9 +171,11 @@ class GameManager {
         const scene = this.currentScene.value;
         if (scene.editMode) {
             scene.exitEditMode();
+            this.editor.editMode = false;
             logger.info('Editor Mode Disabled');
         } else {
             scene.enterEditMode();
+            this.editor.editMode = true;
             logger.info('Editor Mode Enabled');
         }
     }

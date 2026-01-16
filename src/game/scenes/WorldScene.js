@@ -152,6 +152,7 @@ export class WorldScene {
         // 重置交互状态
         EditorInteractionSystem.selectedEntity = null
         EditorInteractionSystem.isDragging = false
+        gameManager.editor.selectedEntity = null // Reset reactive state
     }
 
     /**
