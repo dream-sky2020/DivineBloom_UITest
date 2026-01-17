@@ -19,44 +19,36 @@ export class ScenarioLoader {
 
         if (!mapData) return result
 
-        // 0. Spawn Background (Ground & Decorations)
+        // 0. Spawn Background (Ground only)
         if (mapData.background) {
-            // Ground (Infinite or Big enough?) - assuming map constraints or fixed size
-            // For now, let's assume a large enough area or use map constraints if available
-            // Or just use the canvas size? But canvas size changes.
-            // Let's use a fixed large size for the ground based on map constraints or just big.
-            // A better way: SceneManager/Engine updates ground size on resize. 
-            // BUT BackgroundEntity is static.
-            // Let's create a big ground rect for now (e.g. 2000x2000 covering the play area)
-            // Or use mapData.width/height if existed.
-            // Since we don't have explicit map size, we use a default large rect.
             const groundW = 2000
             const groundH = 2000
-            // Assuming (0,0) is top-left, but we might have negative coords?
-            // Let's stick to positive for now.
             BackgroundEntity.createGround(groundW, groundH, mapData.background.groundColor)
+        }
 
-            if (mapData.background.decorations) {
-                mapData.background.decorations.forEach(dec => {
-                    if (dec.type === 'rect') {
-                        // yRatio support needs height context.
-                        // If we use yRatio, we need to know the 'current' screen height which is dynamic.
-                        // This is why EnvironmentRenderSystem handled it dynamically on resize.
-                        // If we convert to Entity, we lose dynamic resize capability unless we update entity.
-                        // FIX: Calculate absolute Y based on a 'standard' height (e.g. 600) or just use explicit y if available.
-                        // Our map schema now has 'y' or 'yRatio'.
-                        // If yRatio is used, we might need to listen to resize events to update position.
-                        // For simplicity in this 'Static Entity' refactor, let's assume fixed Y or calculate once based on 600h.
+        // 0.5 Spawn Decorations (As top-level entities)
+        if (mapData.decorations) {
+            mapData.decorations.forEach(dec => {
+                let y = dec.y
+                if (y === undefined && dec.yRatio !== undefined) {
+                    y = dec.yRatio * 600
+                }
 
-                        let y = dec.y
-                        if (y === undefined && dec.yRatio !== undefined) {
-                            y = dec.yRatio * 600 // Standard height
-                        }
-
-                        BackgroundEntity.createDecoration(dec.x, y || 0, dec.width, dec.height, dec.color)
+                EntityManager.createDecoration({
+                    x: dec.x,
+                    y: y || 0,
+                    name: dec.spriteId ? `Decoration_${dec.spriteId}` : 'Decoration_Rect',
+                    config: {
+                        spriteId: dec.spriteId,
+                        scale: dec.scale,
+                        rect: dec.type === 'rect' ? {
+                            width: dec.width,
+                            height: dec.height,
+                            color: dec.color
+                        } : undefined
                     }
                 })
-            }
+            })
         }
 
         // 1. Create Player
@@ -169,23 +161,35 @@ export class ScenarioLoader {
             entities: []
         }
 
-        // 0. Restore Background (Always from mapData)
+        // 0. Restore Background (Ground and Decorations)
         if (mapData && mapData.background) {
             const groundW = 2000
             const groundH = 2000
             BackgroundEntity.createGround(groundW, groundH, mapData.background.groundColor)
+        }
 
-            if (mapData.background.decorations) {
-                mapData.background.decorations.forEach(dec => {
-                    if (dec.type === 'rect') {
-                        let y = dec.y
-                        if (y === undefined && dec.yRatio !== undefined) {
-                            y = dec.yRatio * 600
-                        }
-                        BackgroundEntity.createDecoration(dec.x, y || 0, dec.width, dec.height, dec.color)
+        if (mapData && mapData.decorations) {
+            mapData.decorations.forEach(dec => {
+                let y = dec.y
+                if (y === undefined && dec.yRatio !== undefined) {
+                    y = dec.yRatio * 600
+                }
+
+                EntityManager.createDecoration({
+                    x: dec.x,
+                    y: y || 0,
+                    name: dec.spriteId ? `Decoration_${dec.spriteId}` : 'Decoration_Rect',
+                    config: {
+                        spriteId: dec.spriteId,
+                        scale: dec.scale,
+                        rect: dec.type === 'rect' ? {
+                            width: dec.width,
+                            height: dec.height,
+                            color: dec.color
+                        } : undefined
                     }
                 })
-            }
+            })
         }
 
         if (state.entities) {

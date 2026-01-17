@@ -69,6 +69,16 @@ export const Visuals = {
         animations: { 'default': { frames: [0] } }
     },
 
+    // --- Decorations ---
+    'door_0': { assetId: 'door_0', layout: { type: 'grid', cols: 1, rows: 1 }, anchor: { x: 0.5, y: 1.0 }, animations: { 'default': { frames: [0] } } },
+    'door_1': { assetId: 'door_1', layout: { type: 'grid', cols: 1, rows: 1 }, anchor: { x: 0.5, y: 1.0 }, animations: { 'default': { frames: [0] } } },
+    'door_2': { assetId: 'door_2', layout: { type: 'grid', cols: 1, rows: 1 }, anchor: { x: 0.5, y: 1.0 }, animations: { 'default': { frames: [0] } } },
+    'table_0': { assetId: 'table_0', layout: { type: 'grid', cols: 1, rows: 1 }, anchor: { x: 0.5, y: 1.0 }, animations: { 'default': { frames: [0] } } },
+    'table_1': { assetId: 'table_1', layout: { type: 'grid', cols: 1, rows: 1 }, anchor: { x: 0.5, y: 1.0 }, animations: { 'default': { frames: [0] } } },
+    'table_2': { assetId: 'table_2', layout: { type: 'grid', cols: 1, rows: 1 }, anchor: { x: 0.5, y: 1.0 }, animations: { 'default': { frames: [0] } } },
+    'table_3': { assetId: 'table_3', layout: { type: 'grid', cols: 1, rows: 1 }, anchor: { x: 0.5, y: 1.0 }, animations: { 'default': { frames: [0] } } },
+    'table_4': { assetId: 'table_4', layout: { type: 'grid', cols: 1, rows: 1 }, anchor: { x: 0.5, y: 1.0 }, animations: { 'default': { frames: [0] } } },
+
     // 缺省/调试用
     'default': {
         assetId: 'default_enemy', // 假设 assets.js 有这个

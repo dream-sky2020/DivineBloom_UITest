@@ -53,13 +53,15 @@ const PortalSpawnSchema = z.object({
 });
 
 const DecorationSchema = z.object({
-    type: z.enum(['rect']), // 目前代码只处理 'rect'
-    color: z.string(),
+    type: z.enum(['rect', 'sprite']),
+    spriteId: z.string().optional(),
+    scale: z.number().optional(),
+    color: z.string().optional(), // For rect
     x: z.number(),
     y: z.number().optional(), // 与 yRatio 二选一
     yRatio: z.number().optional(),
-    width: z.number(),
-    height: z.number()
+    width: z.number().optional(), // For rect
+    height: z.number().optional() // For rect
 });
 
 export const MapSchema = z.object({
@@ -77,11 +79,11 @@ export const MapSchema = z.object({
 
     // 背景配置
     background: z.object({
-        groundColor: z.string(),
-        decorations: z.array(DecorationSchema).optional()
+        groundColor: z.string()
     }),
 
     // 实体生成
+    decorations: z.array(DecorationSchema).optional().default([]),
     spawners: z.array(SpawnerSchema).optional().default([]),
     npcs: z.array(NpcSpawnSchema).optional().default([]),
     portals: z.array(PortalSpawnSchema).optional().default([]),

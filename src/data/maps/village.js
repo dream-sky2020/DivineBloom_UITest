@@ -28,13 +28,13 @@ export const village = {
     ],
 
     background: {
-        groundColor: '#dcfce7', // 较浅的草地
-        decorations: [
-            { type: 'rect', x: 50, yRatio: 0.30, width: 60, height: 60, color: '#94a3b8' }, // 房子示意
-            { type: 'rect', x: 150, yRatio: 0.32, width: 50, height: 50, color: '#94a3b8' }, // 房子示意
-            { type: 'rect', x: 300, yRatio: 0.70, width: 200, height: 20, color: '#a8a29e' } // 道路
-        ]
+        groundColor: '#dcfce7' // 较浅的草地
     },
+    decorations: [
+        { type: 'sprite', spriteId: 'door_2', x: 100, yRatio: 0.4, scale: 1.0 },
+        { type: 'sprite', spriteId: 'table_4', x: 300, yRatio: 0.5, scale: 0.8 },
+        { type: 'sprite', spriteId: 'table_0', x: 600, yRatio: 0.6, scale: 0.8 }
+    ],
 
     npcs: [
         {

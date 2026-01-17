@@ -2,21 +2,21 @@ export const demo_plains = {
     id: 'demo_plains',
     name: 'Demo Plains',
     constraints: {
-        minYRatio: 0.35 
+        minYRatio: 0.35
     },
-    
+
     // 入口定义
     entryPoints: {
         default: { x: 100, y: 400 },
         from_village: { x: 750, y: 400 }, // 从右边（村庄）回来，出现在右侧
         from_forest: { x: 400, y: 250 }   // 从上边（森林）回来，出现在上方
     },
-    
+
     // 传送门定义
     portals: [
         {
             // 右侧边缘 -> 去村庄
-            x: 780, y: 0, w: 20, h: 600, 
+            x: 780, y: 0, w: 20, h: 600,
             targetMapId: 'village',
             targetEntryId: 'from_demo'
         },
@@ -30,12 +30,13 @@ export const demo_plains = {
 
     spawnPoint: { x: 100, y: 400 },
     background: {
-        groundColor: '#bbf7d0',
-        decorations: [
-            { type: 'rect', x: 80, yRatio: 0.55, width: 140, height: 18, color: 'rgba(0,0,0,0.10)' },
-            { type: 'rect', x: 260, yRatio: 0.70, width: 200, height: 18, color: 'rgba(0,0,0,0.10)' }
-        ]
+        groundColor: '#bbf7d0'
     },
+    decorations: [
+        { type: 'sprite', spriteId: 'table_0', x: 200, yRatio: 0.6, scale: 0.8 },
+        { type: 'sprite', spriteId: 'table_1', x: 500, yRatio: 0.7, scale: 0.8 },
+        { type: 'sprite', spriteId: 'door_0', x: 700, yRatio: 0.4, scale: 1.0 }
+    ],
     spawners: [
         {
             enemyIds: ['character_wasteland_wolf'],

@@ -12,6 +12,7 @@ export const EntityManager = {
     createEnemy: EntityCreator.createEnemy.bind(EntityCreator),
     createNPC: EntityCreator.createNPC.bind(EntityCreator),
     createPortal: EntityCreator.createPortal.bind(EntityCreator),
+    createDecoration: EntityCreator.createDecoration.bind(EntityCreator),
 
     // --- Serialization ---
     serialize: EntitySerializer.serialize.bind(EntitySerializer)

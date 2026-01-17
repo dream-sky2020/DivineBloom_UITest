@@ -3,6 +3,7 @@ import { EnemyEntity } from '../definitions/EnemyEntity'
 import { NPCEntity } from '../definitions/NPCEntity'
 import { PortalEntity } from '../definitions/PortalEntity'
 import { GlobalEntity } from '../definitions/GlobalEntity'
+import { DecorationEntity } from '../definitions/DecorationEntity'
 
 export const EntityCreator = {
     createEnemy(data) {
@@ -23,6 +24,10 @@ export const EntityCreator = {
 
     createGlobalManager(data) {
         return GlobalEntity.create(data)
+    },
+
+    createDecoration(data) {
+        return DecorationEntity.create(data)
     },
 
     create(engine, type, data, context = {}) {
@@ -52,6 +57,10 @@ export const EntityCreator = {
 
         if (type === 'global_manager') {
             return this.createGlobalManager(data)
+        }
+
+        if (type === 'decoration') {
+            return this.createDecoration(data)
         }
     }
 }

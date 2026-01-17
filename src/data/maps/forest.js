@@ -28,13 +28,13 @@ export const forest = {
     ],
 
     background: {
-        groundColor: '#14532d', // 深绿色草地
-        decorations: [
-            { type: 'rect', x: 100, yRatio: 0.25, width: 20, height: 100, color: '#3f6212' }, // 树干
-            { type: 'rect', x: 250, yRatio: 0.20, width: 30, height: 120, color: '#3f6212' },
-            { type: 'rect', x: 600, yRatio: 0.28, width: 25, height: 90, color: '#3f6212' }
-        ]
+        groundColor: '#14532d' // 深绿色草地
     },
+    decorations: [
+        { type: 'sprite', spriteId: 'door_1', x: 400, yRatio: 0.35, scale: 1.0 },
+        { type: 'sprite', spriteId: 'table_2', x: 200, yRatio: 0.6, scale: 0.8 },
+        { type: 'sprite', spriteId: 'table_3', x: 600, yRatio: 0.5, scale: 0.8 }
+    ],
 
     spawners: [
         {

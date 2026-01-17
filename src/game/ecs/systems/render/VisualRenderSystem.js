@@ -67,17 +67,13 @@ export const VisualRenderSystem = {
    * @param {import('@/game/GameEngine').Renderer2D} renderer 
    */
   draw(renderer) {
-    // 1. 收集实体 (仅 Z >= 0)
+    // 1. 收集实体 (排除纯地面)
     const entities = []
     for (const entity of renderEntities) {
-      // Defensive check for entity validity before adding to render list
-      if (!entity.position || !entity.visual) {
-        console.error(`[VisualRenderSystem] Entity ${entity.id || 'N/A'} missing essential components for rendering!`);
-        continue;
-      }
+      if (!entity.position || !entity.visual) continue;
 
-      // Filter out background (handled by BackgroundRenderSystem)
-      if ((entity.zIndex || 0) < 0) continue;
+      // 仅排除 background_ground 类型，其余全部由本系统渲染
+      if (entity.type === 'background_ground') continue;
 
       entities.push(entity)
     }
@@ -131,9 +127,15 @@ export const VisualRenderSystem = {
 
     // --- Rect Support ---
     if (visual.type === 'rect') {
+      const camera = renderer.camera
       renderer.ctx.fillStyle = visual.color || 'magenta' // fallback color
-      // rect is drawn from top-left by default in canvas
-      renderer.ctx.fillRect(position.x, position.y, visual.width || 10, visual.height || 10)
+      // 使用相机偏移绘制矩形
+      renderer.ctx.fillRect(
+        position.x - (camera?.x || 0),
+        position.y - (camera?.y || 0),
+        visual.width || 10,
+        visual.height || 10
+      )
       return
     }
 

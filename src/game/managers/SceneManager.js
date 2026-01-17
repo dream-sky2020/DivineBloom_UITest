@@ -3,6 +3,7 @@ import { ScenarioLoader } from '@/game/utils/ScenarioLoader'
 import { EntityManager } from '@/game/entities/EntityManager'
 import { getMapData } from '@/data/maps'
 import { createLogger } from '@/utils/logger'
+import { SceneLifecycle } from '@/game/resources/SceneLifecycle'
 
 const logger = createLogger('SceneManager')
 
@@ -87,10 +88,8 @@ export class SceneManager {
             this.worldStore.saveState(this.currentScene)
         }
 
-        // 2. 预加载新地图数据
-        // (可以在这里做 Loading UI 的回调)
-        // const loadingHandle = showLoading()
-
+        // 2. 加载新地图数据
+        logger.info(`Loading map data: ${mapId}`)
         const mapData = await getMapData(mapId)
         if (!mapData) throw new Error(`Map data not found: ${mapId}`)
 
@@ -104,55 +103,52 @@ export class SceneManager {
         this.worldStore.loadMap(mapId)
         const persistedState = this.worldStore.currentMapState
 
-        // 6. 重建场景
-        // 更新 Scene 的 mapData
+        // 6. 更新 Scene 的 mapData
         if (this.currentScene) {
             this.currentScene.mapData = mapData
             this.currentScene.entryId = entryId
-            // 重新初始化依赖 mapData 的系统
-            // (注意：理想情况下这些 System 应该在 update 里自动检测 mapData 变化，但手动 init 也行)
-            if (this.currentScene.onMapLoaded) {
-                this.currentScene.onMapLoaded(mapData)
-            }
         }
 
-        let player = null
-
-        // 策略：如果存在有效的存档（且包含实体），则恢复；否则加载默认
-        // 增加健壮性检查：如果 entities 为空数组，视为无效存档，回退到默认
-        if (persistedState && persistedState.entities && persistedState.entities.length > 0) {
-            logger.info(`Restoring state for ${mapId}`)
-            const result = ScenarioLoader.restore(this.engine, persistedState, mapData)
-            player = result.player
-
-            // 修正玩家位置到入口点 (如果是传送进入)
-            if (entryId && mapData.entryPoints && mapData.entryPoints[entryId] && player) {
-                const spawn = mapData.entryPoints[entryId]
-                player.position.x = spawn.x
-                player.position.y = spawn.y
+        // 🎯 7. 使用现代化场景生命周期管理
+        logger.info(`Preparing scene using SceneLifecycle...`)
+        const result = await SceneLifecycle.prepareScene(
+            mapData,
+            this.engine,
+            entryId,
+            persistedState,
+            (progress) => {
+                // 进度回调（可以用于 UI 显示）
+                if (progress.phase === 'loading') {
+                    logger.info(`Loading assets: ${(progress.progress * 100).toFixed(0)}%`)
+                }
             }
-        } else {
-            logger.info(`Loading default scenario for ${mapId}`)
-            const result = ScenarioLoader.load(this.engine, mapData, entryId)
-            player = result.player
+        )
 
-            // CRITICAL FIX: 初始化 Store 状态，确保后续战斗返回时有数据可更新
-            // 默认地图加载后，entities 应该同步到 store
-            if (result.entities) {
-                // Serialize entities before passing to store (Store expects validated schema objects, not ECS entities)
-                const serializedEntities = result.entities
-                    .map(e => EntityManager.serialize(e))
-                    .filter(e => e !== null) // EntitySerializer returns {type, data} or null
+        const player = result.player
 
-                this.worldStore.initCurrentState(serializedEntities)
-            }
+        // 8. 修正玩家位置到入口点 (如果是传送进入)
+        if (entryId && mapData.entryPoints && mapData.entryPoints[entryId] && player) {
+            const spawn = mapData.entryPoints[entryId]
+            player.position.x = spawn.x
+            player.position.y = spawn.y
+            logger.info(`Player spawned at entry point: ${entryId}`)
         }
 
-        // 7. 玩家状态传递 (HP/Inventory)
-        // 从 Store 或之前的 Scene 实例中获取跨场景数据
-        // TODO: 如果需要保留上一张图的血量，需要在 saveState 时保存到全局 Store，这里再读出来
+        // 9. 如果是新加载的场景，同步状态到 Store
+        if (!persistedState && result.entities) {
+            const serializedEntities = result.entities
+                .map(e => EntityManager.serialize(e))
+                .filter(e => e !== null)
 
-        logger.info(`Transition complete.`)
+            this.worldStore.initCurrentState(serializedEntities)
+        }
+
+        // 10. 更新 Scene 的 player 引用
+        if (this.currentScene) {
+            this.currentScene.player = player
+        }
+
+        logger.info(`✅ Map switch complete: ${mapId}`)
     }
 }
 

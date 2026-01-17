@@ -30,7 +30,7 @@ export const EditorInteractionSystem = {
         this.isDragging = true;
         this.dragOffset.x = hit.position.x - worldX;
         this.dragOffset.y = hit.position.y - worldY;
-        console.log('[Editor] Selected:', hit.id || hit.uuid || 'unnamed');
+        console.log('[Editor] Selected:', hit.name || hit.id || hit.uuid || 'unnamed');
       } else {
         this.selectedEntity = null;
         gameManager.editor.selectedEntity = null; // Sync with reactive state

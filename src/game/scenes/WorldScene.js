@@ -64,7 +64,6 @@ export class WorldScene {
 
         // --- Render Pipeline Setup ---
         // 注册所有渲染系统，draw() 时会自动按 LAYER 排序执行
-        // 如果要添加新的渲染系统，只需在这里注册，并在系统内定义 LAYER 即可
         this.renderPipeline = [
             BackgroundRenderSystem, // Layer 10
             AIVisionRenderSystem,   // Layer 15
@@ -73,7 +72,7 @@ export class WorldScene {
             DetectAreaRenderSystem  // Layer 100 (Debug)
         ]
 
-        // 预排序（虽然通常是静态的，但排序一次无妨）
+        // 预排序
         this.renderPipeline.sort((a, b) => (a.LAYER || 0) - (b.LAYER || 0))
 
         // Time delta for animation
@@ -88,10 +87,11 @@ export class WorldScene {
         // Initialize Global Entities (Command Queue)
         this._initGlobalEntities()
 
+        // 同步初始化实体（资源加载在 load() 中异步处理）
         if (initialState && initialState.isInitialized) {
-            this.restore(initialState)
+            this._restoreSync(initialState)
         } else {
-            this._initScenario()
+            this._initScenarioSync()
         }
     }
 
@@ -106,24 +106,26 @@ export class WorldScene {
 
     /**
      * Map Loaded Callback (Called by SceneManager when switching maps)
+     * 注意：现在资源加载由 SceneLifecycle 在 SceneManager 中统一处理
+     * 这个方法只负责初始化系统
      * @param {object} mapData 
      */
     onMapLoaded(mapData) {
         // Re-initialize systems that depend on map data
-        // EnvironmentRenderSystem removed
         DetectAreaRenderSystem.init(mapData)
+        console.log('[WorldScene] Map systems reinitialized')
     }
 
-    _initScenario() {
+    _initScenarioSync() {
         const { player } = ScenarioLoader.load(this.engine, this.mapData, this.entryId)
         this.player = player
-        this.isLoaded = true
+        // 资源加载在 load() 方法中进行
     }
 
-    restore(state) {
-        // ... (existing restore code) ...
+    _restoreSync(state) {
+        const { player } = ScenarioLoader.restore(this.engine, state, this.mapData)
         this.player = player
-        this.isLoaded = true
+        // 资源加载在 load() 方法中进行
     }
 
     /**
@@ -143,11 +145,11 @@ export class WorldScene {
      */
     exitEditMode() {
         this.editMode = false
-        
+
         // 清理渲染系统
         const systemsToRemove = [EditorGridRenderSystem, EditorHighlightRenderSystem]
         this.renderPipeline = this.renderPipeline.filter(s => !systemsToRemove.includes(s))
-        
+
         // 重置交互状态
         EditorInteractionSystem.selectedEntity = null
         EditorInteractionSystem.isDragging = false
@@ -183,44 +185,22 @@ export class WorldScene {
     }
 
     /**
-     * Preload assets if needed
+     * 🎯 现代化资源加载（使用资源管线）
      */
     async load() {
-        // Collect all assets needed by map
-        const requiredVisuals = new Set()
+        console.log('[WorldScene] Starting resource loading...')
 
-        // Add player assets
-        requiredVisuals.add('hero')
-
-        // Add map assets (npcs defined in map)
-        if (this.mapData.npcs) {
-            this.mapData.npcs.forEach(npc => {
-                if (npc.spriteId) requiredVisuals.add(npc.spriteId)
+        if (this.engine.resources && this.engine.resources.pipeline) {
+            // 使用新的资源管线
+            await this.engine.resources.pipeline.preloadWorld(world, (progress) => {
+                console.log(`[WorldScene] Loading: ${(progress.progress * 100).toFixed(0)}%`)
             })
+        } else {
+            console.warn('[WorldScene] Resource pipeline not available, skipping')
         }
-
-        // Add map assets (enemies)
-        if (this.mapData.spawners) {
-            this.mapData.spawners.forEach(spawner => {
-                if (spawner.enemyIds && spawner.enemyIds.length > 0) {
-                    const leaderId = spawner.enemyIds[0]
-                    const leaderDef = Enemies[leaderId]
-                    if (leaderDef && leaderDef.spriteId) {
-                        requiredVisuals.add(leaderDef.spriteId)
-                    }
-                }
-            })
-        }
-
-        // Add portal assets
-        if (this.mapData.portals && this.mapData.portals.length > 0) {
-            requiredVisuals.add('portal_default')
-        }
-
-        // Wait for assets
-        await this.engine.assets.preloadVisuals(Array.from(requiredVisuals), VisualDefs)
 
         this.isLoaded = true
+        console.log('[WorldScene] Resource loading complete')
     }
 
     /**

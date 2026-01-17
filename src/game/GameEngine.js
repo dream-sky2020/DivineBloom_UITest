@@ -1,4 +1,6 @@
 import { AssetManager } from './managers/AssetManager'
+import { ResourcePipeline } from './resources/ResourcePipeline'
+import { ResourceDeclaration } from './resources/ResourceDeclaration'
 
 /**
  * 精灵定义（支持裁切 + 锚点）
@@ -203,6 +205,12 @@ export class GameEngine {
         this.input = new InputManager(this.canvas)
         this.renderer = new Renderer2D(this.ctx, this.assets)
 
+        // 🎯 新增：现代化资源管理系统
+        this.resources = {
+            pipeline: new ResourcePipeline(this.assets),
+            declarations: ResourceDeclaration
+        }
+
         // 状态
         this.isRunning = false
         this.rafId = 0
@@ -243,7 +251,7 @@ export class GameEngine {
         // 2. Set new canvas and context
         this.canvas = canvas
         this.ctx = canvas.getContext('2d', { alpha: false })
-        
+
         if (this.input) {
             this.input.canvas = canvas
         }

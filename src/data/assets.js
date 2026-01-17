@@ -12,6 +12,16 @@ export const AssetManifest = {
   // 缺省/Fallback
   'default_enemy': '/assets/characters/slime.png',
 
+  // Decorations
+  'door_0': '/assets/door/door_0.png',
+  'door_1': '/assets/door/door_1.png',
+  'door_2': '/assets/door/door_2.png',
+  'table_0': '/assets/table/table_0.png',
+  'table_1': '/assets/table/table_1.png',
+  'table_2': '/assets/table/table_2.png',
+  'table_3': '/assets/table/table_3.png',
+  'table_4': '/assets/table/table_4.png',
+
   // Maps (如果不需要背景图，可以不配，继续用纯色)
   // 'bg_demo': '/assets/maps/demo_bg.png' 
 }

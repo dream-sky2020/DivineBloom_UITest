@@ -66,9 +66,12 @@ export {
 } from '@/game/entities/definitions/PlayerEntity.js';
 
 export {
-    BackgroundGroundSchema,
-    BackgroundDecorationSchema
+    BackgroundGroundSchema
 } from '@/game/entities/definitions/BackgroundEntity.js';
+
+export {
+    DecorationEntitySchema
+} from '@/game/entities/definitions/DecorationEntity.js';
 
 export {
     GlobalEntitySchema
