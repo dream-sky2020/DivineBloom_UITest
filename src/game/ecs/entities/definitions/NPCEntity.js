@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { world } from '@/game/ecs/world'
-import { DetectArea, DetectInput, Trigger } from '@/game/entities/components/Triggers'
-import { Visuals } from '@/game/entities/components/Visuals'
-import { Physics } from '@/game/entities/components/Physics'
-import { Actions } from '@/game/entities/components/Actions'
+import { DetectArea, DetectInput, Trigger } from '@/game/ecs/entities/components/Triggers'
+import { Visuals } from '@/game/ecs/entities/components/Visuals'
+import { Physics } from '@/game/ecs/entities/components/Physics'
+import { Actions } from '@/game/ecs/entities/components/Actions'
 
 // --- Schema Definition ---
 

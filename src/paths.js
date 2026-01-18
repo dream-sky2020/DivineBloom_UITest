@@ -11,7 +11,7 @@ export const PATHS = {
   // 游戏核心逻辑
   GAME: '@/game',
   SCENES: '@/game/scenes',
-  ENTITIES: '@/game/entities',
+  ENTITIES: '@/game/ecs/entities',
 
   // Vue 组件
   COMPONENTS: '@/components',

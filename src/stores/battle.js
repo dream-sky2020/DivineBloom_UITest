@@ -17,7 +17,7 @@ import { getUnitDisplayData } from '@/game/battle/displaySystem';
 
 // ECS Integration
 import { world } from '@/game/ecs/world';
-import { BattleResult } from '@/game/entities/components/BattleResult';
+import { BattleResult } from '@/game/ecs/entities/components/BattleResult';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('BattleStore');
@@ -180,10 +180,10 @@ export const useBattleStore = defineStore('battle', () => {
             const equippedActive = state.equippedActiveSkills || [];
             const equippedPassive = state.equippedPassiveSkills || [];
             const fixedPassive = state.fixedPassiveSkills || [];
-            
+
             // Combine all active and passive skills that should be available in battle
             battleSkills = [...equippedActive, ...equippedPassive, ...fixedPassive];
-            
+
             // Deduplicate and filter exclusive skills
             battleSkills = filterExclusiveSkills([...new Set(battleSkills)]);
         }

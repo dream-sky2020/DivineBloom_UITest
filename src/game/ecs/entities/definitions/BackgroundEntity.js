@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { world } from '@/game/ecs/world'
-import { Visuals } from '@/game/entities/components/Visuals'
+import { Visuals } from '@/game/ecs/entities/components/Visuals'
 
 // --- Schema Definitions ---
 

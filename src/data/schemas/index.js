@@ -17,62 +17,62 @@ export {
     VisualRectSchema,
     VisualVisionSchema,
     VisualComponentSchema
-} from '@/game/entities/components/Visuals.js';
+} from '@/game/ecs/entities/components/Visuals.js';
 
 export {
     DetectAreaSchema,
     TriggerRuleSchema,
     TriggerSchema,
     DetectInputSchema
-} from '@/game/entities/components/Triggers.js';
+} from '@/game/ecs/entities/components/Triggers.js';
 
 export {
     PhysicsVelocitySchema,
     PhysicsBoundsSchema,
     PhysicsStaticBodySchema
-} from '@/game/entities/components/Physics.js';
+} from '@/game/ecs/entities/components/Physics.js';
 
 export {
     AIConfigSchema,
     AIStateSchema
-} from '@/game/entities/components/AI.js';
+} from '@/game/ecs/entities/components/AI.js';
 
 export {
     ActionBattleSchema,
     ActionDialogueSchema,
     ActionTeleportSchema
-} from '@/game/entities/components/Actions.js';
+} from '@/game/ecs/entities/components/Actions.js';
 
 export {
     BattleResultSchema
-} from '@/game/entities/components/BattleResult.js';
+} from '@/game/ecs/entities/components/BattleResult.js';
 
 
 // Entity Definition Schemas
 export {
     PortalEntitySchema
-} from '@/game/entities/definitions/PortalEntity.js';
+} from '@/game/ecs/entities/definitions/PortalEntity.js';
 
 export {
     NPCEntitySchema
-} from '@/game/entities/definitions/NPCEntity.js';
+} from '@/game/ecs/entities/definitions/NPCEntity.js';
 
 export {
     EnemyEntitySchema
-} from '@/game/entities/definitions/EnemyEntity.js';
+} from '@/game/ecs/entities/definitions/EnemyEntity.js';
 
 export {
     PlayerEntitySchema
-} from '@/game/entities/definitions/PlayerEntity.js';
+} from '@/game/ecs/entities/definitions/PlayerEntity.js';
 
 export {
     BackgroundGroundSchema
-} from '@/game/entities/definitions/BackgroundEntity.js';
+} from '@/game/ecs/entities/definitions/BackgroundEntity.js';
 
 export {
     DecorationEntitySchema
-} from '@/game/entities/definitions/DecorationEntity.js';
+} from '@/game/ecs/entities/definitions/DecorationEntity.js';
 
 export {
     GlobalEntitySchema
-} from '@/game/entities/definitions/GlobalEntity.js';
+} from '@/game/ecs/entities/definitions/GlobalEntity.js';

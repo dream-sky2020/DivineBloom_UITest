@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { world } from '@/game/ecs/world'
-import { DetectArea, Trigger } from '@/game/entities/components/Triggers'
-import { Actions } from '@/game/entities/components/Actions'
+import { DetectArea, Trigger } from '@/game/ecs/entities/components/Triggers'
+import { Actions } from '@/game/ecs/entities/components/Actions'
 
 // --- Schema Definition ---
 

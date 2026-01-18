@@ -1,5 +1,5 @@
-import { EntityManager } from '@/game/entities/EntityManager'
-import { BackgroundEntity } from '@/game/entities/definitions/BackgroundEntity'
+import { EntityManager } from '@/game/ecs/entities/EntityManager'
+import { BackgroundEntity } from '@/game/ecs/entities/definitions/BackgroundEntity'
 import { PlayerConfig } from '@/data/assets'
 import Enemies from '@/data/characters/enemies'
 

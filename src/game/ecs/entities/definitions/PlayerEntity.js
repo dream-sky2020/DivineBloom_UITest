@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { world } from '@/game/ecs/world'
 import { PlayerConfig } from '@/data/assets'
-import { Visuals } from '@/game/entities/components/Visuals'
-import { Physics } from '@/game/entities/components/Physics'
+import { Visuals } from '@/game/ecs/entities/components/Visuals'
+import { Physics } from '@/game/ecs/entities/components/Physics'
 
 // --- Schema Definition ---
 

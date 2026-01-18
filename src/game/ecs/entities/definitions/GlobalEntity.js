@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { world } from '@/game/ecs/world';
-import { BattleResultSchema } from '@/game/entities/components/BattleResult';
+import { BattleResultSchema } from '@/game/ecs/entities/components/BattleResult';
 
 // --- Schema Definition ---
 export const GlobalEntitySchema = z.object({
