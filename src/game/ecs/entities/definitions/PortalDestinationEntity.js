@@ -44,8 +44,11 @@ export const PortalDestinationEntity = {
       
       // 视觉配置（用于渲染系统）
       visual: {
+        type: 'rect', // 指定类型为 rect，避免被 VisualRenderSystem 误判为缺失 id 的 Sprite
         color: visual?.color || '#8b5cf6',
-        size: visual?.size || 20
+        size: visual?.size || 20,
+        width: visual?.size || 20,
+        height: visual?.size || 20
       },
 
       // 标记为不可序列化的静态实体（从地图配置加载）

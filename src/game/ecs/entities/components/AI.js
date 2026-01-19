@@ -10,7 +10,14 @@ export const AIConfigSchema = z.object({
   visionAngle: z.number().default(Math.PI / 2), // 弧度
   visionProximity: z.number().default(40),
   suspicionTime: z.number().default(0),
-  minYRatio: z.number().default(0.35)
+  minYRatio: z.number().default(0.35),
+
+  // --- New Optimized Configs ---
+  homePosition: z.object({ x: z.number(), y: z.number() }).optional(),
+  patrolRadius: z.number().default(150),
+  detectedState: z.string().default('chase'), // 疑虑值满后进入的状态 (chase/flee)
+  stunDuration: z.number().default(5),        // 击晕持续时间
+  chaseExitMultiplier: z.number().default(1.5) // 追击/逃跑退出的距离倍率 (相对于视野半径)
 });
 
 export const AIStateSchema = z.object({
@@ -36,7 +43,11 @@ const createFallbackAIConfig = (type) => ({
   visionAngle: Math.PI / 2,
   visionProximity: 40,
   suspicionTime: 0,
-  minYRatio: 0.35
+  minYRatio: 0.35,
+  patrolRadius: 150,
+  detectedState: 'chase',
+  stunDuration: 5,
+  chaseExitMultiplier: 1.5
 });
 
 const createFallbackAIState = (defaultState) => ({
@@ -71,7 +82,13 @@ export const AI = {
       visionAngle: visionAngle,
       visionProximity: extraOptions.visionProximity,
       suspicionTime: extraOptions.suspicionTime,
-      minYRatio: extraOptions.minYRatio
+      minYRatio: extraOptions.minYRatio,
+      // --- New Optimized Configs ---
+      homePosition: extraOptions.homePosition,
+      patrolRadius: extraOptions.patrolRadius,
+      detectedState: extraOptions.detectedState,
+      stunDuration: extraOptions.stunDuration,
+      chaseExitMultiplier: extraOptions.chaseExitMultiplier
     };
 
     if (!AIConfigSchema) return createFallbackAIConfig(type);

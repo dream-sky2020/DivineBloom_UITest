@@ -17,13 +17,33 @@ export const WanderState = {
              aiState.suspicion = aiSensory.suspicion
 
              if (aiState.suspicion >= 1.0) {
-                 changeState(entity, aiConfig.type === 'chase' ? 'chase' : 'flee')
+                 // [DECOUPLED] Use detectedState from config
+                 changeState(entity, aiConfig.detectedState || 'chase')
                  return
              }
         }
 
-        // 3. Movement Logic
-        if (aiState.suspicion > 0 && aiSensory && aiSensory.hasPlayer) {
+        // 3. Home Area Constraint
+        let isReturningHome = false
+        if (aiConfig.homePosition && aiConfig.patrolRadius) {
+            const dx = position.x - aiConfig.homePosition.x
+            const dy = position.y - aiConfig.homePosition.y
+            const distSq = dx * dx + dy * dy
+            const radiusSq = aiConfig.patrolRadius * aiConfig.patrolRadius
+
+            if (distSq > radiusSq) {
+                isReturningHome = true
+                // Point towards home
+                const dist = Math.sqrt(distSq)
+                aiState.moveDir.x = -dx / dist
+                aiState.moveDir.y = -dy / dist
+                // Reset timer if we were idle or moving elsewhere
+                if (aiState.timer <= 0) aiState.timer = 1.0 
+            }
+        }
+
+        // 4. Movement Logic
+        if (!isReturningHome && aiState.suspicion > 0 && aiSensory && aiSensory.hasPlayer) {
             // Stop to observe
             aiState.moveDir.x = 0
             aiState.moveDir.y = 0

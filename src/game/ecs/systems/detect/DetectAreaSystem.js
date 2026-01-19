@@ -13,48 +13,38 @@ export const DetectAreaSystem = {
     // 1. 获取所有具有 DetectArea 的实体
     const detectors = world.with('detectArea', 'position')
 
-    // 2. 缓存所有具有特定标签的目标集合 (例如 player, enemy)
-    const players = world.with('player', 'position')
-    const enemies = world.with('enemy', 'position')
+    // 2. 获取所有具备被探测资格的实体
+    const targets = world.with('detectable', 'position')
 
     for (const entity of detectors) {
-      // Defensive Check
-      if (!entity.detectArea) {
-        logger.warn(`Entity ${entity.id || 'N/A'} missing detectArea component!`);
-        continue;
-      }
-
       const detect = entity.detectArea
       detect.results = [] // 重置结果
 
-      // Defensive Check for required arrays (ensure safe fallback if schema failed)
-      if (!detect.includeTags) detect.includeTags = [];
-      if (!detect.results) detect.results = [];
+      // 获取探测器要求的目标标签
+      const requiredLabels = Array.isArray(detect.target) ? detect.target : [detect.target]
+      const requiredSet = new Set([...requiredLabels, ...(detect.includeTags || [])])
 
-      // 获取需要检测的目标标签列表
-      const targetTags = Array.isArray(detect.target) ? detect.target : [detect.target];
-      
-      // 合并 includeTags
-      const allTags = new Set([...targetTags, ...detect.includeTags]);
+      // 遍历潜在目标
+      for (const target of targets) {
+        if (target === entity) continue // 不探测自己
 
-      // 检测所有符合标签的目标
-      if (allTags.has('player')) {
-          for (const player of players) {
-              if (this.checkCollision(entity, player, detect)) {
-                  detect.results.push(player);
-              }
+        const detectable = target.detectable
+        
+        // 标签匹配检查
+        const hasMatch = detectable.labels.some(label => requiredSet.has(label))
+
+        if (hasMatch) {
+          // 排除标签检查
+          if (detect.excludeTags && detectable.labels.some(label => detect.excludeTags.includes(label))) {
+            continue
           }
-      }
 
-      if (allTags.has('enemy')) {
-          for (const enemy of enemies) {
-              if (this.checkCollision(entity, enemy, detect)) {
-                  detect.results.push(enemy);
-              }
+          // 进行空间检测 (目前 target 视为点，使用其 position)
+          if (this.checkCollision(entity, target, detect)) {
+            detect.results.push(target)
           }
+        }
       }
-
-      // TODO: 未来可扩展对其他类型（如 npc, interactive）的检测
     }
   },
 

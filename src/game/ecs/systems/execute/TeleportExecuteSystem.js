@@ -76,10 +76,19 @@ export const TeleportExecuteSystem = {
 
     // === 跨地图传送：使用 mapId 和 entryId ===
     if (isCrossMapTeleport) {
-      logger.info(`Triggering transition to ${mapId}:${entryId}`)
+      // 关键安全检查：仅允许具备 'player' 标签的实体触发跨地图传送
+      const isPlayer = targetEntity.detectable?.labels?.includes('player')
+      
+      if (!isPlayer) {
+        logger.info(`Cross-map teleport ignored for non-player entity: ${targetEntity.type}`)
+        return
+      }
 
-      // 给实体添加切换场景请求，交由 WorldScene → SceneManager 处理
-      world.addComponent(entity, 'sceneTransition', SceneTransition({
+      logger.info(`Triggering transition to ${mapId}:${entryId} for player`)
+
+      // 给触发传送的实体（玩家）添加切换场景请求
+      // WorldScene 会检测到此请求并通知 SceneManager
+      world.addComponent(targetEntity, 'sceneTransition', SceneTransition({
         mapId,
         entryId
       }))

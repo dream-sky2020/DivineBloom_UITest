@@ -107,13 +107,13 @@ export const demo_plains = {
             enemyIds: ['character_wasteland_wolf'],
             count: 3,
             area: { x: 400, y: 1000, w: 1000, h: 600 },
-            options: { aiType: 'chase', visionRadius: 300, speed: 110, scale: 0.8 }
+            options: { aiType: 'chase', visionRadius: 300, speed: 110, scale: 0.8, patrolRadius: 400 }
         },
         {
             enemyIds: ['character_slime'],
             count: 8,
             area: { x: 100, y: 600, w: 3000, h: 1500 },
-            options: { aiType: 'wander', visionRadius: 150, speed: 60, scale: 0.8 }
+            options: { aiType: 'wander', visionRadius: 150, speed: 60, scale: 0.8, patrolRadius: 300 }
         },
         // 北部遗迹的强力狼群
         {

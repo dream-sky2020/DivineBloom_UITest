@@ -23,9 +23,10 @@ export const FleeState = {
       
         const distSq = aiSensory.distSqToPlayer
         const visionRadiusSq = aiConfig.visionRadius * aiConfig.visionRadius
+        const exitMultiplier = aiConfig.chaseExitMultiplier || 1.5
       
         // Check exit condition (squared distance)
-        if (distSq > visionRadiusSq * 2.25) {
+        if (distSq > visionRadiusSq * (exitMultiplier * exitMultiplier)) {
           changeState(entity, 'wander')
           return
         }

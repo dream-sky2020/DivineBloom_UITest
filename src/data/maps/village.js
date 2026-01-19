@@ -55,7 +55,7 @@ export const village = {
             enemyIds: ['character_slime'],
             count: 3,
             area: { x: 200, y: 400, w: 400, h: 200 },
-            options: { aiType: 'wander', visionRadius: 80, speed: 40, scale: 0.6 }
+            options: { aiType: 'wander', visionRadius: 80, speed: 40, scale: 0.6, detectedState: 'flee' }
         }
     ]
 }

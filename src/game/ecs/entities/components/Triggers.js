@@ -18,8 +18,8 @@ export const DetectAreaSchema = z.object({
     y: z.number().default(0)
   }).default({ x: 0, y: 0 }),
 
-  target: z.union([z.string(), z.array(z.string())]).default('actors'), // 'actors' | 'player' | ['player', 'enemy']
-  includeTags: z.array(z.string()).default(['player']),
+  target: z.union([z.string(), z.array(z.string())]).default('detectable'), // 现在指向 entity.tags 中的标签
+  includeTags: z.array(z.string()).default([]),
   excludeTags: z.array(z.string()).default(['ghost']),
 
   // Runtime state (initially empty)
@@ -60,12 +60,24 @@ export const DetectInputSchema = z.object({
   justPressed: z.boolean().default(false)
 });
 
+// 4. Detectable (被探测组件)
+export const DetectableSchema = z.object({
+  labels: z.array(z.string()).default([]),
+  shape: z.enum(['point', 'circle', 'aabb']).default('point') // 目前默认仅支持点探测
+});
+
 // --- Triggers Factory ---
 
 /**
  * Component Factories for Detection and Triggers
  * Pattern: Schema-Driven (Default values handled by Schema)
  */
+
+export const Detectable = (labels = [], shape = 'point') => {
+  const config = Array.isArray(labels) ? { labels, shape } : { labels: [labels], shape };
+  const result = DetectableSchema.safeParse(config);
+  return result.success ? result.data : { labels: [], shape: 'point' };
+}
 
 export const DetectArea = (config = {}) => {
   if (!DetectAreaSchema) {

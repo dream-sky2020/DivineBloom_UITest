@@ -52,7 +52,16 @@ export const forest = {
             enemyIds: ['character_heavy_guard'],
             count: 1,
             area: { x: 500, y: 300, w: 200, h: 200 },
-            options: { aiType: 'chase', visionType: 'cone', visionAngle: 60, visionRadius: 250, speed: 80, scale: 0.9 }
+            options: { 
+                aiType: 'chase', 
+                visionType: 'cone', 
+                visionAngle: 60, 
+                visionRadius: 250, 
+                speed: 80, 
+                scale: 0.9,
+                stunDuration: 8,
+                chaseExitMultiplier: 2.0
+            }
         }
     ]
 }

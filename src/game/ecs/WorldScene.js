@@ -3,6 +3,7 @@ import { BackgroundRenderSystem } from '@/game/ecs/systems/render/BackgroundRend
 import { VisualRenderSystem } from '@/game/ecs/systems/render/VisualRenderSystem'
 import { PhysicsDebugRenderSystem } from '@/game/ecs/systems/render/PhysicsDebugRenderSystem'
 import { AIVisionRenderSystem } from '@/game/ecs/systems/render/AIVisionRenderSystem'
+import { AIPatrolDebugRenderSystem } from '@/game/ecs/systems/render/AIPatrolDebugRenderSystem'
 import { StatusRenderSystem } from '@/game/ecs/systems/render/StatusRenderSystem'
 import { DetectAreaRenderSystem } from '@/game/ecs/systems/render/DetectAreaRenderSystem'
 import { PortalDebugRenderSystem } from '@/game/ecs/systems/render/PortalDebugRenderSystem'
@@ -75,6 +76,7 @@ export class WorldScene {
             // 渲染管线 (Render Pipeline)
             render: [
                 BackgroundRenderSystem, // Layer 10
+                AIPatrolDebugRenderSystem, // Layer 12
                 AIVisionRenderSystem,   // Layer 15
                 VisualRenderSystem,     // Layer 20
                 StatusRenderSystem,     // Layer 30

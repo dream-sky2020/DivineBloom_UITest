@@ -58,7 +58,7 @@ export const EnemyAIIntentSystem = {
           // Player Fled -> Enemy Stunned
           logger.info(`Player fled. Stunning enemy ${entity.id}.`)
           aiState.state = 'stunned'
-          aiState.timer = 5 // Stun for 5 seconds
+          aiState.timer = entity.aiConfig?.stunDuration || 5 // 使用配置的持续时间
         }
       }
 

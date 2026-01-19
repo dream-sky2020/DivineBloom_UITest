@@ -80,7 +80,7 @@ export const PortalEntity = {
         shape: 'aabb',
         offset: { x: width / 2, y: height / 2 },
         size: { w: width, h: height },
-        target: ['player']  // 只检测玩家，不检测敌人（避免敌人误触传送门）
+        target: 'teleportable'  // 扫描具备 'teleportable' 标签的实体
       }),
 
       trigger: Trigger({

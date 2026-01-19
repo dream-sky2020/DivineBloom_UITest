@@ -1,5 +1,8 @@
 import { world } from '@/game/ecs/world'
 import { Visuals } from '@/data/visuals'
+import { createLogger } from '@/utils/logger'
+
+const logger = createLogger('VisualRenderSystem')
 
 /**
  * Sprite Render System
@@ -24,7 +27,7 @@ export const VisualRenderSystem = {
   update(dt) {
     for (const entity of renderEntities) {
       if (!entity.visual) {
-        console.warn(`[VisualRenderSystem] Entity ${entity.id || 'N/A'} missing visual component!`);
+        logger.warn(`Entity ${entity.id || 'N/A'} missing visual component!`);
         continue;
       }
       this.updateAnimation(entity, dt)
@@ -100,7 +103,7 @@ export const VisualRenderSystem = {
 
     // Defensive check for camera
     if (!camera) {
-      console.error('[VisualRenderSystem] Camera not initialized!');
+      logger.error('Camera not initialized!');
       return;
     }
 
@@ -149,7 +152,10 @@ export const VisualRenderSystem = {
     // --- Sprite Support ---
     // Defensive check
     if (!visual.id) {
-      console.warn(`[VisualRenderSystem] Visual component missing 'id'. Entity: ${entity.id || 'N/A'}`);
+      // 降低日志频率，避免在某些特殊实体（如纯色块）没有配置 id 时刷屏
+      if (Math.random() < 0.01) {
+        logger.warn(`Visual component missing 'id'. Entity: ${entity.type || 'N/A'} (ID: ${entity.id || 'N/A'})`);
+      }
       return;
     }
 
@@ -158,14 +164,14 @@ export const VisualRenderSystem = {
     if (!def) {
       // Fallback placeholder
       renderer.drawCircle(position.x, position.y, 10, 'red')
-      if (Math.random() < 0.01) console.warn(`[VisualRenderSystem] Missing visual definition for: ${visual.id}`)
+      if (Math.random() < 0.01) logger.warn(`Missing visual definition for: ${visual.id}`)
       return
     }
 
     const texture = renderer.assetManager.getTexture(def.assetId)
     if (!texture) {
       // Only warn occasionally to avoid spamming console
-      if (Math.random() < 0.01) console.warn(`[VisualRenderSystem] Missing texture for asset: ${def.assetId}`)
+      if (Math.random() < 0.01) logger.warn(`Missing texture for asset: ${def.assetId}`)
       return
     }
 

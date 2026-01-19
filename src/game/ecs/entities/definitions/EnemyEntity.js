@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ID } from '@/data/schemas/common'
 import { world } from '@/game/ecs/world'
-import { DetectArea, Trigger, DetectInput } from '@/game/ecs/entities/components/Triggers'
+import { DetectArea, Trigger, DetectInput, Detectable } from '@/game/ecs/entities/components/Triggers'
 import { Visuals } from '@/game/ecs/entities/components/Visuals'
 import { Physics } from '@/game/ecs/entities/components/Physics'
 import { AI } from '@/game/ecs/entities/components/AI'
@@ -31,7 +31,12 @@ export const EnemyEntitySchema = z.object({
     visionAngle: z.number().optional(),
     visionProximity: z.number().optional(),
     suspicionTime: z.number().optional(),
-    minYRatio: z.number().optional()
+    minYRatio: z.number().optional(),
+    homePosition: z.object({ x: z.number(), y: z.number() }).optional(),
+    patrolRadius: z.number().optional(),
+    detectedState: z.string().optional(),
+    stunDuration: z.number().optional(),
+    chaseExitMultiplier: z.number().optional()
   }).default({})
 });
 
@@ -57,10 +62,11 @@ export const EnemyEntity = {
       name: name || `Enemy_${visualId}`,
       position: { x, y },
       velocity: Physics.Velocity(),
+      detectable: Detectable(['enemy', 'teleportable']),
       enemy: true,
 
       // [NEW ARCHITECTURE]
-      detectArea: DetectArea({ shape: 'circle', radius: 40, target: 'player' }),
+      detectArea: DetectArea({ shape: 'circle', radius: 40, target: 'player' }), // 敌人依然只探测玩家标签来触发战斗
       trigger: Trigger({
         rules: [{
           type: 'onEnter',
@@ -92,7 +98,12 @@ export const EnemyEntity = {
           visionAngle: options.visionAngle,
           visionProximity: options.visionProximity,
           suspicionTime: options.suspicionTime,
-          minYRatio: options.minYRatio
+          minYRatio: options.minYRatio,
+          homePosition: options.homePosition || { x, y }, // 优先使用保存的家位置，否则使用初始坐标
+          patrolRadius: options.patrolRadius,
+          detectedState: options.detectedState || (options.aiType === 'flee' ? 'flee' : 'chase'),
+          stunDuration: options.stunDuration,
+          chaseExitMultiplier: options.chaseExitMultiplier
         }
       ),
 
@@ -132,6 +143,11 @@ export const EnemyEntity = {
         speed: aiConfig.speed,
         minYRatio: aiConfig.minYRatio,
         suspicionTime: aiConfig.suspicionTime,
+        homePosition: aiConfig.homePosition,
+        patrolRadius: aiConfig.patrolRadius,
+        detectedState: aiConfig.detectedState,
+        stunDuration: aiConfig.stunDuration,
+        chaseExitMultiplier: aiConfig.chaseExitMultiplier,
         spriteId: visual.id,
         scale: visual.scale
       }

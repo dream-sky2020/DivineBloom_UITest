@@ -17,6 +17,10 @@ const SpawnerOptionsSchema = z.object({
     suspicionTime: z.number().optional(),
     spriteId: z.string().optional(),
     scale: z.number().optional(),
+    patrolRadius: z.number().optional(),
+    detectedState: z.enum(['chase', 'flee']).optional(),
+    stunDuration: z.number().optional(),
+    chaseExitMultiplier: z.number().optional(),
 });
 
 const SpawnerSchema = z.object({
