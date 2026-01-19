@@ -11,7 +11,7 @@ export const PortalEntitySchema = z.object({
   name: z.string().optional(),
   width: z.number(),
   height: z.number(),
-  targetMapId: z.string(),
+  targetMapId: z.string().optional(),
   targetEntryId: z.string()
 });
 

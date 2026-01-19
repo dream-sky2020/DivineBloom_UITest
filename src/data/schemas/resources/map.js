@@ -48,7 +48,7 @@ const PortalSpawnSchema = z.object({
     y: z.number(),
     w: z.number(),
     h: z.number(),
-    targetMapId: z.string(),
+    targetMapId: z.string().optional(), // 可选，如果不填则表示在当前地图内移动
     targetEntryId: z.string()
 });
 

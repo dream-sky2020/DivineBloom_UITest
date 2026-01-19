@@ -27,7 +27,7 @@ const EventHandlers = {
  * 接收 TriggerSystem 产生的 Action 请求，分发给具体子系统
  */
 export const ExecuteSystem = {
-  update(callbacks = {}) {
+  update(callbacks = {}, mapData = null) {
     // 1. 处理 ActionQueue (ECS 内部产生)
     // Defensive check: ensure queue exists (though imported)
     if (!actionQueue) {
@@ -69,7 +69,7 @@ export const ExecuteSystem = {
             break;
 
           case 'TELEPORT':
-            TeleportExecuteSystem.handle(source, callbacks);
+            TeleportExecuteSystem.handle(request, callbacks, mapData);
             break;
 
           default:

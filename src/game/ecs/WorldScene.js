@@ -5,6 +5,7 @@ import { PhysicsDebugRenderSystem } from '@/game/ecs/systems/render/PhysicsDebug
 import { AIVisionRenderSystem } from '@/game/ecs/systems/render/AIVisionRenderSystem'
 import { StatusRenderSystem } from '@/game/ecs/systems/render/StatusRenderSystem'
 import { DetectAreaRenderSystem } from '@/game/ecs/systems/render/DetectAreaRenderSystem'
+import { PortalDebugRenderSystem } from '@/game/ecs/systems/render/PortalDebugRenderSystem'
 import { InputSenseSystem } from '@/game/ecs/systems/sense/InputSenseSystem'
 import { AISenseSystem } from '@/game/ecs/systems/sense/AISenseSystem'
 import { PlayerIntentSystem } from '@/game/ecs/systems/intent/PlayerIntentSystem'
@@ -57,6 +58,7 @@ export class WorldScene {
 
         // 初始化 Environment System
         DetectAreaRenderSystem.init(this.mapData)
+        PortalDebugRenderSystem.init(this.mapData)
 
         // 🎯 系统注册表化 (System Registry)
         this.systems = {
@@ -76,7 +78,8 @@ export class WorldScene {
                 VisualRenderSystem,     // Layer 20
                 StatusRenderSystem,     // Layer 30
                 PhysicsDebugRenderSystem, // Layer 110
-                DetectAreaRenderSystem  // Layer 100 (Debug)
+                DetectAreaRenderSystem,  // Layer 100 (Debug)
+                PortalDebugRenderSystem  // Layer 105 (Portal Debug)
             ],
             // 编辑器阶段 (Editor Phases)
             editor: {
@@ -120,6 +123,7 @@ export class WorldScene {
      */
     onMapLoaded(mapData) {
         DetectAreaRenderSystem.init(mapData)
+        PortalDebugRenderSystem.init(mapData)
         console.log('[WorldScene] Map systems reinitialized')
     }
 
@@ -239,7 +243,7 @@ export class WorldScene {
                 onSwitchMap: null,
                 onInteract: this.onInteract,
                 onOpenMenu: this.onOpenMenu
-            })
+            }, this.mapData)
 
             // 5. 更新相机 (在物理和逻辑之后)
             CameraSystem.update(dt, {

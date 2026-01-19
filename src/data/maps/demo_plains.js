@@ -17,6 +17,11 @@ export const demo_plains = {
     // 传送门定义
     portals: [
         {
+            // 同地图传送测试：传送回出生点
+            x: 500, y: 500, w: 40, h: 40,
+            targetEntryId: 'default'
+        },
+        {
             // 右侧边缘 -> 去村庄
             x: 1980, y: 0, w: 20, h: 1200,
             targetMapId: 'village',

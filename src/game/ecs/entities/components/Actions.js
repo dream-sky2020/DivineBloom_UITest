@@ -14,7 +14,7 @@ export const ActionDialogueSchema = z.object({
 });
 
 export const ActionTeleportSchema = z.object({
-  mapId: z.string().default('demo_plains'),
+  mapId: z.string().optional(),
   entryId: z.string().default('default')
 });
 
