@@ -23,13 +23,16 @@ export const AIConfigSchema = z.object({
 export const AIStateSchema = z.object({
   state: z.string().default('wander'),
   timer: z.number().default(0),
+  lostTargetTimer: z.number().default(0), // 丢失玩家后的追击剩余时间
+  lastSeenPos: z.object({ x: z.number(), y: z.number() }).nullable().default(null), // 玩家最后出现的坐标
   suspicion: z.number().default(0),
   moveDir: z.object({ x: z.number(), y: z.number() }).default({ x: 0, y: 0 }),
   facing: z.object({ x: z.number(), y: z.number() }).default({ x: 1, y: 0 }),
   colorHex: z.string().default('#eab308'),
   alertAnim: z.number().default(0),
   starAngle: z.number().default(0),
-  justEntered: z.boolean().default(true)
+  justEntered: z.boolean().default(true),
+  targetPos: z.object({ x: z.number(), y: z.number() }).nullable().default(null) // 临时目标位置
 });
 
 // --- AI Factory ---

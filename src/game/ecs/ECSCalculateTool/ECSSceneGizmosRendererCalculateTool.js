@@ -152,17 +152,43 @@ export function drawSuspicion(ctx, pos, aiState, aiConfig) {
 }
 
 /**
- * 绘制惊叹号
+ * 绘制惊叹号和追击计时
  */
 export function drawAlert(ctx, pos, aiState) {
-    if (aiState.alertAnim > 0) {
+    if (aiState.state === 'chase') {
         ctx.save()
         ctx.font = 'bold 24px Arial'
         ctx.fillStyle = '#ef4444'
         ctx.textAlign = 'center'
-        // Bounce effect
-        const yOffset = Math.sin(aiState.alertAnim * 20) * 5
-        ctx.fillText('!', pos.x, pos.y - 35 - yOffset)
+        
+        // 1. 惊叹号动画
+        if (aiState.alertAnim > 0) {
+            const yOffset = Math.sin(aiState.alertAnim * 20) * 5
+            ctx.fillText('!', pos.x, pos.y - 45 - yOffset)
+        } else {
+            ctx.fillText('!', pos.x, pos.y - 45)
+        }
+
+        // 2. 追击计时条 (当失去目标时显示)
+        if (aiState.lostTargetTimer > 0 && aiState.lostTargetTimer < 10) {
+            const barW = 30
+            const barH = 4
+            const cx = pos.x
+            const cy = pos.y - 35
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+            ctx.fillRect(cx - barW / 2, cy, barW, barH)
+            
+            const pct = aiState.lostTargetTimer / 10
+            ctx.fillStyle = '#ef4444' // Red
+            ctx.fillRect(cx - barW / 2, cy, barW * pct, barH)
+            
+            // 文字显示剩余秒数
+            ctx.font = '10px Arial'
+            ctx.fillStyle = '#ffffff'
+            ctx.fillText(Math.ceil(aiState.lostTargetTimer) + 's', cx, cy - 5)
+        }
+        
         ctx.restore()
     }
 }

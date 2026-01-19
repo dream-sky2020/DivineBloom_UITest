@@ -1,4 +1,5 @@
 import { changeState } from '@/game/ai/utils'
+import { SteeringTool } from '@/game/ecs/ECSCalculateTool/SteeringTool'
 
 export const FleeState = {
     update(entity, dt) {
@@ -31,13 +32,24 @@ export const FleeState = {
           return
         }
       
-        // Move opposite (Vector normalization)
+        // --- 核心重构：使用 SteeringTool 进行避障逃跑 ---
         if (distSq > 0.001) {
-          const dist = Math.sqrt(distSq)
           const playerPos = aiSensory.playerPos
+          
+          // 计算逃跑目标点：背离玩家 200 像素的位置
+          const dx = position.x - playerPos.x
+          const dy = position.y - playerPos.y
+          const dist = Math.sqrt(distSq)
+          const targetPos = {
+              x: position.x + (dx / dist) * 200,
+              y: position.y + (dy / dist) * 200
+          }
 
-          aiState.moveDir.x = -((playerPos.x - position.x) / dist)
-          aiState.moveDir.y = -((playerPos.y - position.y) / dist)
+          const obstacles = aiSensory.nearbyObstacles || [];
+          const moveDir = SteeringTool.calculateMoveDir(entity, targetPos, obstacles);
+          
+          aiState.moveDir.x = moveDir.x;
+          aiState.moveDir.y = moveDir.y;
         }
     }
 }

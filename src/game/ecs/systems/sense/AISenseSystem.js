@@ -10,6 +10,7 @@ const logger = createLogger('AISenseSystem')
  */
 
 const aiEntities = world.with('aiConfig', 'aiState', 'position')
+const obstacleEntities = world.with('type', 'position', 'collider') // 修正：明确包含 collider
 
 // Helper to get player
 const getPlayer = () => {
@@ -99,7 +100,9 @@ export const AISenseSystem = {
             senseTimer: Math.random() * 0.1,
             lastBattleResult: null,
             // 传送门感知
-            bestPortal: null // { pos: {x,y}, dest: {x,y}, distImprovement: number }
+            bestPortal: null, // { pos: {x,y}, dest: {x,y}, distImprovement: number }
+            // 障碍物感知
+            nearbyObstacles: [] // Array of obstacle entities
         })
     },
 
@@ -145,6 +148,11 @@ export const AISenseSystem = {
             sensory.hasPlayer = true
             sensory.playerPos.x = px
             sensory.playerPos.y = py
+            
+            // 更新 AI 记忆中的最后位置
+            if (entity.aiState) {
+                entity.aiState.lastSeenPos = { x: px, y: py };
+            }
 
             const dx = px - position.x
             const dy = py - position.y
@@ -170,6 +178,32 @@ export const AISenseSystem = {
 
             // 5. 感知传送门 (Shortcut Detection)
             this._sensePortals(entity, sensory, playerPos);
+
+            // 6. 感知障碍物 (Obstacle Detection)
+            this._senseObstacles(entity, sensory);
+        }
+    },
+
+    /**
+     * 感知周围的障碍物
+     */
+    _senseObstacles(entity, sensory) {
+        const entityPos = entity.position;
+        const radius = 150; // 感知半径比转向用的危险半径稍大一点
+        const radiusSq = radius * radius;
+
+        sensory.nearbyObstacles = [];
+        
+        for (const obs of obstacleEntities) {
+            if (obs.type !== 'obstacle') continue;
+            
+            const dx = obs.position.x - entityPos.x;
+            const dy = obs.position.y - entityPos.y;
+            const distSq = dx * dx + dy * dy;
+
+            if (distSq < radiusSq) {
+                sensory.nearbyObstacles.push(obs);
+            }
         }
     },
 
@@ -177,7 +211,7 @@ export const AISenseSystem = {
      * 感知本地图内的传送门，判断是否可以作为追逐玩家的捷径
      */
     _sensePortals(entity, sensory, playerPos) {
-        if (!playerPos || !currentMapData) {
+        if (!currentMapData) {
             sensory.bestPortal = null;
             return;
         }
@@ -185,9 +219,46 @@ export const AISenseSystem = {
         const portals = world.with('actionTeleport', 'position');
         const destinations = world.with('destinationId', 'position');
         const entityPos = entity.position;
+        const lastSeenPos = entity.aiState?.lastSeenPos;
+
         let bestPortal = null;
         let maxImprovement = 0;
 
+        // 如果没有玩家位置，但有最后看到玩家的位置
+        // 我们检查玩家是否消失在了某个传送门附近
+        if (!playerPos) {
+            if (!lastSeenPos) {
+                sensory.bestPortal = null;
+                return;
+            }
+
+            for (const p of portals) {
+                const { actionTeleport, position: pPos, detectArea } = p;
+                
+                // 计算传送门位置（中心点）
+                let portalX = pPos.x;
+                let portalY = pPos.y;
+                if (detectArea && detectArea.offset) {
+                    portalX += detectArea.offset.x;
+                    portalY += detectArea.offset.y;
+                }
+
+                // 如果玩家消失的位置离这个传送门很近 (50像素内)，AI 认为玩家进了这个门
+                const distToPortal = Math.sqrt((portalX - lastSeenPos.x) ** 2 + (portalY - lastSeenPos.y) ** 2);
+                if (distToPortal < 50) {
+                    sensory.bestPortal = {
+                        pos: { x: portalX, y: portalY },
+                        improvement: 9999 // 极高优先级，诱导 AI 走向传送门
+                    };
+                    return; // 找到即返回
+                }
+            }
+            
+            sensory.bestPortal = null;
+            return;
+        }
+
+        // --- 以下是正常的捷径评估逻辑 (当玩家在场时) ---
         // 计算当前到玩家的直线距离 (近似路径成本)
         const directDist = Math.sqrt(sensory.distSqToPlayer);
 

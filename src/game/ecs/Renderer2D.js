@@ -91,4 +91,27 @@ export class Renderer2D {
         ctx.fillStyle = color
         ctx.fillRect(x - this.camera.x, y - this.camera.y, w, h)
     }
+
+    drawText(text, x, y, font = '12px Arial', color = '#ffffff', align = 'center') {
+        const ctx = this.ctx
+        ctx.save()
+        ctx.font = font
+        ctx.fillStyle = color
+        ctx.textAlign = align
+        ctx.fillText(text, x - this.camera.x, y - this.camera.y)
+        ctx.restore()
+    }
+
+    drawLine(x1, y1, x2, y2, color = '#ffffff', width = 1, dash = []) {
+        const ctx = this.ctx
+        ctx.save()
+        ctx.strokeStyle = color
+        ctx.lineWidth = width
+        if (dash.length > 0) ctx.setLineDash(dash)
+        ctx.beginPath()
+        ctx.moveTo(x1 - this.camera.x, y1 - this.camera.y)
+        ctx.lineTo(x2 - this.camera.x, y2 - this.camera.y)
+        ctx.stroke()
+        ctx.restore()
+    }
 }

@@ -1,4 +1,5 @@
 import { changeState } from '@/game/ai/utils'
+import { SteeringTool } from '@/game/ecs/ECSCalculateTool/SteeringTool'
 
 export const WanderState = {
     update(entity, dt) {
@@ -8,6 +9,8 @@ export const WanderState = {
         if (aiState.justEntered) {
             aiState.colorHex = '#eab308' // Yellow
             aiState.suspicion = 0
+            aiState.lostTargetTimer = 0
+            aiState.targetPos = null
             aiState.justEntered = false
         }
 
@@ -23,7 +26,9 @@ export const WanderState = {
              }
         }
 
-        // 3. Home Area Constraint
+        // 3. Home Area Constraint & Random Movement
+        const obstacles = aiSensory?.nearbyObstacles || [];
+        
         let isReturningHome = false
         if (aiConfig.homePosition && aiConfig.patrolRadius) {
             const dx = position.x - aiConfig.homePosition.x
@@ -33,16 +38,17 @@ export const WanderState = {
 
             if (distSq > radiusSq) {
                 isReturningHome = true
-                // Point towards home
-                const dist = Math.sqrt(distSq)
-                aiState.moveDir.x = -dx / dist
-                aiState.moveDir.y = -dy / dist
+                // --- 使用 SteeringTool 回家 ---
+                const moveDir = SteeringTool.calculateMoveDir(entity, aiConfig.homePosition, obstacles);
+                aiState.moveDir.x = moveDir.x;
+                aiState.moveDir.y = moveDir.y;
+                
                 // Reset timer if we were idle or moving elsewhere
                 if (aiState.timer <= 0) aiState.timer = 1.0 
             }
         }
 
-        // 4. Movement Logic
+        // 4. Observation Logic
         if (!isReturningHome && aiState.suspicion > 0 && aiSensory && aiSensory.hasPlayer) {
             // Stop to observe
             aiState.moveDir.x = 0
@@ -62,14 +68,29 @@ export const WanderState = {
             return
         }
 
-        aiState.timer -= dt
-        if (aiState.timer <= 0) {
-            aiState.timer = 2 + Math.random() * 2
-            const angle = Math.random() * Math.PI * 2
-            aiState.moveDir.x = Math.cos(angle)
-            aiState.moveDir.y = Math.sin(angle)
+        // 5. Random Wander Logic
+        if (!isReturningHome) {
+            aiState.timer -= dt
+            if (aiState.timer <= 0) {
+                aiState.timer = 2 + Math.random() * 2
+                
+                if (Math.random() < 0.3) {
+                    aiState.targetPos = null; // Idle
+                } else {
+                    const angle = Math.random() * Math.PI * 2
+                    // 设定一个临时目标点用于转向系统
+                    aiState.targetPos = {
+                        x: position.x + Math.cos(angle) * 100,
+                        y: position.y + Math.sin(angle) * 100
+                    }
+                }
+            }
 
-            if (Math.random() < 0.3) {
+            if (aiState.targetPos) {
+                const moveDir = SteeringTool.calculateMoveDir(entity, aiState.targetPos, obstacles);
+                aiState.moveDir.x = moveDir.x;
+                aiState.moveDir.y = moveDir.y;
+            } else {
                 aiState.moveDir.x = 0
                 aiState.moveDir.y = 0
             }

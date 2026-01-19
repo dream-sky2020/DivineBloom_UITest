@@ -76,6 +76,35 @@ export const AIPatrolDebugRenderSystem = {
             ctx.setLineDash([2, 2])
             ctx.stroke()
 
+            // 4. 绘制 AI 的移动意图向量 (moveDir)
+            if (entity.aiState && entity.aiState.moveDir) {
+                const moveX = entity.aiState.moveDir.x
+                const moveY = entity.aiState.moveDir.y
+                if (Math.abs(moveX) > 0 || Math.abs(moveY) > 0) {
+                    ctx.beginPath()
+                    ctx.setLineDash([])
+                    ctx.moveTo(screenAiX, screenAiY)
+                    ctx.lineTo(screenAiX + moveX * 30, screenAiY + moveY * 30)
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'
+                    ctx.lineWidth = 2
+                    ctx.stroke()
+                }
+            }
+
+            // 5. 绘制感知到的捷径 (Portal)
+            if (entity.aiSensory && entity.aiSensory.bestPortal) {
+                const portalPos = entity.aiSensory.bestPortal.pos
+                const portalX = portalPos.x - camera.x
+                const portalY = portalPos.y - camera.y
+                
+                ctx.beginPath()
+                ctx.moveTo(screenAiX, screenAiY)
+                ctx.lineTo(portalX, portalY)
+                ctx.strokeStyle = 'rgba(147, 51, 234, 0.5)' // 紫色
+                ctx.setLineDash([4, 4])
+                ctx.stroke()
+            }
+
             ctx.restore()
         }
     }
