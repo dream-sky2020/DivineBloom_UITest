@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { MapSaveStateSchema } from '@/data/schemas/save';
+import { ScenarioLoader } from '@/game/ecs/ScenarioLoader';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('WorldStore');
@@ -19,34 +20,17 @@ export const useWorldStore = defineStore('world', () => {
     const saveState = (sceneInstance) => {
         if (!sceneInstance) return;
 
-        // Serialize current scene
-        const data = sceneInstance.serialize();
+        // 使用 ScenarioLoader 统一导出格式，从场景实例中获取引擎
+        const bundle = ScenarioLoader.exportScene(sceneInstance.engine || {}, currentMapId.value);
 
-        // Validate before saving
-        try {
-            // We construct the state object to match what we expect in the schema
-            const stateToValidate = {
-                isInitialized: true,
-                entities: data.entities
-            };
-            MapSaveStateSchema.parse(stateToValidate);
-        } catch (e) {
-            logger.error('Save Validation Failed:', e);
-            // We proceed anyway for resilience, but log the error
-        }
+        // Update current runtime state
+        currentMapState.value = bundle;
 
-        // Update current runtime state (used for immediate restoration like battle return)
-        currentMapState.value = {
-            entities: data.entities,
-            isInitialized: true
-        };
-
-        // Persist enemy state for this map ID
-        // We merge with existing state to preserve other potential map data
+        // Persist for this map ID
         if (!worldStates.value[currentMapId.value]) {
             worldStates.value[currentMapId.value] = {};
         }
-        worldStates.value[currentMapId.value].entities = data.entities;
+        worldStates.value[currentMapId.value] = bundle;
     };
 
     const loadMap = (mapId) => {
@@ -56,15 +40,28 @@ export const useWorldStore = defineStore('world', () => {
         // Try to load persisted state for this map
         const persisted = worldStates.value[mapId];
 
+        // 🎯 [FIX] 保存完整的 Bundle 数据（包括 header），避免 Ground 实体丢失
         // 即使没有持久化数据，也要清空 currentMapState，防止残留上一张地图的状态
-        // 如果有持久化数据，我们只恢复 enemies，playerPos 为 null 让场景使用出生点
-        currentMapState.value = persisted && persisted.entities ? {
-            isInitialized: true,
-            entities: persisted.entities
-        } : null;
+        if (persisted) {
+            // 如果是完整的 Bundle 格式（包含 header 和 entities）
+            if (persisted.header && persisted.entities) {
+                currentMapState.value = persisted;
+            }
+            // 兼容旧格式：只有 entities 数组
+            else if (persisted.entities && Array.isArray(persisted.entities)) {
+                currentMapState.value = {
+                    isInitialized: true,
+                    entities: persisted.entities
+                };
+            } else {
+                currentMapState.value = null;
+            }
+        } else {
+            currentMapState.value = null;
+        }
 
         // Validate loaded state if exists
-        if (currentMapState.value) {
+        if (currentMapState.value && currentMapState.value.entities) {
             try {
                 MapSaveStateSchema.parse(currentMapState.value);
             } catch (e) {
@@ -112,21 +109,20 @@ export const useWorldStore = defineStore('world', () => {
     };
 
     /**
-     * 手动初始化当前地图状态（用于首次加载默认地图后）
+     * 手动初始化当前地图状态
+     * @deprecated 已被 saveState 替代，保留用于向后兼容
      */
     const initCurrentState = (entities) => {
-        const newState = {
-            isInitialized: true,
-            entities: JSON.parse(JSON.stringify(entities)) // Clone to be safe
+        console.warn('[WorldStore] initCurrentState is deprecated, use saveState instead');
+        const bundle = {
+            header: {
+                version: '1.0.0',
+                config: { id: currentMapId.value }
+            },
+            entities: JSON.parse(JSON.stringify(entities))
         };
 
-        try {
-            MapSaveStateSchema.parse(newState);
-        } catch (e) {
-            logger.error('Init State Validation Failed:', e);
-        }
-
-        currentMapState.value = newState;
+        currentMapState.value = bundle;
     };
 
     const reset = () => {
@@ -150,6 +146,17 @@ export const useWorldStore = defineStore('world', () => {
         // loadMap(currentMapId.value);
     };
 
+    /**
+     * [批量更新] 用于项目级导入
+     */
+    const bulkUpdateStates = (newWorldStates) => {
+        worldStates.value = {
+            ...worldStates.value,
+            ...newWorldStates
+        };
+        logger.info('Project states updated bulkly');
+    };
+
     const clearState = () => {
         reset();
     };
@@ -165,6 +172,7 @@ export const useWorldStore = defineStore('world', () => {
         reset,
         serialize,
         loadState,
+        bulkUpdateStates,
         initCurrentState
     };
 });

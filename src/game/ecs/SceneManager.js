@@ -24,6 +24,7 @@ export class SceneManager {
         // 状态标志
         this.isTransitioning = false
         this.pendingRequest = null
+        this._resolveTransition = null // 用于等待切换完成的 Promise resolve
     }
 
     /**
@@ -39,8 +40,14 @@ export class SceneManager {
      */
     update() {
         if (this.pendingRequest) {
-            this.executeTransition(this.pendingRequest)
-            this.pendingRequest = null
+            const req = this.pendingRequest;
+            const res = this._resolveTransition;
+            this.pendingRequest = null;
+            this._resolveTransition = null;
+
+            this.executeTransition(req).then(() => {
+                if (res) res();
+            });
         }
     }
 
@@ -48,10 +55,16 @@ export class SceneManager {
      * 请求切换地图
      * @param {string} mapId 
      * @param {string} entryId 
+     * @returns {Promise}
      */
     requestSwitchMap(mapId, entryId) {
-        if (this.isTransitioning) return
-        this.pendingRequest = { type: 'MAP', mapId, entryId }
+        if (this.isTransitioning) return Promise.resolve()
+
+        // 如果已经有请求在排队，先取消旧的（或者等待，这里选择覆盖）
+        return new Promise((resolve) => {
+            this.pendingRequest = { type: 'MAP', mapId, entryId }
+            this._resolveTransition = resolve
+        });
     }
 
     /**
@@ -134,13 +147,11 @@ export class SceneManager {
             logger.info(`Player spawned at entry point: ${entryId}`)
         }
 
-        // 9. 如果是新加载的场景，同步状态到 Store
-        if (!persistedState && result.entities) {
-            const serializedEntities = result.entities
-                .map(e => EntityManager.serialize(e))
-                .filter(e => e !== null)
-
-            this.worldStore.initCurrentState(serializedEntities)
+        // 9. 🎯 [FIX] 如果是新加载的场景，保存完整的场景状态（包括 header.config）
+        // 避免下次切换回来时 Ground 消失
+        if (!persistedState && this.currentScene) {
+            logger.info(`Initializing state for new map: ${mapId}`)
+            this.worldStore.saveState(this.currentScene)
         }
 
         // 10. 更新 Scene 的 player 引用

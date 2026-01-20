@@ -31,7 +31,7 @@ class GameManager {
             editMode: false,
             // 侧边栏布局配置
             layout: {
-                left: ['scene-explorer'], // 左侧面板列表
+                left: ['project-manager', 'scene-explorer'], // 添加项目管理
                 right: ['entity-properties'] // 右侧面板列表
             }
         })
@@ -164,7 +164,7 @@ class GameManager {
 
         // If scene exists, use SceneManager to switch (reusing the instance)
         if (this.currentScene.value) {
-            this.sceneManager.requestSwitchMap(mapId, entryId)
+            await this.sceneManager.requestSwitchMap(mapId, entryId)
             return
         }
 

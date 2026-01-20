@@ -175,6 +175,15 @@
                  <button @click="togglePause" :class="{ warn: gameManager.state.isPaused }">
                    {{ gameManager.state.isPaused ? '恢复运行' : '暂停运行' }}
                  </button>
+                 <button 
+                   @click="exportScene" 
+                   :style="{ 
+                     background: isEditMode ? '#059669' : '#1e40af', 
+                     color: 'white' 
+                   }"
+                 >
+                   {{ isEditMode ? '📥 导出场景布局' : '📸 捕捉运行快照' }}
+                 </button>
                </template>
 
                <!-- 战斗专属操作 (预留) -->
@@ -230,6 +239,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGameStore } from '@/stores/game';
 import { gameManager } from '@/game/ecs/GameManager';
+import { ScenarioLoader } from '@/game/ecs/ScenarioLoader';
 import { createLogger } from '@/utils/logger';
 
 import MainMenuSystem from '@/interface/pages/systems/MainMenuSystem.vue';
@@ -244,6 +254,7 @@ import DevTools from '@/interface/pages/DevTools.vue';
 import SidebarPanel from '@/interface/pages/editor/SidebarPanel.vue';
 import SceneExplorer from '@/interface/pages/editor/SceneExplorer.vue';
 import EntityProperties from '@/interface/pages/editor/EntityProperties.vue';
+import ProjectManager from '@/interface/pages/editor/ProjectManager.vue';
 
 const logger = createLogger('GameUI');
 const { locale } = useI18n();
@@ -492,6 +503,21 @@ const togglePause = () => {
   }
 };
 
+const exportScene = () => {
+  const mapId = gameManager.currentScene.value?.mapData?.id || 'unknown';
+  const bundle = ScenarioLoader.exportScene(gameManager.engine, mapId);
+  
+  const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${mapId}_scene_export_${new Date().getTime()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  
+  logger.info('Scene data exported:', mapId);
+};
+
 const setLanguage = (lang) => {
   settingsStore.setLanguage(lang);
 };
@@ -500,7 +526,8 @@ const setLanguage = (lang) => {
 const getPanelTitle = (id) => {
   const titles = {
     'scene-explorer': '场景浏览器',
-    'entity-properties': '属性编辑'
+    'entity-properties': '属性编辑',
+    'project-manager': '项目管理'
   };
   return titles[id] || id;
 };
@@ -508,7 +535,8 @@ const getPanelTitle = (id) => {
 const getPanelComponent = (id) => {
   const components = {
     'scene-explorer': SceneExplorer,
-    'entity-properties': EntityProperties
+    'entity-properties': EntityProperties,
+    'project-manager': ProjectManager
   };
   return components[id];
 };

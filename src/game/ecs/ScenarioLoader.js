@@ -3,6 +3,8 @@ import { BackgroundEntity } from '@/game/ecs/entities/definitions/BackgroundEnti
 import { PlayerConfig } from '@/data/assets'
 import Enemies from '@/data/characters/enemies'
 import { world } from '@/game/ecs/world'
+import { SceneMigration } from './entities/internal/SceneMigration'
+import { EntitySerializer } from './entities/internal/EntitySerializer'
 
 /**
  * 实体创建工厂映射表
@@ -10,218 +12,339 @@ import { world } from '@/game/ecs/world'
  */
 const ENTITY_FACTORIES = {
     // 背景层工厂
-    background: (mapData) => {
-        if (mapData.background) {
-            const groundW = mapData.width || 2000
-            const groundH = mapData.height || 2000
-            BackgroundEntity.createGround(groundW, groundH, mapData.background.groundColor)
+    background: (config) => {
+        if (config && config.groundColor) {
+            const groundW = config.width || 2000
+            const groundH = config.height || 2000
+            BackgroundEntity.createGround(groundW, groundH, config.groundColor)
         }
     },
 
-    // 装饰物工厂
-    decorations: (mapData) => {
-        const mapHeight = mapData.height || 600
-        mapData.decorations?.forEach(dec => {
+    // 玩家工厂 (特殊处理，通常不在场景数据中持久化位置，除非是存档)
+    player: (config, spawnPoint) => {
+        const player = EntityManager.createPlayer({
+            x: spawnPoint?.x || 200,
+            y: spawnPoint?.y || 260,
+            scale: config.playerScale || PlayerConfig.scale
+        })
+        return player
+    }
+}
+
+export class ScenarioLoader {
+    /**
+     * [归一化入口] 加载场景
+     * 支持加载原始 Map 配置或编辑器导出的 Bundle
+     * @param {object} engine 
+     * @param {object} source 地图配置或导出的场景包
+     * @param {string} entryId 
+     * @returns {object} { player, entities }
+     */
+    static load(engine, source, entryId = 'default') {
+        if (!source) return { player: null, entities: [] }
+
+        // 1. 归一化处理：将不同来源的数据统一为 SceneBundle 格式
+        let bundle = this.normalize(source)
+
+        // 2. 版本迁移：处理组件变更导致的结构差异
+        bundle = SceneMigration.migrate(bundle)
+
+        // 3. 执行物理层加载 (背景/相机等配置)
+        const config = bundle.header?.config || {}
+        ENTITY_FACTORIES.background(config)
+
+        // 4. 执行实体加载
+        const result = {
+            player: null,
+            entities: []
+        }
+
+        // 4.1 确定玩家出生点 (如果是跨地图进入)
+        let spawnPoint = config.spawnPoint
+        if (config.entryPoints && config.entryPoints[entryId]) {
+            spawnPoint = config.entryPoints[entryId]
+        }
+
+        // 4.2 从 bundle.entities 还原所有实体
+        bundle.entities.forEach(item => {
+            const entity = EntityManager.create(engine, item.type, item.data, {
+                player: null
+            })
+
+            if (entity) {
+                result.entities.push(entity)
+                if (entity.type === 'player') {
+                    result.player = entity
+                }
+            }
+        })
+
+        // 4.3 安全检查：如果没有玩家实体 (比如新场景加载)，则手动创建一个
+        if (!result.player) {
+            result.player = ENTITY_FACTORIES.player(config, spawnPoint)
+            result.entities.push(result.player)
+        } else if (spawnPoint) {
+            // 如果已有玩家实体但有指定的入口点，则覆盖坐标
+            result.player.position.x = spawnPoint.x
+            result.player.position.y = spawnPoint.y
+        }
+
+        // 5. 初始化相机
+        this._initCamera(engine, result.player, config)
+
+        return result
+    }
+
+    /**
+     * 将原始地图配置 (src/data/maps/*.js) 转换为统一的归一化格式
+     * @param {object} source 
+     * @returns {object} SceneBundle
+     */
+    static normalize(source) {
+        // 1. 如果已经是完整的 Bundle 格式，直接返回
+        if (source.header && source.entities) {
+            return source
+        }
+
+        // 2. 如果是只有 entities 的存档数据 (兼容旧格式或部分导出)
+        if (source.entities && Array.isArray(source.entities)) {
+            return {
+                header: {
+                    version: '1.0.0',
+                    config: source.config || { id: 'unknown' }
+                },
+                entities: source.entities
+            }
+        }
+
+        // 3. 执行“展开”逻辑，将 MapSchema 静态配置转换为具体的实体实例列表
+        const entities = []
+        const config = {
+            id: source.id,
+            width: source.width || 800,
+            height: source.height || 600,
+            groundColor: source.background?.groundColor || '#000',
+            entryPoints: source.entryPoints,
+            spawnPoint: source.spawnPoint
+        }
+
+        // 转换装饰物
+        source.decorations?.forEach(dec => {
             let y = dec.y
             if (y === undefined && dec.yRatio !== undefined) {
-                y = dec.yRatio * mapHeight
+                y = dec.yRatio * config.height
             }
-
-            EntityManager.createDecoration({
-                x: dec.x,
-                y: y || 0,
-                name: dec.spriteId ? `Decoration_${dec.spriteId}` : 'Decoration_Rect',
-                config: {
-                    spriteId: dec.spriteId,
-                    scale: dec.scale,
-                    collider: dec.collider,
-                    rect: dec.type === 'rect' ? {
-                        width: dec.width,
-                        height: dec.height,
-                        color: dec.color
-                    } : undefined
+            entities.push({
+                type: 'decoration',
+                data: {
+                    x: dec.x,
+                    y: y || 0,
+                    name: dec.spriteId ? `Decoration_${dec.spriteId}` : 'Decoration_Rect',
+                    config: {
+                        spriteId: dec.spriteId,
+                        scale: dec.scale,
+                        collider: dec.collider,
+                        rect: dec.type === 'rect' ? {
+                            width: dec.width,
+                            height: dec.height,
+                            color: dec.color
+                        } : undefined
+                    }
                 }
             })
         })
-    },
 
-    // 障碍物 (空气墙) 工厂
-    obstacles: (mapData) => {
-        const created = []
-        mapData.obstacles?.forEach(data => {
-            const obstacleEntity = EntityManager.createObstacle({
-                ...data
+        // 转换障碍物
+        source.obstacles?.forEach(obs => {
+            entities.push({
+                type: 'obstacle',
+                data: { ...obs }
             })
-            created.push(obstacleEntity)
-        })
-        return created
-    },
-
-    // 玩家工厂
-    player: (mapData, entryId) => {
-        const player = EntityManager.createPlayer({
-            x: 200,
-            y: 260,
-            scale: PlayerConfig.scale
         })
 
-        // 处理出生点
-        let spawn = mapData.spawnPoint
-        if (mapData.entryPoints && mapData.entryPoints[entryId]) {
-            spawn = mapData.entryPoints[entryId]
-        }
+        // 转换传送门目的地
+        source.portalDestinations?.forEach(dest => {
+            entities.push({
+                type: 'portal_destination',
+                data: { ...dest }
+            })
+        })
 
-        if (spawn) {
-            player.position.x = spawn.x
-            player.position.y = spawn.y
-        }
+        // 转换 NPC
+        source.npcs?.forEach(npc => {
+            entities.push({
+                type: 'npc',
+                data: {
+                    x: npc.x,
+                    y: npc.y,
+                    name: npc.name,
+                    config: { ...npc, x: undefined, y: undefined, name: undefined }
+                }
+            })
+        })
 
-        return player
-    },
+        // 转换传送门
+        source.portals?.forEach(portal => {
+            entities.push({
+                type: 'portal',
+                data: {
+                    x: portal.x, y: portal.y, name: portal.name,
+                    width: portal.w, height: portal.h,
+                    isForced: portal.isForced,
+                    targetMapId: portal.targetMapId,
+                    targetEntryId: portal.targetEntryId,
+                    destinationId: portal.destinationId,
+                    targetX: portal.targetX,
+                    targetY: portal.targetY
+                }
+            })
+        })
 
-    // 敌人/生成器工厂
-    enemies: (mapData) => {
-        const created = []
-        mapData.spawners?.forEach(spawner => {
+        // 转换刷怪点为具体敌人实例 (静态展开)
+        source.spawners?.forEach(spawner => {
             for (let i = 0; i < spawner.count; i++) {
                 let x = 0, y = 0
                 if (spawner.area) {
                     x = spawner.area.x + Math.random() * spawner.area.w
                     y = spawner.area.y + Math.random() * spawner.area.h
                 } else {
-                    x = 300
-                    y = 300
+                    x = 300; y = 300;
                 }
 
-                const group = spawner.enemyIds.map(id => ({ id }))
                 const leaderId = spawner.enemyIds[0]
                 const leaderDef = Enemies[leaderId]
                 const spriteId = (leaderDef && leaderDef.spriteId) ? leaderDef.spriteId : 'default'
 
-                const enemyEntity = EntityManager.createEnemy({
-                    x, y,
-                    battleGroup: group,
-                    options: {
-                        ...spawner.options,
-                        spriteId: spriteId,
-                        minYRatio: mapData.constraints?.minYRatio,
+                entities.push({
+                    type: 'enemy',
+                    data: {
+                        x, y,
+                        battleGroup: spawner.enemyIds.map(id => ({ id })),
+                        options: {
+                            ...spawner.options,
+                            spriteId: spriteId,
+                            minYRatio: source.constraints?.minYRatio,
+                        }
                     }
                 })
-                created.push(enemyEntity)
             }
         })
-        return created
-    },
 
-    // NPC 工厂
-    npcs: (mapData) => {
-        const created = []
-        mapData.npcs?.forEach(data => {
-            const npcEntity = EntityManager.createNPC({
-                x: data.x,
-                y: data.y,
-                name: data.name,
-                config: {
-                    ...data,
-                    x: undefined,
-                    y: undefined,
-                    name: undefined
-                }
-            })
-            created.push(npcEntity)
-        })
-        return created
-    },
-
-    // 传送门工厂
-    portals: (mapData) => {
-        const created = []
-        mapData.portals?.forEach(data => {
-            const portalEntity = EntityManager.createPortal({
-                x: data.x,
-                y: data.y,
-                name: data.name,
-                width: data.w,
-                height: data.h,
-                // [FIXED] 增加强制传送标志的传递
-                isForced: data.isForced,
-                // 跨地图传送
-                targetMapId: data.targetMapId,
-                targetEntryId: data.targetEntryId,
-                // 同地图传送
-                destinationId: data.destinationId,
-                targetX: data.targetX,
-                targetY: data.targetY
-            })
-            created.push(portalEntity)
-        })
-        return created
-    },
-
-    // 传送门目的地工厂
-    portalDestinations: (mapData) => {
-        const created = []
-        mapData.portalDestinations?.forEach(data => {
-            const destEntity = EntityManager.createPortalDestination({
-                id: data.id,
-                x: data.x,
-                y: data.y,
-                name: data.name,
-                visual: data.visual
-            })
-            if (destEntity) {
-                created.push(destEntity)
-            }
-        })
-        return created
+        return {
+            header: {
+                version: '1.0.0', // 原始 MapSchema 视为 1.0.0
+                config: config
+            },
+            entities: entities
+        }
     }
-}
 
-export class ScenarioLoader {
     /**
-     * 加载场景实体 (静态配置加载)
-     * @param {object} engine 
-     * @param {object} mapData 
-     * @param {string} entryId 
-     * @returns {object} { player, entities }
+     * [导出入口] 将当前场景导出为归一化 Bundle
      */
-    static load(engine, mapData, entryId = 'default') {
-        const result = {
-            player: null,
-            entities: []
+    static exportScene(engine, mapId) {
+        // [FIX] miniplex world 没有 .entities 属性，需使用 Array.from(world)
+        const entities = Array.from(world)
+            .map(ent => EntitySerializer.serialize(ent))
+            .filter(Boolean)
+
+        // [FIX] 尝试从世界中查找地面实体以获取背景色和尺寸，解决切换场景时 Ground 消失的问题
+        const groundEntity = Array.from(world).find(e => e.type === 'background_ground');
+        const groundColor = groundEntity?.visual?.color || '#000';
+        const groundW = groundEntity?.visual?.width || 3200;
+        const groundH = groundEntity?.visual?.height || 2400;
+
+        const config = {
+            id: mapId,
+            width: groundW,
+            height: groundH,
+            groundColor: groundColor
         }
 
-        if (!mapData) return result
+        return {
+            header: {
+                version: SceneMigration.CURRENT_VERSION,
+                config: config,
+                exportTime: new Date().toISOString()
+            },
+            entities: entities
+        }
+    }
 
-        // 1. 执行背景和装饰物初始化 (不返回实体引用)
-        ENTITY_FACTORIES.background(mapData)
-        ENTITY_FACTORIES.decorations(mapData)
-        ENTITY_FACTORIES.obstacles(mapData)
-        ENTITY_FACTORIES.portalDestinations(mapData) // 先加载目的地实体
+    /**
+     * [存档恢复] 以前的 restore 现在可以复用 load 逻辑
+     */
+    static restore(engine, state, mapData = null) {
+        // 如果 state 已经是 Bundle 格式，直接 load
+        // 如果是旧存档格式，则需要进行一次转换
+        return this.load(engine, state)
+    }
 
-        // 2. 创建核心实体
-        result.player = ENTITY_FACTORIES.player(mapData, entryId)
-        result.entities.push(result.player)
+    /**
+     * [项目级导出] 导出整个项目的所有地图数据
+     * @param {object} engine
+     * @param {object} worldStates store中的所有地图持久化状态
+     * @param {object} mapLoaders 外部传入的地图加载器字典
+     * @returns {object} ProjectBundle
+     */
+    static async exportProject(engine, worldStates, mapLoaders) {
+        const projectBundle = {
+            project: {
+                version: SceneMigration.CURRENT_VERSION,
+                exportTime: new Date().toISOString(),
+                mapIds: Object.keys(mapLoaders || {})
+            },
+            maps: {}
+        };
 
-        // 3. 创建其他业务实体
-        const otherEntities = [
-            ...ENTITY_FACTORIES.enemies(mapData),
-            ...ENTITY_FACTORIES.npcs(mapData),
-            ...ENTITY_FACTORIES.portals(mapData)
-        ]
-        
-        result.entities.push(...otherEntities)
+        const targetMaps = mapLoaders || {};
 
-        // 4. 初始化相机位置 (直接同步到玩家中心)
-        this._initCamera(engine, result.player, mapData)
+        // 遍历所有定义的地图
+        for (const mapId of Object.keys(targetMaps)) {
+            // 1. 优先获取内存中已改变的状态
+            if (worldStates[mapId]) {
+                projectBundle.maps[mapId] = worldStates[mapId];
+            } else {
+                // 2. 如果内存没有，则读取静态配置并归一化
+                try {
+                    const rawData = await targetMaps[mapId]();
+                    projectBundle.maps[mapId] = this.normalize(rawData);
+                } catch (e) {
+                    console.error(`[ScenarioLoader] Failed to pre-load map ${mapId} for export`, e);
+                }
+            }
+        }
 
-        return result
+        return projectBundle;
+    }
+
+    /**
+     * [项目级导入] 解析项目包
+     * @param {object} projectBundle 
+     * @returns {object} { worldStates }
+     */
+    static importProject(projectBundle) {
+        if (!projectBundle.project || !projectBundle.maps) {
+            throw new Error('Invalid project bundle format');
+        }
+
+        const worldStates = {};
+        for (const [mapId, sceneBundle] of Object.entries(projectBundle.maps)) {
+            // 对每个场景包进行版本迁移
+            const migrated = SceneMigration.migrate(sceneBundle);
+            worldStates[mapId] = {
+                entities: migrated.entities,
+                isInitialized: true
+            };
+        }
+
+        return worldStates;
     }
 
     /**
      * 初始化相机
      */
-    static _initCamera(engine, player, mapData = null) {
+    static _initCamera(engine, player, config = null) {
         if (!player) return
 
         const globalEntity = world.with('camera', 'globalManager').first
@@ -229,8 +352,8 @@ export class ScenarioLoader {
             const cam = globalEntity.camera
             const viewportWidth = engine.width
             const viewportHeight = engine.height
-            const mapWidth = mapData?.width || 800
-            const mapHeight = mapData?.height || 600
+            const mapWidth = config?.width || 800
+            const mapHeight = config?.height || 600
 
             // 检查地图是否大于视口
             const isMapLargerX = mapWidth > viewportWidth
@@ -241,25 +364,21 @@ export class ScenarioLoader {
 
             if (isMapLargerX) {
                 targetX = player.position.x - viewportWidth / 2
-                // 裁剪到边界
                 if (cam.useBounds) {
                     const maxX = mapWidth - viewportWidth
                     targetX = Math.max(0, Math.min(targetX, maxX))
                 }
             } else {
-                // 居中
                 targetX = (mapWidth - viewportWidth) / 2
             }
 
             if (isMapLargerY) {
                 targetY = player.position.y - viewportHeight / 2
-                // 裁剪到边界
                 if (cam.useBounds) {
                     const maxY = mapHeight - viewportHeight
                     targetY = Math.max(0, Math.min(targetY, maxY))
                 }
             } else {
-                // 居中
                 targetY = (mapHeight - viewportHeight) / 2
             }
 
@@ -268,80 +387,5 @@ export class ScenarioLoader {
             cam.targetX = cam.x
             cam.targetY = cam.y
         }
-    }
-
-    /**
-     * 从保存状态恢复实体 (动态状态恢复)
-     * @param {object} engine 
-     * @param {object} state 
-     * @param {object} [mapData] 
-     * @returns {object} { player, entities }
-     */
-    static restore(engine, state, mapData = null) {
-        const result = {
-            player: null,
-            entities: []
-        }
-
-        // 1. 恢复静态层（背景层不序列化，总是从地图加载）
-        if (mapData) {
-            ENTITY_FACTORIES.background(mapData)
-            
-            // 🎯 修复：如果存档中没有实体数据，才从地图加载装饰物和障碍物
-            // 否则这些实体会从 state.entities 中恢复，避免重复加载
-            const hasPersistedEntities = state && state.entities && state.entities.length > 0
-            if (!hasPersistedEntities) {
-                ENTITY_FACTORIES.decorations(mapData)
-                ENTITY_FACTORIES.obstacles(mapData)
-                ENTITY_FACTORIES.portalDestinations(mapData) // 先加载目的地实体
-            }
-        }
-
-        // 2. 从状态列表恢复动态实体
-        if (state.entities) {
-            state.entities.forEach(item => {
-                const entity = EntityManager.create(engine, item.type, item.data, {
-                    player: null
-                })
-
-                if (entity) {
-                    result.entities.push(entity)
-                    if (entity.type === 'player') {
-                        result.player = entity
-                    }
-                }
-            })
-        }
-
-        // 3. 补丁逻辑：如果是旧存档缺失传送门和目的地，从地图配置补全
-        if (mapData?.portalDestinations) {
-            const hasDestinations = result.entities.some(e => e.type === 'portal_destination')
-            if (!hasDestinations) {
-                console.warn('[ScenarioLoader] Legacy Save: Injecting portal destinations from map data.')
-                const destinations = ENTITY_FACTORIES.portalDestinations(mapData)
-                result.entities.push(...destinations)
-            }
-        }
-        
-        if (mapData?.portals) {
-            const hasPortals = result.entities.some(e => e.type === 'portal')
-            if (!hasPortals) {
-                console.warn('[ScenarioLoader] Legacy Save: Injecting portals from map data.')
-                const portals = ENTITY_FACTORIES.portals(mapData)
-                result.entities.push(...portals)
-            }
-        }
-
-        // 4. 安全回退：确保玩家存在
-        if (!result.player) {
-            console.warn('[ScenarioLoader] Player missing in state, recreating...')
-            result.player = ENTITY_FACTORIES.player(mapData || {}, 'default')
-            result.entities.push(result.player)
-        }
-
-        // 5. 初始化相机
-        this._initCamera(engine, result.player, mapData)
-
-        return result
     }
 }
