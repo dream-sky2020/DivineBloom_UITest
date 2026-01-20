@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { world } from '@/game/ecs/world'
+import { Inspector } from '@/game/ecs/entities/components/Inspector'
 
 // --- Schema Definition ---
 
@@ -16,6 +17,13 @@ export const PortalDestinationEntitySchema = z.object({
 });
 
 // --- Entity Definition ---
+
+const INSPECTOR_FIELDS = [
+  { path: 'destinationId', label: '目的地 ID', type: 'text', tip: '传送门引用的唯一 ID', props: { readonly: true } },
+  { path: 'name', label: '显示名称', type: 'text' },
+  { path: 'position.x', label: '坐标 X', type: 'number' },
+  { path: 'position.y', label: '坐标 Y', type: 'number' }
+];
 
 export const PortalDestinationEntity = {
   /**
@@ -52,7 +60,10 @@ export const PortalDestinationEntity = {
       },
 
       // 标记为不可序列化的静态实体（从地图配置加载）
-      isStatic: true
+      isStatic: true,
+
+      // [NEW] 添加 Inspector
+      inspector: Inspector.create({ fields: INSPECTOR_FIELDS })
     })
   },
 

@@ -94,8 +94,8 @@ export const usePartyStore = defineStore('party', () => {
 
                 members.value[id] = {
                     id: id,
-                    currentHp: dbChar.initialStats.hp,
-                    currentMp: dbChar.initialStats.mp,
+                    currentHp: dbChar.hp,
+                    currentMp: dbChar.mp,
                     level: 1,
                     exp: 0,
                     equippedActiveSkills: equippedActive,
@@ -169,12 +169,12 @@ export const usePartyStore = defineStore('party', () => {
             currentMp: runtime.currentMp,
             
             // 基础属性 (暂不考虑成长，始终读 DB)
-            maxHp: db.initialStats.hp, 
-            maxMp: db.initialStats.mp,
-            atk: db.initialStats.atk || 50,
-            def: db.initialStats.def || 30,
-            spd: db.initialStats.spd || 10,
-            mag: db.initialStats.mag || 10,
+            maxHp: db.hp, 
+            maxMp: db.mp,
+            atk: db.atk || 50,
+            def: db.def || 30,
+            spd: db.spd || 10,
+            mag: db.mag || 10,
             
             skills: db.skills || [], // All learned skills
             equippedActiveSkills: equippedActive,

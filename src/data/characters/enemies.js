@@ -5,7 +5,7 @@ export default {
     role: "roles.monster",
     element: "elements.water",
     weaponType: "weapons.none",
-    initialStats: { hp: 150, mp: 0, atk: 10, def: 5, mag: 0, spd: 8 },
+    hp: 150, mp: 0, atk: 10, def: 5, mag: 0, spd: 8,
     skills: ['skill_enemy_slime_shot', 'skill_passive_attack_up', 'skill_passive_call_of_death'], // Slime Shot (Active) + Attack Up (Passive)
     spriteId: 'enemy_slime',
     description: { zh: '常见的胶状怪物。', en: 'A common gelatinous monster.' },
@@ -20,7 +20,7 @@ export default {
     role: "roles.monster",
     element: "elements.wind",
     weaponType: "weapons.none",
-    initialStats: { hp: 100, mp: 20, atk: 12, def: 2, mag: 5, spd: 18 },
+    hp: 100, mp: 20, atk: 12, def: 2, mag: 5, spd: 18,
     skills: ['skill_enemy_vampiric_bite', 'skill_passive_call_of_death'], // Vampiric Bite
     spriteId: 'default',
     description: { zh: '行动敏捷的飞行怪物。', en: 'An agile flying monster.' },
@@ -34,7 +34,7 @@ export default {
     role: "roles.monster",
     element: "elements.earth",
     weaponType: "weapons.claw",
-    initialStats: { hp: 300, mp: 0, atk: 20, def: 8, mag: 0, spd: 14 },
+    hp: 300, mp: 0, atk: 20, def: 8, mag: 0, spd: 14,
     skills: ['skill_enemy_pack_bite', 'skill_passive_attack_up', 'skill_passive_call_of_death'], // Pack Bite + Attack Up
     spriteId: 'default',
     description: { zh: '凶猛的群居野兽。', en: 'A ferocious pack beast.' },
@@ -49,7 +49,7 @@ export default {
     role: "roles.monster",
     element: "elements.metal",
     weaponType: "weapons.shield",
-    initialStats: { hp: 500, mp: 50, atk: 25, def: 20, mag: 0, spd: 6 },
+    hp: 500, mp: 50, atk: 25, def: 20, mag: 0, spd: 6,
     skills: ['skill_enemy_shield_bash', 'skill_support_shield', 'skill_passive_call_of_death'], // Shield Bash + Shield (Buff)
     spriteId: 'default',
     description: { zh: '全副武装的巡逻者。', en: 'A fully armed patroller.' },
@@ -64,7 +64,7 @@ export default {
     role: "roles.monster",
     element: "elements.wind",
     weaponType: "weapons.dagger",
-    initialStats: { hp: 200, mp: 10, atk: 15, def: 5, mag: 0, spd: 15 },
+    hp: 200, mp: 10, atk: 15, def: 5, mag: 0, spd: 15,
     // 演示：开场半血，且自带流血状态
     currentHp: 100,
     statusEffects: [

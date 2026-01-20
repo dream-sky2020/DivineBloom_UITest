@@ -13,12 +13,23 @@ export const EditorHighlightRenderSystem = {
 
   draw(renderer) {
     const { ctx, camera } = renderer;
-    const entities = world.with('position');
+    const entities = world; // 遍历所有实体，不只是带位置的
 
     ctx.save();
 
-    // 1. 遍历所有带位置的实体，绘制它们的边界框
     for (const entity of entities) {
+      const isSelected = entity === EditorInteractionSystem.selectedEntity;
+      const isDragging = isSelected && EditorInteractionSystem.isDragging;
+
+      // 如果没有位置，只在选中时特殊处理
+      if (!entity.position) {
+        if (isSelected && entity.globalManager) {
+          // 全局管理实体在选中时，在左上角绘制一个固定标识
+          this.drawGlobalIndicator(ctx, isDragging);
+        }
+        continue;
+      }
+
       const { x, y } = entity.position;
       const screenX = x - camera.x;
       const screenY = y - camera.y;
@@ -26,9 +37,6 @@ export const EditorHighlightRenderSystem = {
       // 剔除屏幕外 (稍微多留一点边距)
       if (screenX < -100 || screenX > renderer.width + 100 || 
           screenY < -100 || screenY > renderer.height + 100) continue;
-
-      const isSelected = entity === EditorInteractionSystem.selectedEntity;
-      const isDragging = isSelected && EditorInteractionSystem.isDragging;
 
       // 确定框体大小和位置
       let w = 32, h = 32, ax = 0.5, ay = 1.0;
@@ -110,5 +118,47 @@ export const EditorHighlightRenderSystem = {
     if (isSelected || isDragging) {
       ctx.fillText(posText, x + 2, y + h + 12);
     }
+  },
+
+  /**
+   * 绘制全局管理实体的标识（固定在左上角区域）
+   */
+  drawGlobalIndicator(ctx, isDragging) {
+    const x = 20, y = 20, w = 120, h = 40;
+    
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // 取消相机变换，绘制在固定位置
+    
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+    ctx.strokeStyle = isDragging ? '#f97316' : '#facc15';
+    ctx.lineWidth = 2;
+    
+    // 绘制背景
+    this.roundRect(ctx, x, y, w, h, 8);
+    ctx.fill();
+    ctx.stroke();
+    
+    // 绘制文字
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('GLOBAL MANAGER', x + w/2, y + 25);
+    
+    // 恢复之前的变换（如果有的话）
+    // 注意：caller 应该在 restore() 之前处理好 transform
+  },
+
+  /**
+   * 绘制圆角矩形辅助函数
+   */
+  roundRect(ctx, x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
   }
 };

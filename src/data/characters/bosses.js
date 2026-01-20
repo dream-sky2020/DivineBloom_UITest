@@ -13,14 +13,12 @@ export default {
     weaponType: "weapons.sword",
     isBoss: true,
     color: '#fbbf24', // Gold
-    initialStats: {
-      hp: 50000,
-      mp: 9999,
-      atk: 50,
-      def: 40,
-      mag: 40,
-      spd: 10
-    },
+    hp: 50000,
+    mp: 9999,
+    atk: 50,
+    def: 40,
+    mag: 40,
+    spd: 10,
     description: {
       zh: '神戮兵装的持有者，立誓通过武力终结一切混乱的霸主。',
       'zh-TW': '神戮兵裝的持有者，立誓通過武力終結一切混亂的霸主。',
@@ -47,14 +45,12 @@ export default {
     weaponType: "weapons.scimitar",
     isBoss: true,
     color: '#94a3b8', // Slate/Silver
-    initialStats: {
-      hp: 45000,
-      mp: 9999,
-      atk: 45,
-      def: 35,
-      mag: 50,
-      spd: 15
-    },
+    hp: 45000,
+    mp: 9999,
+    atk: 45,
+    def: 35,
+    mag: 50,
+    spd: 15,
     description: {
       zh: '看破轮回虚无的国王，试图毁灭许愿术核心以赐予众生彻底的解脱。',
       'zh-TW': '看破輪迴虛無的國王，試圖毀滅許願術核心以賜予眾生徹底的解脫。',
@@ -81,14 +77,12 @@ export default {
     weaponType: "weapons.scythe",
     isBoss: true,
     color: '#ef4444',
-    initialStats: {
-      hp: 60000,
-      mp: 9999,
-      atk: 60,
-      def: 45,
-      mag: 55,
-      spd: 20
-    },
+    hp: 60000,
+    mp: 9999,
+    atk: 60,
+    def: 45,
+    mag: 55,
+    spd: 20,
     description: {
       zh: '屠灭所有神明的非人神。',
       'zh-TW': '屠滅所有神明的非人神。',
@@ -115,14 +109,12 @@ export default {
     weaponType: "weapons.scythe",
     isBoss: true,
     color: '#10b981',
-    initialStats: {
-      hp: 70000,
-      mp: 9999,
-      atk: 50,
-      def: 50,
-      mag: 65,
-      spd: 22
-    },
+    hp: 70000,
+    mp: 9999,
+    atk: 50,
+    def: 50,
+    mag: 65,
+    spd: 22,
     description: {
       zh: '屠灭所有神明的非人神。',
       'zh-TW': '屠滅所有神明的非人神。',

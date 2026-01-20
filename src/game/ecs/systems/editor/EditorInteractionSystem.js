@@ -39,7 +39,7 @@ export const EditorInteractionSystem = {
 
     // 2. 处理拖拽逻辑 (MouseMove while Down)
     const target = gameManager.editor.selectedEntity;
-    if (this.isDragging && target) {
+    if (this.isDragging && target && target.position) {
       if (mouse.isDown) {
         // 更新位置 (通过响应式代理更新，Vue 就能感知到)
         target.position.x = worldX + this.dragOffset.x;
@@ -52,6 +52,11 @@ export const EditorInteractionSystem = {
           target.position.y = Math.round(target.position.y / gridSize) * gridSize;
         }
       } else {
+        this.isDragging = false;
+      }
+    } else if (this.isDragging && target && !target.position) {
+      // 对于没有位置的实体（如全局实体），如果鼠标松开了就停止“拖拽”状态
+      if (!mouse.isDown) {
         this.isDragging = false;
       }
     }

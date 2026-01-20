@@ -16,14 +16,15 @@
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    padding-top: 1vh;
     gap: 20px;
 }
 
 /* Party Zone */
 .party-zone {
-    height: 600px;
-    padding: 2rem;
+    height: 400px;
+    padding: 2rem 2rem 0.5rem 2rem;
     display: flex;
     justify-content: center;
     align-items: flex-end;

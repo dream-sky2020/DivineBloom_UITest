@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { world } from '@/game/ecs/world'
 import { Visuals } from '@/game/ecs/entities/components/Visuals'
 import { Physics } from '@/game/ecs/entities/components/Physics'
+import { Inspector } from '@/game/ecs/entities/components/Inspector'
 
 // --- Schema Definition ---
 
@@ -32,6 +33,15 @@ export const DecorationEntitySchema = z.object({
 });
 
 // --- Entity Definition ---
+
+const INSPECTOR_FIELDS = [
+    { path: 'name', label: '名称', type: 'text', tip: '该装饰物的显示名称' },
+    { path: 'position.x', label: '坐标 X', type: 'number', props: { step: 1 } },
+    { path: 'position.y', label: '坐标 Y', type: 'number', props: { step: 1 } },
+    { path: 'zIndex', label: '层级', type: 'number', tip: '控制重叠顺序，背景通常在 -50 以下', props: { step: 1 } },
+    { path: 'visual.id', label: '资源 ID', type: 'text', tip: '对应 assets 中的 ID' },
+    { path: 'visual.scale', label: '缩放比例', type: 'number', props: { step: 0.1, min: 0.1 } }
+];
 
 export const DecorationEntity = {
     create(data) {
@@ -72,7 +82,9 @@ export const DecorationEntity = {
             name: name,
             position: { x, y },
             visual: visualComponent,
-            zIndex: zIndex
+            zIndex: zIndex,
+            // 🎯 添加 Inspector 映射组件
+            inspector: Inspector.create({ fields: INSPECTOR_FIELDS })
         };
 
         if (collider) {

@@ -20,6 +20,7 @@ import { DetectInputSystem } from '@/game/ecs/systems/detect/DetectInputSystem'
 import { TriggerSystem } from '@/game/ecs/systems/event/TriggerSystem'
 import { ExecuteSystem } from '@/game/ecs/systems/execute/ExecuteSystem'
 import { CameraSystem } from '@/game/ecs/systems/camera/CameraSystem'
+import { TimeSystem } from '@/game/ecs/systems/time/TimeSystem'
 import { clearWorld, world } from '@/game/ecs/world'
 import { GlobalEntity } from '@/game/ecs/entities/definitions/GlobalEntity'
 import { EditorGridRenderSystem } from '@/game/ecs/systems/render/EditorGridRenderSystem'
@@ -207,8 +208,9 @@ export class WorldScene {
     update(dt) {
         this.lastDt = dt
 
-        // 1. 始终运行的系统 (动画等)
+        // 1. 始终运行的系统 (动画、时间等)
         VisualRenderSystem.update(dt)
+        TimeSystem.update(dt)
 
         // 2. 编辑器模式逻辑
         if (this.editMode) {

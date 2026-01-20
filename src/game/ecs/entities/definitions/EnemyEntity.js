@@ -6,6 +6,7 @@ import { Visuals } from '@/game/ecs/entities/components/Visuals'
 import { Physics } from '@/game/ecs/entities/components/Physics'
 import { AI } from '@/game/ecs/entities/components/AI'
 import { Actions } from '@/game/ecs/entities/components/Actions'
+import { Inspector } from '@/game/ecs/entities/components/Inspector'
 
 // --- Schema Definition ---
 
@@ -41,6 +42,19 @@ export const EnemyEntitySchema = z.object({
 });
 
 // --- Entity Definition ---
+
+const INSPECTOR_FIELDS = [
+  { path: 'name', label: '名称', type: 'text', tip: '敌人在场景中的标识名' },
+  { path: 'position.x', label: '坐标 X', type: 'number', props: { step: 1 } },
+  { path: 'position.y', label: '坐标 Y', type: 'number', props: { step: 1 } },
+  { path: 'visual.id', label: '精灵 ID', type: 'text', tip: '对应资源库中的敌人图片' },
+  { path: 'visual.scale', label: '缩放', type: 'number', props: { step: 0.1, min: 0.1 } },
+  { path: 'aiConfig.type', label: 'AI 类型', type: 'text', tip: 'chase(追逐), flee(逃跑), patrol(巡逻), idle(静止)' },
+  { path: 'aiConfig.visionRadius', label: '视野半径', type: 'number', tip: '敌人发现目标的距离', props: { min: 0 } },
+  { path: 'aiConfig.speed', label: '移动速度', type: 'number', props: { step: 10, min: 0 } },
+  { path: 'aiConfig.patrolRadius', label: '巡逻半径', type: 'number', tip: '仅对巡逻型 AI 有效', props: { min: 0 } },
+  { path: 'aiConfig.stunDuration', label: '眩晕时长', type: 'number', tip: '战斗逃跑或被特殊技能击中后的瘫痪时间', props: { step: 0.1, min: 0 } }
+];
 
 export const EnemyEntity = {
   create(data) {
@@ -113,7 +127,10 @@ export const EnemyEntity = {
         visualId,
         options.scale,
         isStunned ? 'stunned' : 'idle'
-      )
+      ),
+
+      // [NEW] 添加 Inspector 映射
+      inspector: Inspector.create({ fields: INSPECTOR_FIELDS })
     })
 
     // [REMOVED] Vision Indicator Entity

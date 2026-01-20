@@ -55,12 +55,12 @@
               </div>
 
               <!-- Character Specific Stats Preview -->
-              <div v-if="currentTab === 'characters' && selectedItem.initialStats" class="stats-preview">
+              <div v-if="currentTab === 'characters'" class="stats-preview">
                  <h4 v-t="'encyclopedia.baseStats'"></h4>
                  <div class="stats-grid">
-                   <div v-for="(val, stat) in selectedItem.initialStats" :key="stat" class="stat-item">
+                   <div v-for="stat in ['hp', 'mp', 'atk', 'def', 'mag', 'spd']" :key="stat" class="stat-item">
                      <span class="stat-label" v-t="`stats.${stat}`"></span>
-                     <span class="stat-val">{{ val }}</span>
+                     <span class="stat-val">{{ selectedItem[stat] }}</span>
                    </div>
                  </div>
               </div>

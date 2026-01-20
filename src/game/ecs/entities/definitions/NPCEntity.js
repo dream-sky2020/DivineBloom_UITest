@@ -4,6 +4,7 @@ import { DetectArea, DetectInput, Trigger } from '@/game/ecs/entities/components
 import { Visuals } from '@/game/ecs/entities/components/Visuals'
 import { Physics } from '@/game/ecs/entities/components/Physics'
 import { Actions } from '@/game/ecs/entities/components/Actions'
+import { Inspector } from '@/game/ecs/entities/components/Inspector'
 
 // --- Schema Definition ---
 
@@ -20,6 +21,16 @@ export const NPCEntitySchema = z.object({
 });
 
 // --- Entity Definition ---
+
+const INSPECTOR_FIELDS = [
+  { path: 'name', label: '显示名称', type: 'text' },
+  { path: 'position.x', label: '坐标 X', type: 'number', props: { step: 1 } },
+  { path: 'position.y', label: '坐标 Y', type: 'number', props: { step: 1 } },
+  { path: 'actionDialogue.dialogueId', label: '对话 ID', type: 'text', tip: '对应 dialogues 文件夹中的配置' },
+  { path: 'detectArea.radius', label: '交互半径', type: 'number', tip: '玩家靠近多少距离可以触发对话', props: { min: 10 } },
+  { path: 'visual.id', label: '立绘 ID', type: 'text' },
+  { path: 'visual.scale', label: '缩放比例', type: 'number', props: { step: 0.1, min: 0.1 } }
+];
 
 export const NPCEntity = {
   create(data) {
@@ -68,7 +79,10 @@ export const NPCEntity = {
         spriteId, 
         scale,
         'default'
-      )
+      ),
+
+      // [NEW] 添加 Inspector
+      inspector: Inspector.create({ fields: INSPECTOR_FIELDS })
     })
 
     return entity

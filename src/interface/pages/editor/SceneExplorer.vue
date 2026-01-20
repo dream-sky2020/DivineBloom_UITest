@@ -14,12 +14,18 @@
         @click="selectEntity(e)"
       >
         <div class="entity-info">
-          <span class="entity-type">{{ e.type || 'Unknown' }}</span>
-          <span class="entity-name">{{ e.name || '(无名称)' }}</span>
+          <span v-if="e.globalManager" class="entity-type global">Global</span>
+          <span v-else class="entity-type">{{ e.type || 'Unknown' }}</span>
+          <span class="entity-name">{{ e.name || (e.globalManager ? 'Global Manager' : '(无名称)') }}</span>
         </div>
         <div class="entity-meta">
-          <span>x: {{ Math.round(e.position?.x || 0) }}</span>
-          <span>y: {{ Math.round(e.position?.y || 0) }}</span>
+          <template v-if="e.position">
+            <span>x: {{ Math.round(e.position?.x || 0) }}</span>
+            <span>y: {{ Math.round(e.position?.y || 0) }}</span>
+          </template>
+          <template v-else-if="e.globalManager">
+            <span class="global-tag">系统实体</span>
+          </template>
         </div>
       </div>
     </div>
@@ -52,7 +58,6 @@ let rafId = 0
 const syncData = () => {
   const allEntities = []
   for (const entity of world) {
-    if (entity.globalManager) continue 
     allEntities.push(entity)
   }
   entities.value = allEntities
@@ -126,6 +131,11 @@ onUnmounted(() => {
   padding: 1px 4px;
   border-radius: 3px;
   text-transform: uppercase;
+}
+
+.entity-type.global {
+  background: #7c3aed;
+  color: #ede9fe;
 }
 
 .entity-name {

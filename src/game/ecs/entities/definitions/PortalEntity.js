@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { world } from '@/game/ecs/world'
 import { DetectArea, DetectInput, Trigger } from '@/game/ecs/entities/components/Triggers'
 import { Actions } from '@/game/ecs/entities/components/Actions'
+import { Inspector } from '@/game/ecs/entities/components/Inspector'
 
 // --- Schema Definition ---
 
@@ -33,6 +34,18 @@ export const PortalEntitySchema = z.object({
 );
 
 // --- Entity Definition ---
+
+const INSPECTOR_FIELDS = [
+  { path: 'name', label: '传送门名称', type: 'text' },
+  { path: 'position.x', label: '坐标 X', type: 'number' },
+  { path: 'position.y', label: '坐标 Y', type: 'number' },
+  { path: 'detectArea.size.w', label: '触发宽度', type: 'number' },
+  { path: 'detectArea.size.h', label: '触发高度', type: 'number' },
+  { path: 'isForced', label: '强制传送', type: 'checkbox', tip: '勾选则触碰即走，不勾选需按交互键' },
+  { path: 'actionTeleport.mapId', label: '目标地图', type: 'text', tip: '跨地图传送时填写' },
+  { path: 'actionTeleport.entryId', label: '入口 ID', type: 'text', tip: '跨地图传送时填写' },
+  { path: 'actionTeleport.destinationId', label: '同图目的地', type: 'text', tip: '同一地图内跳转时填写' }
+];
 
 export const PortalEntity = {
   /**
@@ -107,7 +120,10 @@ export const PortalEntity = {
         isLocalTeleport && destinationId ? destinationId : undefined,
         isLocalTeleport && targetX != null ? targetX : undefined,
         isLocalTeleport && targetY != null ? targetY : undefined
-      )
+      ),
+
+      // [NEW] 添加 Inspector
+      inspector: Inspector.create({ fields: INSPECTOR_FIELDS })
     })
   },
 

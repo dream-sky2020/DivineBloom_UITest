@@ -149,24 +149,24 @@ export const useBattleStore = defineStore('battle', () => {
         const data = charactersDb[dbId];
         if (!data) return null;
 
-        // 获取基础属性，支持直接从 data 覆盖或从 initialStats 获取
-        const maxHp = data.maxHp || data.initialStats.hp;
-        const maxMp = data.maxMp || data.initialStats.mp;
+        // 获取基础属性
+        const maxHp = data.maxHp || data.hp;
+        const maxMp = data.maxMp || data.mp;
 
         return {
             ...data,
             uuid: data.uuid || generateUUID(),
             // 运行时 HP/MP：优先使用 data 中定义的 currentHp (用于开场不满血)，否则为满值
-            currentHp: data.currentHp !== undefined ? data.currentHp : (data.initialStats.hp),
+            currentHp: data.currentHp !== undefined ? data.currentHp : data.hp,
             maxHp: maxHp,
-            currentMp: data.currentMp !== undefined ? data.currentMp : (data.initialStats.mp),
+            currentMp: data.currentMp !== undefined ? data.currentMp : data.mp,
             maxMp: maxMp,
 
-            // 基础战斗属性：优先使用 data 覆盖，否则从 initialStats 获取
-            atk: data.atk || data.initialStats.atk || 50,
-            def: data.def || data.initialStats.def || 30,
-            mag: data.mag || data.initialStats.mag || 10,
-            spd: data.spd || data.initialStats.spd || 10,
+            // 基础战斗属性
+            atk: data.atk || 50,
+            def: data.def || 30,
+            mag: data.mag || 10,
+            spd: data.spd || 10,
 
             // 技能：合并初始技能并过滤
             skills: filterExclusiveSkills([...(data.skills || []), ...(data.fixedPassiveSkills || [])]),
@@ -196,8 +196,8 @@ export const useBattleStore = defineStore('battle', () => {
             battleSkills = filterExclusiveSkills([...new Set(battleSkills)]);
         }
 
-        const maxHp = state.maxHp || state.initialStats.hp;
-        const maxMp = state.maxMp || state.initialStats.mp;
+        const maxHp = state.maxHp || state.hp;
+        const maxMp = state.maxMp || state.mp;
 
         return {
             ...state,
@@ -205,15 +205,15 @@ export const useBattleStore = defineStore('battle', () => {
             skills: battleSkills,
             
             // 运行时属性：优先保留 state 中的值（用于存档加载/持久化），否则从基础属性初始化
-            currentHp: state.currentHp !== undefined ? state.currentHp : state.initialStats.hp,
+            currentHp: state.currentHp !== undefined ? state.currentHp : state.hp,
             maxHp: maxHp,
-            currentMp: state.currentMp !== undefined ? state.currentMp : state.initialStats.mp,
+            currentMp: state.currentMp !== undefined ? state.currentMp : state.mp,
             maxMp: maxMp,
 
-            atk: state.atk || state.initialStats.atk || 50,
-            def: state.def || state.initialStats.def || 30,
-            mag: state.mag || state.initialStats.mag || 10,
-            spd: state.spd || state.initialStats.spd || 10,
+            atk: state.atk || 50,
+            def: state.def || 30,
+            mag: state.mag || 10,
+            spd: state.spd || 10,
 
             // 状态
             statusEffects: state.statusEffects ? [...state.statusEffects] : [],

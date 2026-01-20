@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { world } from '@/game/ecs/world'
 import { Physics, ShapeType } from '@/game/ecs/entities/components/Physics'
+import { Inspector } from '@/game/ecs/entities/components/Inspector'
 
 export const ObstacleEntitySchema = z.object({
   x: z.number(),
@@ -13,6 +14,16 @@ export const ObstacleEntitySchema = z.object({
   rotation: z.number().optional().default(0),
   shape: z.nativeEnum(ShapeType).optional().default(ShapeType.AABB)
 });
+
+const INSPECTOR_FIELDS = [
+  { path: 'position.x', label: '坐标 X', type: 'number' },
+  { path: 'position.y', label: '坐标 Y', type: 'number' },
+  { path: 'collider.type', label: '形状类型', type: 'text', tip: 'AABB, CIRCLE, POLYGON, SEGMENT' },
+  { path: 'collider.width', label: '宽度', type: 'number', props: { min: 0 } },
+  { path: 'collider.height', label: '高度', type: 'number', props: { min: 0 } },
+  { path: 'collider.radius', label: '半径', type: 'number', props: { min: 0 } },
+  { path: 'collider.rotation', label: '旋转', type: 'number', tip: '弧度值' }
+];
 
 export const ObstacleEntity = {
   create(data) {
@@ -36,7 +47,9 @@ export const ObstacleEntity = {
         p2,
         rotation,
         isStatic: true // 障碍物通常是静态的
-      })
+      }),
+      // [NEW] 添加 Inspector
+      inspector: Inspector.create({ fields: INSPECTOR_FIELDS })
     });
   },
 

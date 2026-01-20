@@ -4,6 +4,7 @@ import { PlayerConfig } from '@/data/assets'
 import { Visuals } from '@/game/ecs/entities/components/Visuals'
 import { Physics } from '@/game/ecs/entities/components/Physics'
 import { Detectable } from '@/game/ecs/entities/components/Triggers'
+import { Inspector } from '@/game/ecs/entities/components/Inspector'
 
 // --- Schema Definition ---
 
@@ -15,6 +16,15 @@ export const PlayerEntitySchema = z.object({
 });
 
 // --- Entity Definition ---
+
+const INSPECTOR_FIELDS = [
+  { path: 'name', label: '名称', type: 'text' },
+  { path: 'position.x', label: '坐标 X', type: 'number' },
+  { path: 'position.y', label: '坐标 Y', type: 'number' },
+  { path: 'speed', label: '基础速度', type: 'number', props: { min: 0, step: 10 } },
+  { path: 'fastSpeed', label: '奔跑速度', type: 'number', props: { min: 0, step: 10 } },
+  { path: 'visual.scale', label: '缩放', type: 'number', props: { min: 0.1, step: 0.1 } }
+];
 
 export const PlayerEntity = {
   create(data) {
@@ -50,7 +60,10 @@ export const PlayerEntity = {
         'hero',
         scale
         // default state 'idle' is fine
-      )
+      ),
+
+      // [NEW] 添加 Inspector
+      inspector: Inspector.create({ fields: INSPECTOR_FIELDS })
     })
 
     return entity
