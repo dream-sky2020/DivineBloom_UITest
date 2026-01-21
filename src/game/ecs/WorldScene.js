@@ -9,6 +9,7 @@ import { DetectAreaRenderSystem } from '@/game/ecs/systems/render/DetectAreaRend
 import { PortalDebugRenderSystem } from '@/game/ecs/systems/render/PortalDebugRenderSystem'
 import { InputSenseSystem } from '@/game/ecs/systems/sense/InputSenseSystem'
 import { AISenseSystem } from '@/game/ecs/systems/sense/AISenseSystem'
+import { MousePositionSenseSystem } from '@/game/ecs/systems/sense/MousePositionSenseSystem'
 import { PlayerIntentSystem } from '@/game/ecs/systems/intent/PlayerIntentSystem'
 import { PlayerControlSystem } from '@/game/ecs/systems/control/PlayerControlSystem'
 import { EnemyAIIntentSystem } from '@/game/ecs/systems/intent/EnemyAIIntentSystem'
@@ -70,7 +71,7 @@ export class WorldScene {
         this.systems = {
             // 逻辑阶段 (Logic Phases)
             logic: {
-                sense: [AISenseSystem, DetectAreaSystem, DetectInputSystem],
+                sense: [AISenseSystem, DetectAreaSystem, DetectInputSystem, MousePositionSenseSystem],
                 intent: [PlayerIntentSystem, EnemyAIIntentSystem],
                 decision: [TriggerSystem],
                 control: [PlayerControlSystem, EnemyControlSystem],
@@ -90,7 +91,7 @@ export class WorldScene {
             ],
             // 编辑器阶段 (Editor Phases)
             editor: {
-                sense: [InputSenseSystem],
+                sense: [InputSenseSystem, MousePositionSenseSystem],
                 interaction: [EditorInteractionSystem],
                 render: [EditorGridRenderSystem, EditorHighlightRenderSystem]
             }
@@ -217,13 +218,23 @@ export class WorldScene {
 
         // 2. 编辑器模式逻辑
         if (this.editMode) {
-            // 编辑器感官 (Input)
-            this.systems.editor.sense.forEach(s => s.update(dt, this.engine.input))
+            // 编辑器感官 (Input + Mouse)
+            this.systems.editor.sense.forEach(s => s.update(dt, this.engine.input || this.engine))
             // 编辑器交互 (Drag/Select)
             this.systems.editor.interaction.forEach(s => s.update(dt, this.engine, this.stateProvider.gameManager))
         }
 
-        // 3. 基础游戏逻辑 (受暂停影响)
+        // 3. 编辑器命令处理 (始终执行，不受暂停影响)
+        // 这样可以确保编辑器的删除、保存等操作能够立即响应
+        ExecuteSystem.update({
+            onEncounter: this.onEncounter,
+            onSwitchMap: null,
+            onInteract: this.onInteract,
+            onOpenMenu: this.onOpenMenu,
+            gameManager: this.stateProvider.gameManager // 传入 gameManager
+        }, this.mapData)
+
+        // 4. 基础游戏逻辑 (受暂停影响)
         const isPaused = this.stateProvider.gameManager && this.stateProvider.gameManager.state.isPaused
 
         if (!isPaused && !this.isTransitioning) {
@@ -235,7 +246,14 @@ export class WorldScene {
             // 核心逻辑阶段驱动
             const phases = ['sense', 'intent', 'decision', 'control']
             phases.forEach(phase => {
-                this.systems.logic[phase].forEach(system => system.update(dt))
+                this.systems.logic[phase].forEach(system => {
+                    // MousePositionSenseSystem 需要 engine 对象而不仅仅是 input
+                    if (system === MousePositionSenseSystem) {
+                        system.update(dt, this.engine)
+                    } else {
+                        system.update(dt)
+                    }
+                })
             })
 
             // 物理阶段 (特殊参数处理)
@@ -245,14 +263,6 @@ export class WorldScene {
                 mapBounds: { width: mapWidth, height: mapHeight }
             }
             this.systems.logic.physics.forEach(system => system.update(dt, physicsOptions))
-
-            // 执行阶段 (特殊参数处理)
-            ExecuteSystem.update({
-                onEncounter: this.onEncounter,
-                onSwitchMap: null,
-                onInteract: this.onInteract,
-                onOpenMenu: this.onOpenMenu
-            }, this.mapData)
 
             // 5. 更新相机 (在物理和逻辑之后)
             CameraSystem.update(dt, {

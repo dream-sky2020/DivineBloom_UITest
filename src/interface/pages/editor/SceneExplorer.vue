@@ -17,6 +17,7 @@
         class="entity-item"
         :class="{ selected: selectedEntity === e }"
         @click="selectEntity(e)"
+        @contextmenu="handleRightClick($event, e)"
       >
         <div class="entity-info">
           <span v-if="e.globalManager" class="entity-type global">Global</span>
@@ -32,16 +33,27 @@
             <span class="global-tag">系统实体</span>
           </template>
         </div>
+        <!-- 删除按钮 -->
+        <button 
+          v-if="e.inspector?.allowDelete !== false" 
+          class="delete-btn" 
+          @click.stop="confirmDelete(e)"
+          title="删除实体"
+        >
+          🗑️
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, inject, toRaw } from 'vue'
 import { world } from '@/game/ecs/world'
 import { gameManager } from '@/game/ecs/GameManager'
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
+
+const { openContextMenu } = inject('editorContextMenu');
 
 const entities = ref([])
 const mapId = computed(() => gameManager.currentScene.value?.mapData?.id || '')
@@ -49,15 +61,66 @@ const selectedEntity = computed(() => gameManager.editor.selectedEntity)
 
 const sortedEntities = computed(() => {
   return [...entities.value].sort((a, b) => {
+    // 1. 首先按优先级排序（高优先级在前）
+    const priorityA = a.inspector?.priority ?? 0
+    const priorityB = b.inspector?.priority ?? 0
+    if (priorityA !== priorityB) return priorityB - priorityA
+    
+    // 2. 然后按类型排序
     const typeA = a.type || ''
     const typeB = b.type || ''
     if (typeA !== typeB) return typeA.localeCompare(typeB)
+    
+    // 3. 最后按名称排序
     return (a.name || '').localeCompare(b.name || '')
   })
 })
 
 const selectEntity = (entity) => {
   gameManager.editor.selectedEntity = entity
+}
+
+const handleRightClick = (e, entity) => {
+  selectEntity(entity);
+  const items = [
+    { 
+      label: '删除实体', 
+      icon: '🗑️', 
+      class: 'danger',
+      disabled: entity.inspector?.allowDelete === false,
+      action: () => confirmDelete(entity) 
+    }
+  ];
+  openContextMenu(e, items);
+}
+
+const confirmDelete = (entity) => {
+  if (entity.inspector?.allowDelete === false) {
+    alert('该实体禁止删除');
+    return;
+  }
+  
+  const name = entity.name || entity.type || '未命名实体';
+  if (confirm(`确定要删除实体 "${name}" 吗？`)) {
+    // [FIX] 使用 toRaw 获取原始实体对象，而不是 Vue 的 Proxy
+    const rawEntity = toRaw(entity);
+    
+    // 发送命令给 ExecuteSystem
+    const globalEntity = world.with('commands').first;
+    if (globalEntity) {
+      globalEntity.commands.queue.push({
+        type: 'DELETE_ENTITY',
+        payload: { entity: rawEntity }
+      });
+    } else {
+      // 降级方案（如果全局实体还没初始化）
+      world.remove(rawEntity);
+    }
+
+    if (gameManager.editor.selectedEntity === entity) {
+      gameManager.editor.selectedEntity = null;
+    }
+  }
 }
 
 const handleExport = () => {
@@ -166,6 +229,37 @@ onUnmounted(() => {
 .entity-item.selected {
   background: #1e40af;
   border-color: #3b82f6;
+}
+
+.entity-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.delete-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.entity-item:hover .delete-btn {
+  opacity: 0.6;
+}
+
+.delete-btn:hover {
+  opacity: 1 !important;
+  background: #450a0a;
+  transform: translateY(-50%) scale(1.1);
 }
 
 .entity-info {

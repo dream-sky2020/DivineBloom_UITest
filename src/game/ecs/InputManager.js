@@ -12,7 +12,9 @@ export class InputManager {
             screenY: 0,
             isDown: false,
             justPressed: false,
-            justReleased: false
+            justReleased: false,
+            rightJustPressed: false,
+            rightJustReleased: false
         }
         this.lastInput = ''
         this._boundDown = this.onKeyDown.bind(this)
@@ -52,13 +54,17 @@ export class InputManager {
         if (e.button === 0) { // Left click
             this.mouse.isDown = true
             this.mouse.justPressed = true
+        } else if (e.button === 2) { // Right click
+            this.mouse.rightJustPressed = true
         }
     }
 
     onMouseUp(e) {
-        if (e.button === 0) {
+        if (e.button === 0) { // Left click
             this.mouse.isDown = false
             this.mouse.justReleased = true
+        } else if (e.button === 2) { // Right click
+            this.mouse.rightJustReleased = true
         }
     }
 
@@ -68,6 +74,8 @@ export class InputManager {
     clearJustActions() {
         this.mouse.justPressed = false
         this.mouse.justReleased = false
+        this.mouse.rightJustPressed = false
+        this.mouse.rightJustReleased = false
     }
 
     onKeyDown(e) {

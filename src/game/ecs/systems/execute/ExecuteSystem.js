@@ -2,6 +2,8 @@ import { actionQueue, eventQueue, world } from '@/game/ecs/world'
 import { BattleExecuteSystem } from '@/game/ecs/systems/execute/BattleExecuteSystem'
 import { DialogueExecuteSystem } from '@/game/ecs/systems/execute/DialogueExecuteSystem'
 import { TeleportExecuteSystem } from '@/game/ecs/systems/execute/TeleportExecuteSystem'
+import { EditorInteractionSystem } from '@/game/ecs/systems/editor/EditorInteractionSystem'
+import { entityTemplateRegistry } from '@/game/ecs/entities/internal/EntityTemplateRegistry'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('ExecuteSystem')
@@ -24,18 +26,28 @@ const EventHandlers = {
 /**
  * ExecuteSystem
  * 任务执行总管
- * 接收 TriggerSystem 产生的 Action 请求，分发给具体子系统
+ * 接收 TriggerSystem 产生的 Action 请求，以及 UI 产生的 Command 请求，统一分发执行
  */
 export const ExecuteSystem = {
   update(callbacks = {}, mapData = null) {
-    // 1. 处理 ActionQueue (ECS 内部产生)
-    // Defensive check: ensure queue exists (though imported)
-    if (!actionQueue) {
-      logger.error('ActionQueue is undefined!');
-      return;
+    // 1. 处理全局命令队列 (Commands Component)
+    const globalEntity = world.with('commands').first;
+    if (globalEntity && globalEntity.commands.queue.length > 0) {
+      const queue = globalEntity.commands.queue.splice(0, globalEntity.commands.queue.length);
+      for (const item of queue) {
+        this.dispatch(item, callbacks, mapData);
+      }
     }
-    
-    // Check Global Player Intents (Directly from entities, not actions)
+
+    // 2. 处理 ActionQueue (ECS 内部产生)
+    if (actionQueue && actionQueue.length > 0) {
+      const requests = actionQueue.splice(0, actionQueue.length);
+      for (const request of requests) {
+        this.dispatch(request, callbacks, mapData);
+      }
+    }
+
+    // 3. 处理全局玩家意图 (Player Intent)
     const playerEntity = world.with('player', 'playerIntent').first;
     if (playerEntity && playerEntity.playerIntent.wantsToOpenMenu) {
        if (callbacks.onOpenMenu) {
@@ -44,60 +56,129 @@ export const ExecuteSystem = {
        }
     }
 
-    // 优化：批量提取任务并清空原队列，避免 shift() 的 O(N) 位移开销和 GC 抖动
-    if (actionQueue.length > 0) {
-      const requests = actionQueue.splice(0, actionQueue.length);
-      
-      for (const request of requests) {
-        if (!request) continue;
-
-        // Type Guard: Validate request structure
-        if (!request.source || !request.type) {
-          logger.error('Invalid request structure:', request);
-          continue;
-        }
-
-        const { source, type } = request;
-
-        switch (type) {
-          case 'BATTLE':
-            BattleExecuteSystem.handle(source, callbacks);
-            break;
-
-          case 'DIALOGUE':
-            DialogueExecuteSystem.handle(source, callbacks);
-            break;
-
-          case 'TELEPORT':
-            TeleportExecuteSystem.handle(request, callbacks, mapData);
-            break;
-
-          default:
-            logger.warn(`Unknown action type: ${type}`, source);
+    // 4. 处理 Legacy/UI Events (EventQueue) - 保持兼容性
+    if (eventQueue) {
+      const events = eventQueue.drain()
+      for (const event of events) {
+        if (event.type && event.payload) {
+          const handler = EventHandlers[event.type]
+          if (handler) handler(event.payload, callbacks)
         }
       }
     }
+  },
 
-    // 2. 处理 Legacy/UI Events (EventQueue) - 保持兼容性
-    if (!eventQueue) return;
+  /**
+   * 统一分发器 (Dispatch Center)
+   * 能够识别 Action { source, type, target } 和 Command { type, payload }
+   */
+  dispatch(item, callbacks, mapData) {
+    if (!item || !item.type) return;
 
-    const events = eventQueue.drain()
-    for (const event of events) {
-      if (!event.type || !event.payload) {
-        logger.warn('Invalid legacy event format:', event);
-        continue;
-      }
+    const type = item.type;
+    // 兼容两种结构：payload (Command) 或 source/target (Action)
+    const payload = item.payload || {};
+    const source = item.source;
+    const target = item.target;
 
-      const handler = EventHandlers[event.type]
-      if (handler) {
-        try {
-          handler(event.payload, callbacks)
-        } catch (e) {
-          logger.error(`Error handling legacy event ${event.type}:`, e);
+    logger.info(`Dispatching: ${type}`, { type, payload, source, target });
+
+    switch (type) {
+      // --- 游戏逻辑动作 (Actions) ---
+      case 'BATTLE':
+        BattleExecuteSystem.handle(source, callbacks);
+        break;
+
+      case 'DIALOGUE':
+        DialogueExecuteSystem.handle(source, callbacks);
+        break;
+
+      case 'TELEPORT':
+        // Teleport 期望的是整个 request 对象作为参数
+        TeleportExecuteSystem.handle(item, callbacks, mapData);
+        break;
+
+      // --- 编辑器/UI 指令 (Commands) ---
+      case 'DELETE_ENTITY':
+      case 'DELETE':
+        this.handleDelete(payload.entity || target || source, callbacks);
+        break;
+      
+      case 'CREATE_ENTITY':
+        this.handleCreateEntity(payload, callbacks);
+        break;
+      
+      case 'SAVE_SCENE':
+        if (callbacks.onSaveScene) callbacks.onSaveScene(payload);
+        break;
+
+      case 'LOAD_MAP':
+        if (callbacks.onLoadMap) callbacks.onLoadMap(payload.mapId);
+        break;
+
+      default:
+        logger.warn(`Unknown dispatch type: ${type}`, item);
+    }
+  },
+
+  /**
+   * 统一处理实体删除
+   */
+  handleDelete(entity, callbacks) {
+    if (!entity) return;
+    
+    // 安全检查
+    if (entity.globalManager || entity.inspector?.allowDelete === false) {
+      logger.warn('Attempted to delete a protected entity:', entity.type);
+      return;
+    }
+
+    logger.info('Deleting entity:', entity.type, entity.id || entity.uuid);
+    
+    // 同步 UI 状态
+    if (callbacks.gameManager && callbacks.gameManager.editor.selectedEntity === entity) {
+      callbacks.gameManager.editor.selectedEntity = null;
+    }
+    
+    // 同步交互系统状态
+    if (EditorInteractionSystem.selectedEntity === entity) {
+      EditorInteractionSystem.selectedEntity = null;
+    }
+
+    world.remove(entity);
+  },
+
+  /**
+   * 处理实体创建
+   * @param {Object} payload - { templateId, position, customData }
+   * @param {Object} callbacks 
+   */
+  handleCreateEntity(payload, callbacks) {
+    const { templateId, position, customData = {} } = payload;
+    
+    if (!templateId) {
+      logger.error('CREATE_ENTITY: templateId is required');
+      return;
+    }
+
+    logger.info(`Creating entity from template: ${templateId}`, payload);
+
+    try {
+      // 使用模板注册表创建实体
+      const entity = entityTemplateRegistry.createEntity(templateId, customData, position);
+      
+      if (entity) {
+        logger.info(`Entity created successfully:`, entity.type, entity.name);
+        
+        // 自动选中新创建的实体（方便用户立即编辑）
+        if (callbacks.gameManager) {
+          callbacks.gameManager.editor.selectedEntity = entity;
         }
       } else {
-        // Optional: warn about unhandled legacy events if strict
+        logger.error(`Failed to create entity from template: ${templateId}`);
       }
+    } catch (error) {
+      logger.error(`Error creating entity:`, error);
     }
   }
 }

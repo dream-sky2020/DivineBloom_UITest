@@ -46,6 +46,7 @@
               ref="gameCanvas" 
               class="global-canvas"
               :style="canvasStyle"
+              @contextmenu="handleContextMenu"
             ></canvas>
 
             <!-- Layer 1: Grid Overlay (Background/World Level) -->
@@ -105,6 +106,24 @@
 
     <!-- Developer Tools Overlay -->
     <DevTools v-if="showDevTools" @close="showDevTools = false" />
+
+    <!-- Context Menu -->
+    <div 
+      v-if="contextMenu.show" 
+      class="context-menu" 
+      :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
+    >
+      <div 
+        v-for="(item, index) in contextMenu.items" 
+        :key="index"
+        class="context-menu-item"
+        :class="[item.class, { disabled: item.disabled }]"
+        @click="!item.disabled && (item.action(), closeContextMenu())"
+      >
+        <span v-if="item.icon" class="item-icon">{{ item.icon }}</span>
+        <span class="item-label">{{ item.label }}</span>
+      </div>
+    </div>
 
     <!-- Viewport 2: Developer Dashboard -->
     <div class="dev-panel-section">
@@ -255,6 +274,44 @@ import SidebarPanel from '@/interface/pages/editor/SidebarPanel.vue';
 import SceneExplorer from '@/interface/pages/editor/SceneExplorer.vue';
 import EntityProperties from '@/interface/pages/editor/EntityProperties.vue';
 import ProjectManager from '@/interface/pages/editor/ProjectManager.vue';
+import EntityCreator from '@/interface/pages/editor/EntityCreator.vue';
+
+// Context Menu State
+const contextMenu = ref({
+  show: false,
+  x: 0,
+  y: 0,
+  items: []
+});
+
+const closeContextMenu = () => {
+  contextMenu.value.show = false;
+};
+
+const openContextMenu = (e, items) => {
+  e.preventDefault();
+  contextMenu.value = {
+    show: true,
+    x: e.clientX,
+    y: e.clientY,
+    items
+  };
+  
+  // Close menu on click outside
+  const handleOutsideClick = () => {
+    closeContextMenu();
+    document.removeEventListener('click', handleOutsideClick);
+  };
+  setTimeout(() => document.addEventListener('click', handleOutsideClick), 0);
+};
+
+// Provide context menu to children
+import { provide } from 'vue';
+import { world } from '@/game/ecs/world';
+import { entityTemplateRegistry } from '@/game/ecs/entities/internal/EntityTemplateRegistry';
+import { EditorInteractionSystem } from '@/game/ecs/systems/editor/EditorInteractionSystem';
+import { toRaw } from 'vue';
+provide('editorContextMenu', { openContextMenu, closeContextMenu });
 
 const logger = createLogger('GameUI');
 const { locale } = useI18n();
@@ -268,7 +325,7 @@ const showDevTools = ref(false);
 const DEFAULT_SIDEBAR_WIDTH = 320;
 const leftSidebarWidth = ref(DEFAULT_SIDEBAR_WIDTH);
 const rightSidebarWidth = ref(DEFAULT_SIDEBAR_WIDTH);
-const isLeftCollapsed = ref(true);
+const isLeftCollapsed = ref(false);
 const isRightCollapsed = ref(false);
 const resizingSidebar = ref(null); // 'left' or 'right'
 
@@ -357,7 +414,11 @@ watch(() => gameManager.state.system, (newSystem) => {
 });
 
 // Watch for edit mode changes to resize canvas
-watch(isEditMode, () => {
+watch(isEditMode, (newVal) => {
+  if (newVal) {
+    isLeftCollapsed.value = false;
+    isRightCollapsed.value = false;
+  }
   // Wait for DOM updates
   setTimeout(resizeCanvas, 0);
 });
@@ -479,6 +540,10 @@ onMounted(() => {
   if (gameCanvas.value) {
     gameManager.init(gameCanvas.value);
   }
+
+  // 设置右键点击回调（统一在 EditorInteractionSystem 中处理）
+  EditorInteractionSystem.onEntityRightClick = handleEntityRightClick;
+  EditorInteractionSystem.onEmptyRightClick = handleEmptyRightClick;
 });
 
 onUnmounted(() => {
@@ -522,12 +587,212 @@ const setLanguage = (lang) => {
   settingsStore.setLanguage(lang);
 };
 
+// 处理 canvas 右键菜单事件
+const handleContextMenu = (e) => {
+  // 在编辑模式下，禁用浏览器默认右键菜单
+  if (isEditMode.value && currentSystem.value === 'world-map') {
+    e.preventDefault();
+  }
+  // 非编辑模式或非世界地图系统，允许默认行为
+};
+
+// 处理空白地面右键点击
+const handleEmptyRightClick = (mouseInfo) => {
+  const worldX = Math.round(mouseInfo.worldX);
+  const worldY = Math.round(mouseInfo.worldY);
+
+  // 获取所有实体模板
+  const templates = entityTemplateRegistry.getAll();
+
+  // 构建右键菜单
+  const menuItems = [
+    {
+      icon: '📍',
+      label: `位置: X=${worldX}, Y=${worldY}`,
+      disabled: true,
+      class: 'menu-header'
+    },
+    {
+      icon: '➕',
+      label: '在此位置创建实体',
+      disabled: true,
+      class: 'menu-divider'
+    }
+  ];
+
+  // 添加实体模板选项（分组）
+  const gameplayTemplates = templates.filter(t => t.category === 'gameplay');
+  const envTemplates = templates.filter(t => t.category === 'environment');
+
+  if (gameplayTemplates.length > 0) {
+    menuItems.push({
+      icon: '🎮',
+      label: '游戏玩法',
+      disabled: true,
+      class: 'menu-category'
+    });
+    gameplayTemplates.forEach(template => {
+      menuItems.push({
+        icon: template.icon || '📦',
+        label: template.name,
+        action: () => createEntityAtPosition(template.id, worldX, worldY)
+      });
+    });
+  }
+
+  if (envTemplates.length > 0) {
+    menuItems.push({
+      icon: '🌲',
+      label: '环境装饰',
+      disabled: true,
+      class: 'menu-category'
+    });
+    envTemplates.forEach(template => {
+      menuItems.push({
+        icon: template.icon || '📦',
+        label: template.name,
+        action: () => createEntityAtPosition(template.id, worldX, worldY)
+      });
+    });
+  }
+
+  // 显示菜单（使用屏幕坐标）
+  const fakeEvent = {
+    preventDefault: () => {},
+    clientX: mouseInfo.screenX,
+    clientY: mouseInfo.screenY
+  };
+  
+  openContextMenu(fakeEvent, menuItems);
+};
+
+// 在指定位置创建实体
+const createEntityAtPosition = (templateId, x, y) => {
+  try {
+    // 通过命令系统创建实体
+    const globalEntity = world.with('commands').first;
+    if (globalEntity) {
+      globalEntity.commands.queue.push({
+        type: 'CREATE_ENTITY',
+        payload: {
+          templateId: templateId,
+          position: { x, y }
+        }
+      });
+      logger.info(`Entity creation requested at (${x}, ${y})`);
+    } else {
+      // 降级方案：直接创建
+      const entity = entityTemplateRegistry.createEntity(templateId, null, { x, y });
+      if (entity) {
+        logger.info(`Entity created at (${x}, ${y})`, entity);
+        gameManager.editor.selectedEntity = entity;
+      }
+    }
+  } catch (error) {
+    logger.error('Failed to create entity:', error);
+    alert(`创建实体失败: ${error.message}`);
+  }
+};
+
+// 处理实体右键点击
+const handleEntityRightClick = (entity, mouseInfo) => {
+  if (!entity) return;
+
+  // 构建实体信息
+  const entityName = entity.name || '未命名实体';
+  const entityType = entity.type || '未知类型';
+  const posX = entity.position ? Math.round(entity.position.x) : 'N/A';
+  const posY = entity.position ? Math.round(entity.position.y) : 'N/A';
+  const canDelete = entity.inspector?.allowDelete !== false;
+
+  // 构建右键菜单
+  const menuItems = [
+    {
+      icon: '📋',
+      label: entityName,
+      disabled: true,
+      class: 'menu-header'
+    },
+    {
+      icon: '🏷️',
+      label: `类型: ${entityType}`,
+      disabled: true,
+      class: 'menu-info'
+    },
+    {
+      icon: '📍',
+      label: `位置: X=${posX}, Y=${posY}`,
+      disabled: true,
+      class: 'menu-info'
+    }
+  ];
+
+  // 添加操作选项
+  if (canDelete) {
+    menuItems.push({
+      icon: '🗑️',
+      label: '删除实体',
+      class: 'danger',
+      action: () => deleteEntity(entity)
+    });
+  } else {
+    menuItems.push({
+      icon: '🔒',
+      label: '此实体禁止删除',
+      disabled: true,
+      class: 'menu-info'
+    });
+  }
+
+  // 显示菜单（使用屏幕坐标）
+  const fakeEvent = {
+    preventDefault: () => {},
+    clientX: mouseInfo.screenX,
+    clientY: mouseInfo.screenY
+  };
+  
+  openContextMenu(fakeEvent, menuItems);
+};
+
+// 删除实体
+const deleteEntity = (entity) => {
+  if (!entity) return;
+  
+  if (entity.inspector?.allowDelete === false) {
+    alert('该实体禁止删除');
+    return;
+  }
+  
+  const name = entity.name || entity.type || '未命名实体';
+  if (confirm(`确定要删除实体 "${name}" 吗？`)) {
+    // 使用 toRaw 获取原始实体对象
+    const rawEntity = toRaw(entity);
+    
+    // 发送删除命令
+    const globalEntity = world.with('commands').first;
+    if (globalEntity) {
+      globalEntity.commands.queue.push({
+        type: 'DELETE_ENTITY',
+        payload: { entity: rawEntity }
+      });
+      logger.info('Entity deletion requested:', name);
+    } else {
+      world.remove(rawEntity);
+      logger.info('Entity deleted directly:', name);
+    }
+    
+    // 清除选中状态
+    gameManager.editor.selectedEntity = null;
+  }
+};
+
 // Panel Management Helpers
 const getPanelTitle = (id) => {
   const titles = {
     'scene-explorer': '场景浏览器',
     'entity-properties': '属性编辑',
-    'project-manager': '项目管理'
+    'project-manager': '项目管理',
+    'entity-creator': '创建实体'
   };
   return titles[id] || id;
 };
@@ -536,7 +801,8 @@ const getPanelComponent = (id) => {
   const components = {
     'scene-explorer': SceneExplorer,
     'entity-properties': EntityProperties,
-    'project-manager': ProjectManager
+    'project-manager': ProjectManager,
+    'entity-creator': EntityCreator
   };
   return components[id];
 };
@@ -560,3 +826,4 @@ const onDrop = (e, targetSide) => {
 </script>
 
 <style scoped src="@styles/pages/GameUI.css"></style>
+<style src="@styles/ui/ContextMenu.css"></style>

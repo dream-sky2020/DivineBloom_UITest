@@ -10,6 +10,8 @@ export const Inspector = {
      * @param {Object} config 配置信息
      * @param {Array} config.groups 分组显示 (可选)
      * @param {Array} config.fields 字段映射
+     * @param {boolean} config.allowDelete 是否允许删除
+     * @param {number} config.priority 场景浏览器排序优先级（越高越靠前，默认 0）
      * 
      * field 结构:
      * {
@@ -21,10 +23,12 @@ export const Inspector = {
      *   props: Object    // 传给 input 的额外属性，如 { min: 0, max: 100, step: 1 }
      * }
      */
-    create({ groups = [], fields = [] } = {}) {
+    create({ groups = [], fields = [], allowDelete = true, priority = 0 } = {}) {
         return {
             groups,
-            fields
+            fields,
+            allowDelete,
+            priority
         };
     }
 };

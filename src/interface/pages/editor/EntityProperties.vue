@@ -1,6 +1,17 @@
 <template>
   <div class="entity-properties">
     <template v-if="localEntityState">
+      <div class="inspector-header">
+        <span class="entity-type-tag">{{ localEntityState.type || 'ENTITY' }}</span>
+        <button 
+          v-if="localEntityState.inspector?.allowDelete !== false" 
+          class="header-delete-btn" 
+          @click="confirmDelete"
+          title="删除实体"
+        >
+          🗑️ 删除
+        </button>
+      </div>
       <div class="inspector-body">
         <!-- 🎯 方案：声明式 Inspector 映射 -->
         <template v-if="localEntityState.inspector">
@@ -230,12 +241,41 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, toRaw } from 'vue'
+import { world } from '@/game/ecs/world'
 import { gameManager } from '@/game/ecs/GameManager'
 
 // 属性编辑同步
 const localEntityState = ref(null)
 const lastUpdate = ref(Date.now())
+
+const confirmDelete = () => {
+  const entity = localEntityState.value;
+  if (!entity) return;
+  
+  if (entity.inspector?.allowDelete === false) {
+    alert('该实体禁止删除');
+    return;
+  }
+  
+  const name = entity.name || entity.type || '未命名实体';
+  if (confirm(`确定要删除实体 "${name}" 吗？`)) {
+    // [FIX] 使用 toRaw 获取原始实体对象，而不是 Vue 的 Proxy
+    const rawEntity = toRaw(entity);
+    
+    // 发送命令
+    const globalEntity = world.with('commands').first;
+    if (globalEntity) {
+      globalEntity.commands.queue.push({
+        type: 'DELETE_ENTITY',
+        payload: { entity: rawEntity }
+      });
+    } else {
+      world.remove(rawEntity);
+    }
+    gameManager.editor.selectedEntity = null;
+  }
+}
 
 // 刷新频率控制
 let rafId = 0
@@ -299,6 +339,45 @@ const setNestedValue = (obj, path, value) => {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.inspector-header {
+  padding: 12px 16px;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.entity-type-tag {
+  font-size: 10px;
+  background: #334155;
+  color: #94a3b8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.header-delete-btn {
+  background: #450a0a;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-delete-btn:hover {
+  background: #7f1d1d;
+  color: white;
+  border-color: #ef4444;
 }
 
 .inspector-body {

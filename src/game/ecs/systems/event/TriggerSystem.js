@@ -100,10 +100,13 @@ export const TriggerSystem = {
         for (const actionType of trigger.actions) {
           logger.info(`Pushing Action: ${actionType} for Entity: ${entity.type} (ID: ${entity.id})`)
           
+          const globalEntity = world.with('commands').first;
+          const targetQueue = globalEntity ? globalEntity.commands.queue : actionQueue;
+
           // 如果有多个检测结果（例如玩家和敌人都在区域内），则为每个结果生成一个 Action
           if (entity.detectArea && entity.detectArea.results && entity.detectArea.results.length > 0) {
             for (const target of entity.detectArea.results) {
-              actionQueue.push({
+              targetQueue.push({
                 source: entity,
                 type: actionType,
                 target: target
@@ -111,7 +114,7 @@ export const TriggerSystem = {
             }
           } else {
             // 没有检测结果的情况（可能是 onPress 等其他触发方式）
-            actionQueue.push({
+            targetQueue.push({
               source: entity,
               type: actionType,
               target: null

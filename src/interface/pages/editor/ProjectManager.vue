@@ -30,6 +30,7 @@
             disabled: isLoading
           }"
           @click="switchMap(mapId)"
+          @contextmenu="handleRightClick($event, mapId)"
         >
           <div class="scene-icon">{{ isLoading && loadingMapId === mapId ? '⏳' : '🗺️' }}</div>
           <div class="scene-info">
@@ -51,12 +52,14 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, inject } from 'vue'
 import { maps } from '@/data/maps'
 import { useGameStore } from '@/stores/game'
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
 import { gameManager } from '@/game/ecs/GameManager'
 import { createLogger } from '@/utils/logger'
+
+const { openContextMenu } = inject('editorContextMenu');
 
 const logger = createLogger('ProjectManager')
 
@@ -66,6 +69,31 @@ const availableMaps = Object.keys(maps)
 const currentMapId = computed(() => worldStore.currentMapId)
 const isLoading = ref(false)
 const loadingMapId = ref('')
+
+const handleRightClick = (e, mapId) => {
+  const hasState = !!worldStore.worldStates[mapId];
+  const items = [
+    { 
+      label: '重置场景数据', 
+      icon: '♻️', 
+      class: 'danger',
+      disabled: !hasState,
+      action: () => confirmResetMap(mapId) 
+    }
+  ];
+  openContextMenu(e, items);
+}
+
+const confirmResetMap = (mapId) => {
+  if (confirm(`确定要重置场景 "${mapId}" 的所有修改吗？此操作不可撤销。`)) {
+    delete worldStore.worldStates[mapId];
+    if (currentMapId.value === mapId) {
+      // 如果重置的是当前场景，重新加载
+      gameManager.loadMap(mapId);
+    }
+    logger.info('Map state reset:', mapId);
+  }
+}
 
 const switchMap = async (mapId) => {
   if (currentMapId.value === mapId || isLoading.value) return

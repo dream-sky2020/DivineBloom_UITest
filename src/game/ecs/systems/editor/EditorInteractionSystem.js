@@ -3,12 +3,14 @@ import { Visuals } from '@/data/visuals'
 
 /**
  * Editor Interaction System
- * 负责编辑模式下的鼠标交互：点击选中、拖拽移动
+ * 负责编辑模式下的鼠标交互：点击选中、拖拽移动、右键菜单
  */
 export const EditorInteractionSystem = {
   selectedEntity: null,
   isDragging: false,
   dragOffset: { x: 0, y: 0 },
+  onEntityRightClick: null, // 右键点击实体的回调
+  onEmptyRightClick: null, // 右键点击空白地面的回调
 
   update(dt, engine, gameManager) {
     if (!gameManager) return;
@@ -64,6 +66,28 @@ export const EditorInteractionSystem = {
     // 3. 处理松开 (MouseUp)
     if (mouse.justReleased) {
       this.isDragging = false;
+    }
+
+    // 4. 处理右键点击 (Right Click) - 统一处理所有右键事件
+    if (mouse.rightJustPressed) {
+      const hit = this.findEntityAt(worldX, worldY);
+      
+      if (hit) {
+        // 右键点击到了实体
+        this.selectedEntity = hit;
+        gameManager.editor.selectedEntity = hit;
+        
+        // 触发实体右键菜单回调
+        if (this.onEntityRightClick) {
+          this.onEntityRightClick(hit, { worldX, worldY, screenX: mouse.screenX, screenY: mouse.screenY });
+        }
+      } else {
+        // 右键点击空白地面
+        // 触发空白地面右键菜单回调
+        if (this.onEmptyRightClick) {
+          this.onEmptyRightClick({ worldX, worldY, screenX: mouse.screenX, screenY: mouse.screenY });
+        }
+      }
     }
   },
 

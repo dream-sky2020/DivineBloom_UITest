@@ -4,6 +4,8 @@ import { BattleResultSchema } from '@/game/ecs/entities/components/BattleResult'
 import { Camera } from '@/game/ecs/entities/components/Camera';
 import { Timer, TimerSchema } from '@/game/ecs/entities/components/Timer';
 import { Inspector } from '@/game/ecs/entities/components/Inspector';
+import { Commands } from '@/game/ecs/entities/components/Commands';
+import { MousePosition } from '@/game/ecs/entities/components/MousePosition';
 
 // --- Schema Definition ---
 export const GlobalEntitySchema = z.object({
@@ -30,7 +32,9 @@ const INSPECTOR_FIELDS = [
     { path: 'timer.running', label: '计时器状态', type: 'checkbox', tip: '是否继续计时' },
     { path: 'camera.x', label: '相机 X', type: 'number' },
     { path: 'camera.y', label: '相机 Y', type: 'number' },
-    { path: 'camera.lerp', label: '相机平滑系数', type: 'number', tip: '0-1 之间，1 为即时跟随', props: { step: 0.01, min: 0, max: 1 } }
+    { path: 'camera.lerp', label: '相机平滑系数', type: 'number', tip: '0-1 之间，1 为即时跟随', props: { step: 0.01, min: 0, max: 1 } },
+    { path: 'mousePosition.worldX', label: '鼠标世界坐标 X', type: 'number', tip: '鼠标在游戏世界中的 X 坐标', props: { readonly: true } },
+    { path: 'mousePosition.worldY', label: '鼠标世界坐标 Y', type: 'number', tip: '鼠标在游戏世界中的 Y 坐标', props: { readonly: true } }
 ];
 
 export const GlobalEntity = {
@@ -69,8 +73,18 @@ export const GlobalEntity = {
             // [NEW] 初始化计时器
             timer: Timer.create(timerData),
 
+            // [NEW] 鼠标位置追踪
+            mousePosition: MousePosition.create(),
+
             // [NEW] 添加 Inspector
-            inspector: Inspector.create({ fields: INSPECTOR_FIELDS })
+            inspector: Inspector.create({ 
+                fields: INSPECTOR_FIELDS,
+                allowDelete: false, // 全局管理器禁止删除
+                priority: 1000 // 最高优先级，始终显示在场景浏览器顶部
+            }),
+
+            // [NEW] 命令队列
+            commands: Commands.create()
         };
 
         // 如果初始数据里有战斗结果（例如刚从战斗场景存档恢复？）

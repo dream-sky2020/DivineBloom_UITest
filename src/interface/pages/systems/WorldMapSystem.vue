@@ -5,6 +5,7 @@
     <!-- UI 层完全与游戏逻辑解耦，只负责展示数据 -->
     <div class="ui pointer-events-auto" v-if="debugInfo">
       <div><span v-t="'worldMap.position'"></span>: x={{ Math.round(debugInfo.x) }}, y={{ Math.round(debugInfo.y) }}</div>
+      <div style="color: #60a5fa;">🖱️ 鼠标位置: x={{ Math.round(debugInfo.mouseX) }}, y={{ Math.round(debugInfo.mouseY) }}</div>
       <div><span v-t="'worldMap.lastInput'"></span>: {{ debugInfo.lastInput || $t('common.unknown') }}</div>
       
       <!-- Enemy Alert Status -->
@@ -57,6 +58,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { gameManager } from '@/game/ecs/GameManager'
 import { useGameStore } from '@/stores/game'
+import { world } from '@/game/ecs/world'
 
 const emit = defineEmits(['change-system'])
 const gameStore = useGameStore()
@@ -99,10 +101,17 @@ function syncUI() {
       }
   }
 
+  // Get mouse position from global entity
+  const globalEntity = world.with('globalManager', 'mousePosition').first
+  const mouseX = globalEntity?.mousePosition?.worldX || 0
+  const mouseY = globalEntity?.mousePosition?.worldY || 0
+
   // Update Reactive State
   debugInfo.value = {
     x: player.position ? player.position.x : 0,
     y: player.position ? player.position.y : 0,
+    mouseX: mouseX,
+    mouseY: mouseY,
     lastInput: engine.input.lastInput,
     chasingCount
   }
