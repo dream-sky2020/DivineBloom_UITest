@@ -107,6 +107,7 @@ export const iconMap = {
 
   // Characters
   icon_user: "👤",
+  icon_human: "👤",
 
   // UI / Fallbacks
   icon_box: "📦",
