@@ -140,7 +140,7 @@ export default {
     type: "itemTypes.consumable",
     targetType: "enemy",
     effects: [
-      { type: "damage", element: "fire", value: 300 },
+      { type: "damage", element: "elements.fire", value: 300 },
       { type: "applyStatus", status: "status_burn", duration: 3, chance: 1.0 }
     ],
     icon: "icon_bomb",
@@ -172,7 +172,7 @@ export default {
     type: "itemTypes.consumable",
     targetType: "allEnemies",
     effects: [
-      { type: "damage", element: "fire", value: 300 },
+      { type: "damage", element: "elements.fire", value: 300 },
       { type: "applyStatus", status: "status_burn", duration: 3, chance: 1.0 }
     ],
     icon: "icon_bomb",
@@ -204,7 +204,7 @@ export default {
     type: "itemTypes.consumable",
     targetType: "enemy",
     effects: [
-      { type: "damage", element: "ice", value: 300 },
+      { type: "damage", element: "elements.ice", value: 300 },
       { type: "applyStatus", status: "status_freeze", duration: 3, chance: 1.0 }
     ],
     icon: "icon_bomb_ice",
@@ -236,7 +236,7 @@ export default {
     type: "itemTypes.consumable",
     targetType: "allEnemies",
     effects: [
-      { type: "damage", element: "ice", value: 300 },
+      { type: "damage", element: "elements.ice", value: 300 },
       { type: "applyStatus", status: "status_freeze", duration: 3, chance: 1.0 }
     ],
     icon: "icon_bomb_ice",

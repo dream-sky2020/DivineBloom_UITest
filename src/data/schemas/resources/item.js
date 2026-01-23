@@ -1,17 +1,8 @@
 import { z } from 'zod';
 import { ID, LocalizedStringSchema, StatsSchema } from '../common.js';
+import { SkillEffectSchema } from '../effects.js';
 
 // --- 物品 (Item) Schema ---
-
-const ItemEffectSchema = z.object({
-    type: z.string(),
-    value: z.number().optional(),
-    percent: z.number().optional(), // 百分比效果 (0-1)
-    status: z.union([z.string(), z.number()]).optional(),
-    duration: z.number().optional(),
-    chance: z.number().optional(),
-    element: z.string().optional(),
-});
 
 export const ItemSchema = z.object({
     id: ID,
@@ -25,7 +16,7 @@ export const ItemSchema = z.object({
     // 可选字段
     targetType: z.string().optional(), // 消耗品特有
     consumeTurn: z.boolean().optional(), // 是否消耗回合，默认为 true (仅消耗品有效)
-    effects: z.array(ItemEffectSchema).optional(), // 消耗品特有
+    effects: z.array(SkillEffectSchema).optional(), // 消耗品特有
     price: z.number().optional(),
 
     // 装备特有 (StatsSchema 是所有属性可选，符合装备加成)
