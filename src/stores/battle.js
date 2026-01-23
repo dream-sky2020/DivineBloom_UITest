@@ -14,6 +14,7 @@ import { resolveChainSequence, resolveRandomSequence, canUseSkill, paySkillCost,
 import { calculateAtbTick } from '@/game/battle/timeSystem';
 import { calculateDrops, mergeDrops } from '@/game/battle/lootSystem';
 import { getUnitDisplayData } from '@/game/battle/displaySystem';
+import { statusDb } from '@/data/status';
 
 // ECS Integration
 import { world } from '@/game/ecs/world';
@@ -145,6 +146,8 @@ export const useBattleStore = defineStore('battle', () => {
 
     const generateUUID = () => 'u' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 
+// ... (existing code up to createUnit) ...
+
     const createUnit = (dbId, isPlayer = false) => {
         const data = charactersDb[dbId];
         if (!data) return null;
@@ -152,6 +155,17 @@ export const useBattleStore = defineStore('battle', () => {
         // 获取基础属性
         const maxHp = data.maxHp || data.hp;
         const maxMp = data.maxMp || data.mp;
+
+        // 实例化初始状态
+        const instantiatedStatuses = (data.statusEffects || []).map(s => {
+            const def = statusDb[s.id];
+            if (!def) return s;
+            return {
+                ...def,
+                ...s,
+                uuid: s.uuid || 's' + Math.random().toString(36).substr(2, 9)
+            };
+        });
 
         return {
             ...data,
@@ -171,8 +185,8 @@ export const useBattleStore = defineStore('battle', () => {
             // 技能：合并初始技能并过滤
             skills: filterExclusiveSkills([...(data.skills || []), ...(data.fixedPassiveSkills || [])]),
             
-            // 状态：优先使用 data 中定义的初始状态 (用于开场带 Buff/Debuff)
-            statusEffects: [...(data.statusEffects || [])],
+            // 状态
+            statusEffects: instantiatedStatuses,
             
             // 运行时状态
             isDefending: data.isDefending || false,
@@ -199,6 +213,17 @@ export const useBattleStore = defineStore('battle', () => {
         const maxHp = state.maxHp || state.hp;
         const maxMp = state.maxMp || state.mp;
 
+        // 补全状态定义
+        const hydratedStatuses = (state.statusEffects || []).map(s => {
+            const def = statusDb[s.id];
+            if (!def) return s;
+            return {
+                ...def,
+                ...s,
+                uuid: s.uuid || 's' + Math.random().toString(36).substr(2, 9)
+            };
+        });
+
         return {
             ...state,
             uuid: state.uuid || generateUUID(),
@@ -216,7 +241,7 @@ export const useBattleStore = defineStore('battle', () => {
             spd: state.spd || 10,
 
             // 状态
-            statusEffects: state.statusEffects ? [...state.statusEffects] : [],
+            statusEffects: hydratedStatuses,
             isDefending: state.isDefending || false,
             atb: state.atb || 0,
             energy: state.energy || 0,

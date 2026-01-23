@@ -62,10 +62,10 @@ export class BattleController {
     /**
      * 检查槽位是否处于激活回合
      */
-    isSlotActive(slot) {
+    isSlotActive = (slot) => {
         if (!this.activeCharacter.value) return false;
         return slot.front && slot.front.uuid === this.activeCharacter.value.uuid;
-    }
+    };
 
     /**
      * ATB 循环
@@ -80,20 +80,20 @@ export class BattleController {
         this.animationFrameId = requestAnimationFrame(this.gameLoop);
     };
 
-    startLoop() {
+    startLoop = () => {
         if (this.battleState.value !== 'active') {
             this.battleStore.initBattle();
         }
         this.animationFrameId = requestAnimationFrame(this.gameLoop);
-    }
+    };
 
-    stopLoop() {
+    stopLoop = () => {
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
         }
-    }
+    };
 
-    selectSkill(skill) {
+    selectSkill = (skill) => {
         if (!this.battleStore.checkSkillUsability(skill.id)) return;
         
         const needsSelection = ['ally', 'deadAlly', 'enemy'].includes(skill.targetType);
@@ -107,9 +107,9 @@ export class BattleController {
             this.battleStore.playerAction('skill', skill.id);
         }
         this.showSkillMenu.value = false;
-    }
+    };
 
-    selectItem(item) {
+    selectItem = (item) => {
         const targetType = item.targetType || 'ally';
         const needsSelection = ['ally', 'deadAlly', 'enemy'].includes(targetType);
 
@@ -123,9 +123,9 @@ export class BattleController {
             this.battleStore.playerAction('item', { itemId: item.id, targetId: null });
         }
         this.showItemMenu.value = false;
-    }
+    };
 
-    handleTargetClick(unit) {
+    handleTargetClick = (unit) => {
         if (!unit || !this.validTargetIds.value.includes(unit.uuid)) return;
 
         const action = this.pendingAction.value;
@@ -140,9 +140,9 @@ export class BattleController {
         }
         
         this.battleStore.setPendingAction(null);
-    }
+    };
 
-    handleAction(actionType) {
+    handleAction = (actionType) => {
         if (actionType === 'attack') {
             this.battleStore.setPendingAction({ 
                 type: 'attack', 
@@ -152,5 +152,5 @@ export class BattleController {
         } else {
             this.battleStore.playerAction(actionType);
         }
-    }
+    };
 }

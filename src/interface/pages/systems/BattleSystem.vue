@@ -24,7 +24,7 @@
         v-for="enemy in enemiesDisplay" 
         :key="enemy.uuid" 
         :enemy="enemy"
-        @click="ctrl.handleTargetClick($event)"
+        @click="ctrl.handleTargetClick(enemy)"
       />
     </div>
 
@@ -38,14 +38,14 @@
       :battle-items="battleItems"
       :can-switch="canSwitch"
       :boost-level="boostLevel"
-      @action="ctrl.handleAction"
+      @action="ctrl.handleAction($event)"
       @open-skill-menu="showSkillMenu = true"
       @close-skill-menu="showSkillMenu = false"
       @open-item-menu="showItemMenu = true"
       @close-item-menu="showItemMenu = false"
-      @select-skill="ctrl.selectSkill"
-      @select-item="ctrl.selectItem"
-      @adjust-boost="battleStore.adjustBoost"
+      @select-skill="ctrl.selectSkill($event)"
+      @select-item="ctrl.selectItem($event)"
+      @adjust-boost="battleStore.adjustBoost($event)"
     />
 
     <!-- Battle Log Display -->

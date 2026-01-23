@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ID, LocalizedStringSchema } from '../common.js';
+import { StatusSchema } from './status.js';
 
 // --- 掉落物 (Drop) Schema ---
 export const DropSchema = z.object({
@@ -32,11 +33,7 @@ export const CharacterSchema = z.object({
     currentMp: z.number().optional(),
     maxMp: z.number().optional(),
 
-    statusEffects: z.array(z.object({
-        id: ID,
-        duration: z.number().int().optional().default(3),
-        value: z.any().optional()
-    })).optional().default([]),
+    statusEffects: z.array(StatusSchema).optional().default([]),
 
     isDefending: z.boolean().optional().default(false),
     atb: z.number().optional().default(0),

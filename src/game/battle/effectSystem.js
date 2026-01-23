@@ -107,10 +107,7 @@ const _executeSingleEffect = (effect, target, actor, skill, context, silent, pre
                 removeStatus(target, 'status_dead', context, true);
 
                 // 移除所有濒死状态
-                const dyingStatuses = target.statusEffects.filter(s => {
-                    const def = statusDb[s.id];
-                    return def && typeof def.deathChance === 'number';
-                });
+                const dyingStatuses = target.statusEffects.filter(s => typeof s.deathChance === 'number');
                 dyingStatuses.forEach(s => removeStatus(target, s.id, context, true));
 
                 if (!silent && log) log('battle.revived', { target: target.name });
@@ -127,10 +124,7 @@ const _executeSingleEffect = (effect, target, actor, skill, context, silent, pre
                 removeStatus(target, 'status_dead', context, true);
 
                 // 移除所有濒死状态
-                const dyingStatuses = target.statusEffects.filter(s => {
-                    const def = statusDb[s.id];
-                    return def && typeof def.deathChance === 'number';
-                });
+                const dyingStatuses = target.statusEffects.filter(s => typeof s.deathChance === 'number');
                 dyingStatuses.forEach(s => removeStatus(target, s.id, context, true));
 
                 if (!silent && log) log('battle.revived', { target: target.name });
@@ -202,8 +196,7 @@ const _executeSingleEffect = (effect, target, actor, skill, context, silent, pre
                     if (target.statusEffects) {
                         const idsToRemove = [];
                         target.statusEffects.forEach(status => {
-                            const statusDef = statusDb[status.id];
-                            if (statusDef && statusDef.type === 'statusTypes.debuff') {
+                            if (status && status.type === 'statusTypes.debuff') {
                                 idsToRemove.push(status.id);
                             }
                         });
@@ -295,10 +288,9 @@ export const processTurnStatuses = (character, context) => {
     // Iterate backwards to allow removal
     for (let i = character.statusEffects.length - 1; i >= 0; i--) {
         const status = character.statusEffects[i];
-        const statusDef = statusDb[status.id];
 
-        if (statusDef && statusDef.effects) {
-            statusDef.effects.forEach(eff => {
+        if (status && status.effects) {
+            status.effects.forEach(eff => {
                 if (eff.trigger === 'turnStart') {
                     // Pass actor as character itself for self-inflicted effects (DoT/HoT)
                     const val = processEffect(eff, character, character, null, context, true);
@@ -306,9 +298,9 @@ export const processTurnStatuses = (character, context) => {
                     // Custom logs based on type
                     if (log) {
                         if (eff.type === 'damage') {
-                            log('battle.statusDamage', { target: character.name, amount: val, status: statusDef.name });
+                            log('battle.statusDamage', { target: character.name, amount: val, status: status.name });
                         } else if (eff.type === 'heal') {
-                            log('battle.statusHeal', { target: character.name, amount: val, status: statusDef.name });
+                            log('battle.statusHeal', { target: character.name, amount: val, status: status.name });
                         }
                     }
                 }
@@ -317,13 +309,13 @@ export const processTurnStatuses = (character, context) => {
 
         // Decrement Duration (Check decayMode)
         // Default to 'turn' if not specified
-        const decayMode = statusDef.decayMode || 'turn';
+        const decayMode = status.decayMode || 'turn';
 
         if (decayMode === 'turn') {
             status.duration--;
             if (status.duration <= 0) {
                 character.statusEffects.splice(i, 1);
-                if (log) log('battle.statusWoreOff', { target: character.name, status: statusDef.name });
+                if (log) log('battle.statusWoreOff', { target: character.name, status: status.name });
             }
         } else if (decayMode === 'action') {
             // Handled elsewhere (e.g. after action execution)

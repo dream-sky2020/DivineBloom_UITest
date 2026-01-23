@@ -30,7 +30,7 @@ export class EntityCreatorController {
     /**
      * 创建实体
      */
-    createEntity(template) {
+    createEntity = (template) => {
         try {
             // 获取场景中心位置作为默认生成位置
             const camera = world.with('camera').first?.camera;

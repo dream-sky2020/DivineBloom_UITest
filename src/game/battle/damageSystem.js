@@ -102,19 +102,15 @@ const handleHpZeroEvent = (target, context, silent) => {
 /**
  * 处理濒死状态下受创事件
  */
-const handleDyingDamageEvent = (target, amount, context, silent) => {
+const handleDyingDamageEvent = (target, amount, context, silent = false) => {
     const { log } = context;
 
     // 查找当前具有死亡概率的状态
-    const dyingStatus = target.statusEffects?.find(s => {
-        const def = statusDb[s.id];
-        return def && typeof def.deathChance === 'number';
-    });
+    const dyingStatus = target.statusEffects?.find(s => typeof s.deathChance === 'number');
 
     if (!dyingStatus) return;
 
-    const statusDef = statusDb[dyingStatus.id];
-    let deathChance = statusDef.deathChance;
+    let deathChance = dyingStatus.deathChance;
 
     // 允许被动技能微调死亡率
     const handlers = collectHpZeroHandlers(target);
@@ -128,8 +124,7 @@ const handleDyingDamageEvent = (target, amount, context, silent) => {
         applyStatus(target, 'status_dead', 999, null, context);
         // 移除所有濒死状态
         target.statusEffects.forEach(s => {
-            const def = statusDb[s.id];
-            if (def && typeof def.deathChance === 'number') {
+            if (typeof s.deathChance === 'number') {
                 removeStatus(target, s.id, context, true);
             }
         });
@@ -150,9 +145,8 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null,
     // Apply Status Modifiers
     if (attacker.statusEffects) {
         attacker.statusEffects.forEach(s => {
-            const statusDef = statusDb[s.id];
-            if (statusDef && statusDef.effects) {
-                statusDef.effects.forEach(eff => {
+            if (s && s.effects) {
+                s.effects.forEach(eff => {
                     if (eff.trigger === 'passive' && eff.type === 'statMod' && eff.stat === 'atk') {
                         atk *= eff.value;
                     }
@@ -162,9 +156,8 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null,
     }
     if (defender.statusEffects) {
         defender.statusEffects.forEach(s => {
-            const statusDef = statusDb[s.id];
-            if (statusDef && statusDef.effects) {
-                statusDef.effects.forEach(eff => {
+            if (s && s.effects) {
+                s.effects.forEach(eff => {
                     if (eff.trigger === 'passive' && eff.type === 'statMod' && eff.stat === 'def') {
                         def *= eff.value;
                     }
@@ -346,10 +339,7 @@ export const applyHeal = (target, amount, context, silent = false) => {
 
     if (healed > 0) {
         // Recovery from Dying
-        const dyingStatuses = target.statusEffects?.filter(s => {
-            const def = statusDb[s.id];
-            return def && typeof def.deathChance === 'number';
-        });
+        const dyingStatuses = target.statusEffects?.filter(s => typeof s.deathChance === 'number');
 
         if (dyingStatuses && dyingStatuses.length > 0 && target.currentHp > 0) {
             dyingStatuses.forEach(s => removeStatus(target, s.id, context));

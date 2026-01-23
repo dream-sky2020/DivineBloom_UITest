@@ -61,12 +61,12 @@ export class WorldMapController {
         this.uiRafId = requestAnimationFrame(this.syncUI);
     };
 
-    async start() {
+    start = async () => {
         await gameManager.startWorldMap();
         this.syncUI();
-    }
+    };
 
-    stop() {
+    stop = () => {
         if (this.uiRafId) {
             cancelAnimationFrame(this.uiRafId);
         }
@@ -74,9 +74,9 @@ export class WorldMapController {
         if (gameManager.currentScene.value) {
             this.worldStore.saveState(gameManager.currentScene.value);
         }
-    }
+    };
 
-    handleOverlayClick() {
+    handleOverlayClick = () => {
         this.dialogueStore.advance();
-    }
+    };
 }
