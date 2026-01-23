@@ -75,7 +75,7 @@ src/game/ecs/GameManager.js
 **代码片段**：
 ```javascript
 layout: {
-    left: ['project-manager', 'entity-creator', 'scene-explorer'],
+    left: ['scene-manager', 'entity-creator', 'scene-explorer'],
     right: ['entity-properties']
 }
 ```

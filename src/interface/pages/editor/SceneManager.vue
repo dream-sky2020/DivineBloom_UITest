@@ -1,19 +1,20 @@
 <template>
-  <div class="project-manager">
-    <div class="panel-section">
-      <div class="section-header">
-        <span>项目控制</span>
-        <div class="header-actions">
-          <button class="icon-btn" @click="handleExportProject" title="导出全项目 (JSON)">
-            📦 导出项目
-          </button>
-          <label class="icon-btn import-label" title="导入项目数据">
-            📥 导入项目
-            <input type="file" @change="handleImportProject" accept=".json" style="display: none;" />
-          </label>
-        </div>
+  <BasePanel 
+    :title="editorManager.getPanelTitle('scene-manager')" 
+    :icon="editorManager.getPanelIcon('scene-manager')" 
+    :is-enabled="editorManager.isPanelEnabled('scene-manager')"
+  >
+    <template #header-actions>
+      <div class="header-actions">
+        <button class="icon-btn" @click="handleExportProject" title="导出全项目 (JSON)">
+          📦 导出场景
+        </button>
+        <label class="icon-btn import-label" title="导入项目数据">
+          📥 导入场景
+          <input type="file" @change="handleImportProject" accept=".json" style="display: none;" />
+        </label>
       </div>
-    </div>
+    </template>
 
     <div class="panel-section">
       <div class="section-header">
@@ -48,7 +49,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </BasePanel>
 </template>
 
 <script setup>
@@ -57,11 +58,13 @@ import { maps } from '@/data/maps'
 import { useGameStore } from '@/stores/game'
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
 import { gameManager } from '@/game/ecs/GameManager'
+import { editorManager } from '@/game/interface/editor/EditorManager'
 import { createLogger } from '@/utils/logger'
+import BasePanel from './BasePanel.vue'
 
 const { openContextMenu } = inject('editorContextMenu');
 
-const logger = createLogger('ProjectManager')
+const logger = createLogger('SceneManager')
 
 const gameStore = useGameStore()
 const worldStore = gameStore.world
@@ -124,7 +127,7 @@ const handleExportProject = async () => {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `project_full_export_${new Date().getTime()}.json`
+  link.download = `scene_full_export_${new Date().getTime()}.json`
   link.click()
   URL.revokeObjectURL(url)
 }
@@ -139,9 +142,9 @@ const handleImportProject = (event) => {
       const bundle = JSON.parse(e.target.result)
       const newStates = ScenarioLoader.importProject(bundle)
       worldStore.bulkUpdateStates(newStates)
-      alert('项目导入成功！请重新加载或切换地图。')
+      alert('场景导入成功！请重新加载或切换地图。')
     } catch (err) {
-      logger.error('Failed to import project:', err)
+      logger.error('Failed to import scene:', err)
       alert('导入失败：文件格式不正确')
     }
   }
@@ -149,4 +152,4 @@ const handleImportProject = (event) => {
 }
 </script>
 
-<style scoped src="@styles/editor/ProjectManager.css"></style>
+<style scoped src="@styles/editor/SceneManager.css"></style>

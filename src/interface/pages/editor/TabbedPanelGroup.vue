@@ -17,7 +17,7 @@
         @dragstart="onDragStartTab($event, panelId)"
         @click="group.activeId = panelId"
       >
-        <span class="tab-title">{{ getPanelTitle(panelId) }}</span>
+        <span class="tab-title">{{ editorManager.getPanelTitle(panelId) }}</span>
       </div>
       <div class="tab-actions">
         <button class="action-btn" @click="moveGroupSide" :title="side === 'left' ? '移至右侧' : '移至左侧'">
@@ -26,9 +26,11 @@
       </div>
     </div>
 
-    <!-- 面板内容：处理拆分到下方 -->
+    <!-- 面板内容 -->
     <div class="panel-content" :class="{ 'drop-target': dropPos === 'bottom' }">
-      <component :is="getPanelComponent(group.activeId)" />
+      <PanelErrorBoundary :key="group.activeId">
+        <component :is="editorManager.getPanelComponent(group.activeId)" />
+      </PanelErrorBoundary>
     </div>
 
     <!-- 顶部感应线：处理拆分到上方 -->
@@ -38,8 +40,8 @@
 
 <script setup>
 import { ref } from 'vue'
-import { gameManager } from '@/game/ecs/GameManager'
-import { getPanelTitle, getPanelComponent } from '@/game/interface/editor/PanelRegistry'
+import { editorManager } from '@/game/interface/editor/EditorManager'
+import PanelErrorBoundary from './PanelErrorBoundary.vue'
 
 const props = defineProps({
   group: Object,
@@ -49,7 +51,7 @@ const props = defineProps({
 const dropPos = ref(null) // 'top', 'tabs', 'bottom'
 
 const moveGroupSide = () => {
-  const layout = gameManager.editor.layout
+  const layout = editorManager.layout
   const sourceSide = props.side
   const targetSide = sourceSide === 'left' ? 'right' : 'left'
   
@@ -96,46 +98,27 @@ const onDrop = (e) => {
   
   dropPos.value = null
   if (!panelId) return
-
-  const layout = gameManager.editor.layout
-  const side = props.side
-
-  // 1. 从原位置移除
-  let movingPanelId = panelId
-  const sourceGroup = layout[sourceSide].find(g => g.id === sourceGroupId)
-  if (sourceGroup) {
-    sourceGroup.panels = sourceGroup.panels.filter(id => id !== panelId)
-    if (sourceGroup.activeId === panelId) {
-      sourceGroup.activeId = sourceGroup.panels[0]
-    }
-    if (sourceGroup.panels.length === 0) {
-      layout[sourceSide] = layout[sourceSide].filter(g => g.id !== sourceGroupId)
-    }
-  }
-
-  // 2. 根据落点处理
-  if (pos === 'tabs') {
-    // 合并到当前组
-    if (!props.group.panels.includes(movingPanelId)) {
-      props.group.panels.push(movingPanelId)
-      props.group.activeId = movingPanelId
-    }
-  } else {
-    // 拆分出新组
-    const newGroup = {
-      id: `group-${Date.now()}`,
-      activeId: movingPanelId,
-      panels: [movingPanelId]
-    }
-    
-    const currentIndex = layout[side].findIndex(g => g.id === props.group.id)
-    if (pos === 'top') {
-      layout[side].splice(currentIndex, 0, newGroup)
-    } else {
-      layout[side].splice(currentIndex + 1, 0, newGroup)
-    }
-  }
+  
+  // 使用中心化的移动逻辑
+  editorManager.movePanel({
+    panelId,
+    sourceSide,
+    sourceGroupId,
+    targetSide: props.side,
+    targetGroupId: props.group.id,
+    position: pos
+  });
 }
 </script>
 
 <style scoped src="@styles/editor/TabbedPanelGroup.css"></style>
+
+<style scoped>
+/* 简单的淡入淡出动画 */
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
+</style>

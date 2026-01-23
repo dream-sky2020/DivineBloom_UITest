@@ -27,6 +27,7 @@ import { GlobalEntity } from '@/game/ecs/entities/definitions/GlobalEntity'
 import { EditorGridRenderSystem } from '@/game/ecs/systems/render/EditorGridRenderSystem'
 import { EditorInteractionSystem } from '@/game/ecs/systems/editor/EditorInteractionSystem'
 import { EditorHighlightRenderSystem } from '@/game/ecs/systems/editor/EditorHighlightRenderSystem'
+import { editorManager } from '@/game/interface/editor/EditorManager'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('WorldScene')
@@ -161,9 +162,7 @@ export class WorldScene {
         // 重置交互状态
         EditorInteractionSystem.selectedEntity = null
         EditorInteractionSystem.isDragging = false
-        if (this.stateProvider.gameManager) {
-            this.stateProvider.gameManager.editor.selectedEntity = null
-        }
+        editorManager.selectedEntity = null
     }
 
     /**

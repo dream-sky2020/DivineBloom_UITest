@@ -24,10 +24,10 @@
           @dragover.prevent
           @drop="onDrop($event, 'left')"
         >
-          <div v-for="group in gameManager.editor.layout.left" :key="group.id" class="sidebar-panel-wrapper">
+          <div v-for="group in editorManager.layout.left" :key="group.id" class="sidebar-panel-wrapper">
             <TabbedPanelGroup :group="group" side="left" />
           </div>
-          <div v-if="gameManager.editor.layout.left.length === 0" class="sidebar-placeholder">
+          <div v-if="editorManager.layout.left.length === 0" class="sidebar-placeholder">
             <h3 style="padding: 16px; color: #94a3b8; font-size: 14px;">左侧无面板</h3>
           </div>
         </div>
@@ -90,10 +90,10 @@
           @dragover.prevent
           @drop="onDrop($event, 'right')"
         >
-          <div v-for="group in gameManager.editor.layout.right" :key="group.id" class="sidebar-panel-wrapper">
+          <div v-for="group in editorManager.layout.right" :key="group.id" class="sidebar-panel-wrapper">
             <TabbedPanelGroup :group="group" side="right" />
           </div>
-          <div v-if="gameManager.editor.layout.right.length === 0" class="sidebar-placeholder">
+          <div v-if="editorManager.layout.right.length === 0" class="sidebar-placeholder">
             <h3 style="padding: 16px; color: #94a3b8; font-size: 14px;">右侧无面板</h3>
           </div>
         </div>
@@ -179,14 +179,14 @@
           <div class="dev-card">
             <h3 v-t="'dev.debugActions'"></h3>
             <div class="btn-group">
-               <!-- 全局按钮 -->
+               <!-- 全局通用操作 -->
                <button @click="logState" v-t="'dev.actions.logState'"></button>
+               <button @click="toggleEditMode" :class="{ active: isEditMode }">
+                 {{ isEditMode ? '关闭编辑器 (Ctrl+E)' : '开启编辑器 (Ctrl+E)' }}
+               </button>
                
                <!-- 大地图专属操作 -->
                <template v-if="currentSystem === 'world-map'">
-                 <button @click="toggleEditMode" :class="{ active: isEditMode }">
-                   {{ isEditMode ? '关闭编辑器' : '开启编辑器' }}
-                 </button>
                  <button @click="togglePause" :class="{ warn: gameManager.state.isPaused }">
                    {{ gameManager.state.isPaused ? '恢复运行' : '暂停运行' }}
                  </button>
@@ -254,6 +254,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGameStore } from '@/stores/game';
 import { gameManager } from '@/game/ecs/GameManager';
+import { editorManager } from '@/game/interface/editor/EditorManager';
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader';
 import { createLogger } from '@/utils/logger';
 
@@ -267,7 +268,6 @@ import DialogueSystem from '@/interface/pages/systems/DialogueSystem.vue';
 import DevToolsSystem from '@/interface/pages/systems/DevToolsSystem.vue';
 import DevTools from '@/interface/pages/DevTools.vue';
 import TabbedPanelGroup from '@/interface/pages/editor/TabbedPanelGroup.vue';
-import { getPanelTitle, getPanelComponent } from '@/game/interface/editor/PanelRegistry';
 
 // Context Menu State
 const contextMenu = ref({
@@ -323,7 +323,7 @@ const isRightCollapsed = ref(false);
 const resizingSidebar = ref(null); // 'left' or 'right'
 
 // Reactive Edit Mode State
-const isEditMode = computed(() => gameManager.editor.editMode);
+const isEditMode = computed(() => editorManager.editMode);
 
 const canvasContainerStyle = computed(() => {
   const left = isEditMode.value ? (isLeftCollapsed.value ? 40 : leftSidebarWidth.value) : 0;
@@ -499,6 +499,13 @@ const resizeCanvas = () => {
 
 // Keyboard shortcuts
 const handleKeyDown = (e) => {
+  // Ctrl + E: Toggle Edit Mode
+  if (e.ctrlKey && e.key.toLowerCase() === 'e') {
+    e.preventDefault();
+    toggleEditMode();
+    logger.info('Edit mode toggled via shortcut');
+  }
+
   // Ctrl+Shift+D: Toggle Dev Tools (switch to dev-tools system)
   if (e.ctrlKey && e.shiftKey && e.key === 'D') {
     e.preventDefault();
@@ -678,7 +685,7 @@ const createEntityAtPosition = (templateId, x, y) => {
       const entity = entityTemplateRegistry.createEntity(templateId, null, { x, y });
       if (entity) {
         logger.info(`Entity created at (${x}, ${y})`, entity);
-        gameManager.editor.selectedEntity = entity;
+        editorManager.selectedEntity = entity;
       }
     }
   } catch (error) {
@@ -775,7 +782,7 @@ const deleteEntity = (entity) => {
     }
     
     // 清除选中状态
-    gameManager.editor.selectedEntity = null;
+    editorManager.selectedEntity = null;
   }
 };
 
@@ -787,32 +794,14 @@ const onDrop = (e, targetSide) => {
   
   if (!panelId) return;
 
-  const layout = gameManager.editor.layout;
-
-  // 1. 如果源和目标侧边栏不同，或者是在侧边栏空白处释放
-  // 我们创建一个新组并把面板移过去
-  
-  // 从原组移除
-  if (sourceGroupId) {
-    const sourceGroup = layout[sourceSide].find(g => g.id === sourceGroupId);
-    if (sourceGroup) {
-      sourceGroup.panels = sourceGroup.panels.filter(id => id !== panelId);
-      if (sourceGroup.activeId === panelId) {
-        sourceGroup.activeId = sourceGroup.panels[0];
-      }
-      if (sourceGroup.panels.length === 0) {
-        layout[sourceSide] = layout[sourceSide].filter(g => g.id !== sourceGroupId);
-      }
-    }
-  }
-
-  // 2. 在目标侧边栏创建新组
-  const newGroup = {
-    id: `group-${Date.now()}`,
-    activeId: panelId,
-    panels: [panelId]
-  };
-  layout[targetSide].push(newGroup);
+  // 使用中心化的移动逻辑，position 为空表示直接追加到侧边栏末尾
+  editorManager.movePanel({
+    panelId,
+    sourceSide,
+    sourceGroupId,
+    targetSide,
+    position: 'bottom'
+  });
 };
 </script>
 

@@ -7,6 +7,7 @@ import { useGameStore } from '@/stores/game'
 import { dialoguesDb } from '@/data/dialogues'
 import { getMapData } from '@/data/maps'
 import { createLogger } from '@/utils/logger'
+import { editorManager } from '@/game/interface/editor/EditorManager'
 
 const logger = createLogger('GameManager')
 
@@ -25,28 +26,8 @@ class GameManager {
             isPaused: false
         })
 
-        // Editor State (Reactive for UI)
-        this.editor = reactive({
-            selectedEntity: null,
-            editMode: false,
-            // 侧边栏布局配置
-            layout: {
-                left: [
-                    { 
-                        id: 'group-left-1', 
-                        activeId: 'project-manager', 
-                        panels: ['project-manager', 'entity-creator', 'scene-explorer'] 
-                    }
-                ],
-                right: [
-                    { 
-                        id: 'group-right-1', 
-                        activeId: 'entity-properties', 
-                        panels: ['entity-properties'] 
-                    }
-                ]
-            }
-        })
+        // Editor is now managed by editorManager
+        this.editor = editorManager.state;
 
         // 🎯 内存泄漏修复：存储 watcher 引用以便清理
         this._watchers = []
@@ -104,8 +85,29 @@ class GameManager {
             }
         })
 
+        // 🎯 监听系统变化，同步更新编辑器目标
+        const unwatchSystem = watch(() => this.state.system, (newSystem) => {
+            // 同步声明式面板配置
+            editorManager.syncWithSystem(newSystem);
+
+            // 如果是世界地图或战斗，目标是当前场景
+            if (newSystem === 'world-map' || newSystem === 'battle') {
+                editorManager.setTarget(this.currentScene.value);
+            } else {
+                // 其他系统目前没有 Editable 接口实现
+                editorManager.setTarget(null);
+            }
+        }, { immediate: true });
+
+        // 🎯 监听场景变化
+        const unwatchScene = watch(() => this.currentScene.value, (newScene) => {
+            if (this.state.system === 'world-map' || this.state.system === 'battle') {
+                editorManager.setTarget(newScene);
+            }
+        });
+
         // 保存 unwatch 函数以便后续清理
-        this._watchers.push(unwatchDialogue)
+        this._watchers.push(unwatchDialogue, unwatchSystem, unwatchScene)
 
         logger.info('Watchers initialized')
     }
@@ -234,18 +236,7 @@ class GameManager {
      * Toggle Editor Mode
      */
     toggleEditMode() {
-        if (!this.currentScene.value) return;
-
-        const scene = this.currentScene.value;
-        this.editor.editMode = !this.editor.editMode;
-
-        if (this.editor.editMode) {
-            scene.enterEditMode();
-            logger.info('Editor Mode Enabled');
-        } else {
-            scene.exitEditMode();
-            logger.info('Editor Mode Disabled');
-        }
+        editorManager.toggleEditMode();
     }
 
     // --- Callbacks ---

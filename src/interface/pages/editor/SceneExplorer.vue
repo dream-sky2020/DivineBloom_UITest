@@ -1,14 +1,20 @@
 <template>
-  <div class="scene-explorer">
-    <div class="explorer-stats">
-      <div class="stats-left">
-        <span>实体: {{ entities.length }}</span>
-        <span v-if="mapId" class="map-tag">{{ mapId }}</span>
+  <BasePanel 
+    :title="editorManager.getPanelTitle('scene-explorer')" 
+    :icon="editorManager.getPanelIcon('scene-explorer')" 
+    :is-enabled="editorManager.isPanelEnabled('scene-explorer')"
+  >
+    <template #header-actions>
+      <div class="explorer-stats">
+        <div class="stats-left">
+          <span>实体: {{ entities.length }}</span>
+          <span v-if="mapId" class="map-tag">{{ mapId }}</span>
+        </div>
+        <button class="export-btn" @click="handleExport" title="导出场景数据 (JSON)">
+          📥
+        </button>
       </div>
-      <button class="export-btn" @click="handleExport" title="导出场景数据 (JSON)">
-        📥
-      </button>
-    </div>
+    </template>
 
     <div class="explorer-body">
       <div 
@@ -49,20 +55,22 @@
         </button>
       </div>
     </div>
-  </div>
+  </BasePanel>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, inject, toRaw } from 'vue'
 import { world } from '@/game/ecs/world'
 import { gameManager } from '@/game/ecs/GameManager'
+import { editorManager } from '@/game/interface/editor/EditorManager'
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
+import BasePanel from './BasePanel.vue'
 
 const { openContextMenu } = inject('editorContextMenu');
 
 const entities = ref([])
 const mapId = computed(() => gameManager.currentScene.value?.mapData?.id || '')
-const selectedEntity = computed(() => gameManager.editor.selectedEntity)
+const selectedEntity = computed(() => editorManager.selectedEntity)
 
 const sortedEntities = computed(() => {
   return [...entities.value].sort((a, b) => {
@@ -82,7 +90,7 @@ const sortedEntities = computed(() => {
 })
 
 const selectEntity = (entity) => {
-  gameManager.editor.selectedEntity = entity
+  editorManager.selectedEntity = entity
 }
 
 const handleRightClick = (e, entity) => {
@@ -122,8 +130,8 @@ const confirmDelete = (entity) => {
       world.remove(rawEntity);
     }
 
-    if (gameManager.editor.selectedEntity === entity) {
-      gameManager.editor.selectedEntity = null;
+    if (editorManager.selectedEntity === entity) {
+      editorManager.selectedEntity = null;
     }
   }
 }

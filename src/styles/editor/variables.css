@@ -1,0 +1,48 @@
+/* Editor Design Tokens */
+:root {
+  /* Colors - Base */
+  --editor-bg-main: #0f172a;
+  --editor-bg-panel: #1e293b;
+  --editor-bg-header: #0f172a;
+  --editor-bg-hover: #334155;
+  --editor-bg-active: #1e3a8a;
+  
+  /* Colors - Border */
+  --editor-border-light: #334155;
+  --editor-border-medium: #475569;
+  --editor-border-focus: #3b82f6;
+  
+  /* Colors - Text */
+  --editor-text-primary: #f1f5f9;
+  --editor-text-secondary: #cbd5e1;
+  --editor-text-muted: #94a3b8;
+  --editor-text-dim: #64748b;
+  
+  /* Colors - Brand & Feedback */
+  --editor-color-primary: #3b82f6;
+  --editor-color-danger: #ef4444;
+  --editor-color-warning: #f59e0b;
+  --editor-color-success: #10b981;
+  
+  /* Spacing */
+  --editor-spacing-xs: 4px;
+  --editor-spacing-sm: 8px;
+  --editor-spacing-md: 12px;
+  --editor-spacing-lg: 16px;
+  
+  /* Typography */
+  --editor-font-size-xs: 10px;
+  --editor-font-size-sm: 11px;
+  --editor-font-size-md: 13px;
+  --editor-font-header: 11px;
+  
+  /* Effects */
+  --editor-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --editor-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --editor-radius-sm: 4px;
+  --editor-radius-md: 6px;
+  
+  /* Z-index */
+  --editor-z-overlay: 1000;
+  --editor-z-dropdown: 100;
+}

@@ -1,8 +1,8 @@
 .panel-group {
   display: flex;
   flex-direction: column;
-  background: rgba(15, 23, 42, 0.95);
-  border-bottom: 1px solid #334155;
+  background: var(--editor-bg-panel);
+  border-bottom: 1px solid var(--editor-border-light);
   height: 100%;
   min-height: 100px;
   position: relative;
@@ -11,8 +11,8 @@
 
 .panel-tabs {
   display: flex;
-  background: #0f172a;
-  border-bottom: 1px solid #334155;
+  background: var(--editor-bg-header);
+  border-bottom: 1px solid var(--editor-border-light);
   padding: 0 4px;
   gap: 2px;
   overflow-x: auto;
@@ -27,7 +27,7 @@
 .panel-tab {
   padding: 6px 12px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--editor-text-muted);
   cursor: pointer;
   border-top: 2px solid transparent;
   display: flex;
@@ -35,15 +35,15 @@
   gap: 6px;
   white-space: nowrap;
   user-select: none;
-  background: #1e293b;
+  background: var(--editor-bg-hover);
   margin-top: 4px;
-  border-radius: 4px 4px 0 0;
+  border-radius: var(--editor-radius-sm) var(--editor-radius-sm) 0 0;
 }
 
 .panel-tab.active {
-  background: #0f172a;
-  color: #3b82f6;
-  border-top-color: #3b82f6;
+  background: var(--editor-bg-panel);
+  color: var(--editor-color-primary);
+  border-top-color: var(--editor-color-primary);
 }
 
 .panel-content {
@@ -63,7 +63,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: #3b82f6;
+  background: var(--editor-color-primary);
   opacity: 0;
   pointer-events: none;
   z-index: 10;
@@ -82,7 +82,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: #3b82f6;
+  background: var(--editor-color-primary);
   z-index: 10;
 }
 
@@ -96,12 +96,12 @@
 .action-btn {
   background: none;
   border: none;
-  color: #475569;
+  color: var(--editor-text-dim);
   padding: 4px;
   cursor: pointer;
   font-size: 14px;
 }
 
 .action-btn:hover {
-  color: #3b82f6;
+  color: var(--editor-color-primary);
 }

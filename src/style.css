@@ -1,3 +1,5 @@
+@import "@/styles/editor/variables.css";
+
 :root {
   --bg-color: #020617;
   --text-color: #ffffff;

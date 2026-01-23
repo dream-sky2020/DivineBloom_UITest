@@ -1,5 +1,9 @@
 <template>
-  <div class="entity-properties">
+  <BasePanel 
+    :title="editorManager.getPanelTitle('entity-properties')" 
+    :icon="editorManager.getPanelIcon('entity-properties')" 
+    :is-enabled="editorManager.isPanelEnabled('entity-properties')"
+  >
     <template v-if="localEntityState">
       <div class="inspector-header">
         <span 
@@ -242,13 +246,14 @@
     <div v-else class="empty-state">
       <p>请选择一个实体进行编辑</p>
     </div>
-  </div>
+  </BasePanel>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, toRaw } from 'vue'
 import { world } from '@/game/ecs/world'
-import { gameManager } from '@/game/ecs/GameManager'
+import { editorManager } from '@/game/interface/editor/EditorManager'
+import BasePanel from './BasePanel.vue'
 
 // 属性编辑同步
 const localEntityState = ref(null)
@@ -278,14 +283,14 @@ const confirmDelete = () => {
     } else {
       world.remove(rawEntity);
     }
-    gameManager.editor.selectedEntity = null;
+    editorManager.selectedEntity = null;
   }
 }
 
 // 刷新频率控制
 let rafId = 0
 const syncEntityData = () => {
-  const currentSelected = gameManager.editor.selectedEntity
+  const currentSelected = editorManager.selectedEntity
   if (currentSelected) {
     localEntityState.value = currentSelected
     // 更新时间戳，触发那些依赖它的计算属性或显示

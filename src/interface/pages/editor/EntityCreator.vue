@@ -1,5 +1,9 @@
 <template>
-  <div class="entity-creator">
+  <BasePanel 
+    :title="editorManager.getPanelTitle('entity-creator')" 
+    :icon="editorManager.getPanelIcon('entity-creator')" 
+    :is-enabled="editorManager.isPanelEnabled('entity-creator')"
+  >
     <!-- 分类筛选 -->
     <div class="category-tabs">
       <button 
@@ -36,25 +40,28 @@
     </div>
 
     <!-- 创建提示 -->
-    <div class="creator-hint">
-      <div class="hint-item">
-        <span class="hint-icon">💡</span>
-        <span class="hint-text">点击模板即可在场景中心创建实体</span>
+    <template #footer>
+      <div class="creator-hint">
+        <div class="hint-item">
+          <span class="hint-icon">💡</span>
+          <span class="hint-text">点击模板即可在场景中心创建实体</span>
+        </div>
+        <div class="hint-item">
+          <span class="hint-icon">🎯</span>
+          <span class="hint-text">创建后可在画布中拖动位置</span>
+        </div>
       </div>
-      <div class="hint-item">
-        <span class="hint-icon">🎯</span>
-        <span class="hint-text">实体创建后可在画布中拖动调整位置</span>
-      </div>
-    </div>
-  </div>
+    </template>
+  </BasePanel>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { entityTemplateRegistry } from '@/game/ecs/entities/internal/EntityTemplateRegistry'
 import { world } from '@/game/ecs/world'
-import { gameManager } from '@/game/ecs/GameManager'
+import { editorManager } from '@/game/interface/editor/EditorManager'
 import { createLogger } from '@/utils/logger'
+import BasePanel from './BasePanel.vue'
 
 const logger = createLogger('EntityCreator')
 
@@ -105,7 +112,7 @@ const createEntity = (template) => {
       if (entity) {
         logger.info(`Entity created directly: ${template.name}`, entity)
         // 自动选中新创建的实体
-        gameManager.editor.selectedEntity = entity
+        editorManager.selectedEntity = entity
       }
     }
   } catch (error) {

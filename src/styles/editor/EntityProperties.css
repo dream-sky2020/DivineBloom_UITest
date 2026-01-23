@@ -1,13 +1,7 @@
-.entity-properties {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 .inspector-header {
-  padding: 12px 16px;
-  background: #0f172a;
-  border-bottom: 1px solid #334155;
+  padding: var(--editor-spacing-sm) var(--editor-spacing-md);
+  background: var(--editor-bg-header);
+  border-bottom: 1px solid var(--editor-border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -15,20 +9,20 @@
 
 .entity-type-tag {
   font-size: 10px;
-  background: #334155;
-  color: #94a3b8;
+  background: var(--editor-border-light);
+  color: var(--editor-text-muted);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--editor-radius-sm);
   text-transform: uppercase;
   font-weight: bold;
 }
 
 .header-delete-btn {
-  background: #450a0a;
-  color: #fca5a5;
-  border: 1px solid #7f1d1d;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--editor-color-danger);
+  border: 1px solid var(--editor-color-danger);
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--editor-radius-sm);
   font-size: 11px;
   cursor: pointer;
   transition: all 0.2s;
@@ -38,33 +32,31 @@
 }
 
 .header-delete-btn:hover {
-  background: #7f1d1d;
+  background: var(--editor-color-danger);
   color: white;
-  border-color: #ef4444;
 }
 
 .inspector-body {
-  padding: 16px;
-  overflow-y: auto;
+  padding: var(--editor-spacing-md);
 }
 
 .prop-section {
-  margin-bottom: 20px;
+  margin-bottom: var(--editor-spacing-lg);
 }
 
 .prop-section h4 {
-  margin: 0 0 10px 0;
+  margin: 0 0 var(--editor-spacing-sm) 0;
   font-size: 12px;
   text-transform: uppercase;
-  color: #3b82f6;
+  color: var(--editor-color-primary);
   letter-spacing: 0.05em;
 }
 
 .prop-group {
-  margin-bottom: 12px;
+  margin-bottom: var(--editor-spacing-md);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--editor-spacing-xs);
 }
 
 .label-row {
@@ -76,8 +68,8 @@
 .info-icon {
   width: 14px;
   height: 14px;
-  background: #334155;
-  color: #94a3b8;
+  background: var(--editor-border-light);
+  color: var(--editor-text-muted);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -88,13 +80,13 @@
 }
 
 .info-icon:hover {
-  background: #3b82f6;
+  background: var(--editor-color-primary);
   color: white;
 }
 
 .prop-group.inline {
   flex-direction: row;
-  gap: 12px;
+  gap: var(--editor-spacing-md);
 }
 
 .prop-group.inline .field {
@@ -103,27 +95,27 @@
 
 label {
   font-size: 11px;
-  color: #64748b;
+  color: var(--editor-text-dim);
 }
 
 input {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 4px;
+  background: var(--editor-bg-main);
+  border: 1px solid var(--editor-border-light);
+  border-radius: var(--editor-radius-sm);
   padding: 6px 8px;
-  color: #f1f5f9;
-  font-size: 13px;
+  color: var(--editor-text-primary);
+  font-size: var(--editor-font-size-md);
   width: 100%;
 }
 
 input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--editor-color-primary);
 }
 
 .readonly-input {
-  background: #0f172a;
-  color: #94a3b8;
+  background: var(--editor-bg-header);
+  color: var(--editor-text-muted);
   cursor: default;
 }
 
@@ -132,33 +124,23 @@ input:focus {
   background: #7c3aed;
   color: white;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--editor-radius-sm);
   font-size: 10px;
   font-weight: bold;
   text-transform: uppercase;
 }
 
-.checkbox-group {
-  flex-direction: row;
-  align-items: center;
-}
-
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--editor-spacing-sm);
   cursor: pointer;
-  color: #f1f5f9;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: auto;
-  cursor: pointer;
+  color: var(--editor-text-primary);
 }
 
 .unsupported-type {
   font-size: 11px;
-  color: #ef4444;
+  color: var(--editor-color-danger);
   font-style: italic;
 }
 
@@ -167,7 +149,7 @@ input:focus {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #64748b;
+  color: var(--editor-text-dim);
   font-size: 14px;
   text-align: center;
   padding: 20px;

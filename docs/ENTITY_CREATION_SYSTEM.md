@@ -215,7 +215,7 @@ this.register({
 ```javascript
 this.editor = reactive({
     layout: {
-        left: ['project-manager', 'entity-creator', 'scene-explorer'],
+        left: ['scene-manager', 'entity-creator', 'scene-explorer'],
         right: ['entity-properties']
     }
 })

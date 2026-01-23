@@ -39,7 +39,7 @@
             <label>MP</label>
             <div class="bar-container">
               <div class="bar-fill" :style="{ transform: `scaleX(${character.currentMp / character.maxMp})` }"></div>
-               <span class="bar-text">{{ character.currentMp }}/{{ character.maxMp }}</span>
+               <span class="bar-text">{{ character.currentMp }}/{{ character.maxHp }}</span>
             </div>
           </div>
         </div>

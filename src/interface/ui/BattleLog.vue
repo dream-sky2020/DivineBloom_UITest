@@ -54,4 +54,3 @@ watch(() => props.battleLog, async () => {
 </script>
 
 <style scoped src="@styles/ui/BattleLog.css"></style>
-

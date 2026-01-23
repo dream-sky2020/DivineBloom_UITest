@@ -177,4 +177,3 @@ const getLocalizedText = (obj) => {
 </script>
 
 <style scoped src="@styles/ui/BattleActionMenu.css"></style>
-

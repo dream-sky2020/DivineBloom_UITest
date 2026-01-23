@@ -1,5 +1,6 @@
 import { world } from '@/game/ecs/world'
 import { Visuals } from '@/data/visuals'
+import { editorManager } from '@/game/interface/editor/EditorManager'
 
 /**
  * Editor Interaction System
@@ -13,7 +14,6 @@ export const EditorInteractionSystem = {
   onEmptyRightClick: null, // 右键点击空白地面的回调
 
   update(dt, engine, gameManager) {
-    if (!gameManager) return;
     const { input, renderer } = engine;
     const { mouse } = input;
     const { camera } = renderer;
@@ -28,19 +28,19 @@ export const EditorInteractionSystem = {
 
       if (hit) {
         this.selectedEntity = hit;
-        gameManager.editor.selectedEntity = hit; // Sync with reactive state
+        editorManager.selectedEntity = hit; // Sync with reactive state
         this.isDragging = true;
         this.dragOffset.x = hit.position.x - worldX;
         this.dragOffset.y = hit.position.y - worldY;
         console.log('[Editor] Selected:', hit.name || hit.id || hit.uuid || 'unnamed');
       } else {
         this.selectedEntity = null;
-        gameManager.editor.selectedEntity = null; // Sync with reactive state
+        editorManager.selectedEntity = null; // Sync with reactive state
       }
     }
 
     // 2. 处理拖拽逻辑 (MouseMove while Down)
-    const target = gameManager.editor.selectedEntity;
+    const target = editorManager.selectedEntity;
     if (this.isDragging && target && target.position) {
       if (mouse.isDown) {
         // 更新位置 (通过响应式代理更新，Vue 就能感知到)
@@ -75,7 +75,7 @@ export const EditorInteractionSystem = {
       if (hit) {
         // 右键点击到了实体
         this.selectedEntity = hit;
-        gameManager.editor.selectedEntity = hit;
+        editorManager.selectedEntity = hit;
 
         // 触发实体右键菜单回调
         if (this.onEntityRightClick) {

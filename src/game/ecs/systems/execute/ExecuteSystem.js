@@ -4,6 +4,7 @@ import { DialogueExecuteSystem } from '@/game/ecs/systems/execute/DialogueExecut
 import { TeleportExecuteSystem } from '@/game/ecs/systems/execute/TeleportExecuteSystem'
 import { EditorInteractionSystem } from '@/game/ecs/systems/editor/EditorInteractionSystem'
 import { entityTemplateRegistry } from '@/game/ecs/entities/internal/EntityTemplateRegistry'
+import { editorManager } from '@/game/interface/editor/EditorManager'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('ExecuteSystem')
@@ -136,8 +137,8 @@ export const ExecuteSystem = {
     logger.info('Deleting entity:', entity.type, entity.id || entity.uuid);
     
     // 同步 UI 状态
-    if (callbacks.gameManager && callbacks.gameManager.editor.selectedEntity === entity) {
-      callbacks.gameManager.editor.selectedEntity = null;
+    if (editorManager.selectedEntity === entity) {
+      editorManager.selectedEntity = null;
     }
     
     // 同步交互系统状态
@@ -171,9 +172,7 @@ export const ExecuteSystem = {
         logger.info(`Entity created successfully:`, entity.type, entity.name);
         
         // 自动选中新创建的实体（方便用户立即编辑）
-        if (callbacks.gameManager) {
-          callbacks.gameManager.editor.selectedEntity = entity;
-        }
+        editorManager.selectedEntity = entity;
       } else {
         logger.error(`Failed to create entity from template: ${templateId}`);
       }

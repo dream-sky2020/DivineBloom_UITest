@@ -1,0 +1,113 @@
+.panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--editor-spacing-sm);
+  margin-bottom: var(--editor-spacing-lg);
+}
+
+.section-header {
+  font-size: var(--editor-font-size-xs);
+  font-weight: bold;
+  color: var(--editor-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--editor-border-light);
+  padding-bottom: var(--editor-spacing-xs);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--editor-spacing-sm);
+}
+
+.icon-btn {
+  background: var(--editor-bg-main);
+  border: 1px solid var(--editor-border-medium);
+  color: var(--editor-text-secondary);
+  padding: 4px 8px;
+  border-radius: var(--editor-radius-sm);
+  cursor: pointer;
+  font-size: var(--editor-font-size-xs);
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: var(--editor-bg-hover);
+  border-color: var(--editor-border-focus);
+  color: var(--editor-text-primary);
+}
+
+.scene-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--editor-spacing-xs);
+}
+
+.scene-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--editor-spacing-sm) var(--editor-spacing-md);
+  background: var(--editor-bg-main);
+  border: 1px solid var(--editor-border-light);
+  border-radius: var(--editor-radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.scene-item:hover {
+  background: var(--editor-bg-hover);
+  border-color: var(--editor-border-medium);
+}
+
+.scene-item.active {
+  background: var(--editor-bg-active);
+  border-color: var(--editor-border-focus);
+}
+
+.scene-item.loading {
+  background: var(--editor-bg-main);
+  border-color: var(--editor-color-warning);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.scene-item.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.scene-icon {
+  font-size: 20px;
+}
+
+.scene-info {
+  flex: 1;
+}
+
+.scene-name {
+  font-size: var(--editor-font-size-md);
+  font-weight: 600;
+  color: var(--editor-text-primary);
+}
+
+.scene-status {
+  font-size: var(--editor-font-size-xs);
+  color: var(--editor-text-muted);
+}
+
+.active-indicator {
+  font-size: var(--editor-font-size-xs);
+  background: var(--editor-color-primary);
+  color: white;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
