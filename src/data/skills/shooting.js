@@ -12,7 +12,7 @@ export default {
             ko: '사격'
         },
         type: "skillTypes.active",
-        category: "skillCategories.physical",
+        category: "cat_skill_physical",
         icon: "icon_skill_shoot",
         subText: {
             zh: '单体物理伤害',
@@ -29,6 +29,7 @@ export default {
             ko: '총기로 적을 사격한다.'
         },
         targetType: "enemy",
+        tags: ['cat_skill_firearm'],
         cost: "1 Ammo", // UI 显示
         costs: [
             { type: 'status_duration', id: 'status_chambered_count', amount: 1 } // 逻辑消耗：弦上余数 (持续时间)
@@ -49,7 +50,7 @@ export default {
             ko: '속사'
         },
         type: "skillTypes.active",
-        category: "skillCategories.physical",
+        category: "cat_skill_physical",
         icon: "icon_skill_shoot_speed", // 假设有加速图标
         subText: {
             zh: '敏捷射击',
@@ -66,6 +67,7 @@ export default {
             ko: '민첩하게 사격한다. 턴을 소모하지 않는다. 소량의 피해를 준다.'
         },
         targetType: "enemy",
+        tags: ['cat_skill_firearm', 'mech_quick'],
         consumeTurn: false, // 不消耗回合
         cost: "1 Ammo",
         costs: [

@@ -11,6 +11,7 @@ export default {
     },
     type: "itemTypes.keyItem",
     icon: "icon_map",
+    tags: ['item_key', 'rarity_rare', 'quest'],
     subText: {
       zh: '重要物品',
       'zh-TW': '重要物品',
@@ -38,6 +39,7 @@ export default {
     },
     type: "itemTypes.keyItem",
     icon: "icon_key",
+    tags: ['item_key', 'rarity_rare', 'quest'],
     subText: {
       zh: '任务物品',
       'zh-TW': '任務物品',

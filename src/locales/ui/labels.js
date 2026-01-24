@@ -47,6 +47,13 @@ export default {
     en: 'Cost',
     ja: 'コスト',
     ko: '비용'
+  },
+  tags: {
+    zh: '标签',
+    'zh-TW': '標籤',
+    en: 'Tags',
+    ja: 'タグ',
+    ko: '태그'
   }
 }
 

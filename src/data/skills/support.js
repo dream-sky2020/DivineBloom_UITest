@@ -10,8 +10,9 @@ export default {
             ko: '힐'
         },
         type: "skillTypes.active",
-        category: "skillCategories.support",
+        category: "cat_skill_support",
         targetType: "ally",
+        tags: ['status_healing'],
         effects: [
             { type: "heal", value: 500, minOffset: -0.1, maxOffset: 0.1 }
         ],
@@ -42,8 +43,9 @@ export default {
             ko: '쉴드'
         },
         type: "skillTypes.active",
-        category: "skillCategories.support",
+        category: "cat_skill_support",
         targetType: "allAllies",
+        tags: ['status_buff', 'mech_aoe'],
         effects: [
             { type: "applyStatus", status: 'status_defense_up', duration: 3 }
         ],
@@ -74,8 +76,9 @@ export default {
             ko: '부활'
         },
         type: "skillTypes.active",
-        category: "skillCategories.support",
+        category: "cat_skill_support",
         targetType: "deadAlly",
+        tags: ['status_revive'],
         effects: [
             { type: "revive", value: 0.2 }
         ],
@@ -107,8 +110,9 @@ export default {
             ko: '광역 부활'
         },
         type: "skillTypes.active",
-        category: "skillCategories.support",
+        category: "cat_skill_support",
         targetType: "allDeadAllies",
+        tags: ['status_revive', 'mech_aoe'],
         effects: [
             { type: "revive", value: 0.5 }
         ],
@@ -139,8 +143,9 @@ export default {
             ko: '매스 힐'
         },
         type: "skillTypes.active",
-        category: "skillCategories.support",
+        category: "cat_skill_support",
         targetType: "allAllies",
+        tags: ['status_healing', 'mech_aoe'],
         effects: [
             { type: "heal_all", value: 500, minOffset: -0.1, maxOffset: 0.1 }
         ],
@@ -171,8 +176,9 @@ export default {
             ko: '전진하라, 나의 맹우여'
         },
         type: "skillTypes.active",
-        category: "skillCategories.support",
+        category: "cat_skill_support",
         targetType: "allOtherAllies",
+        tags: ['status_buff', 'mech_aoe', 'mech_quick'],
         effects: [
             { type: "applyStatus", status: 'status_haste', duration: 3 } // Haste
         ],

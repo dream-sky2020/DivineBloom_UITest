@@ -242,7 +242,7 @@ export const canUseSkill = (actor, skill, context) => {
             return false;
         });
 
-        if (isSilenced && skill.category === 'skillCategories.magic') {
+        if (isSilenced && skill.category === 'cat_skill_magic') {
             return false;
         }
     }
@@ -356,7 +356,7 @@ export const processPassiveTrigger = (unit, triggerName, context) => {
     // 但为了方便，我们可以动态导入或在此处简单实现基本效果，或要求 context 传入处理函数。
     // 在这里，我们假设 processEffect 可以在外部调用，或者我们只处理被动特有的逻辑。
     // 更好的方式是：返回需要执行的效果列表，由调用者执行。或者 context 提供 executeEffect。
-    
+
     // 这里我们直接查找技能并收集效果
     unit.skills.forEach(skillId => {
         const skill = skillsDb[skillId];

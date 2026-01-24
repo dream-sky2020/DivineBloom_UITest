@@ -11,6 +11,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo",
+    tags: ['item_ammo', 'rarity_common', 'status_ammo'],
     subText: {
       zh: '基础弹药',
       'zh-TW': '基礎彈藥',
@@ -38,6 +39,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_speed",
+    tags: ['item_ammo', 'rarity_rare', 'status_ammo', 'status_movement'],
     subText: {
       zh: '射速/命中提升',
       'zh-TW': '射速/命中提升',
@@ -67,6 +69,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_fire",
+    tags: ['item_ammo', 'rarity_rare', 'status_ammo', 'element_fire'],
     subText: {
       zh: '火焰伤害',
       'zh-TW': '火焰傷害',
@@ -96,6 +99,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_curse",
+    tags: ['item_ammo', 'rarity_rare', 'status_ammo', 'status_negative'],
     subText: {
       zh: '附加诅咒',
       'zh-TW': '附加詛咒',
@@ -123,6 +127,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_bomb",
+    tags: ['item_ammo', 'rarity_rare', 'status_ammo', 'status_phys_attr'],
     subText: {
       zh: '范围伤害',
       'zh-TW': '範圍傷害',
@@ -150,6 +155,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_homing",
+    tags: ['item_ammo', 'rarity_epic', 'status_ammo'],
     subText: {
       zh: '必定命中',
       'zh-TW': '必定命中',
@@ -177,6 +183,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_pierce",
+    tags: ['item_ammo', 'rarity_rare', 'status_ammo', 'status_phys_attr'],
     subText: {
       zh: '无视防御',
       'zh-TW': '無視防禦',
@@ -204,6 +211,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_acid",
+    tags: ['item_ammo', 'rarity_rare', 'status_ammo', 'status_armor'],
     subText: {
       zh: '防御降低',
       'zh-TW': '防禦降低',
@@ -233,6 +241,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_magic",
+    tags: ['item_ammo', 'rarity_rare', 'status_ammo', 'status_elemental'],
     subText: {
       zh: '魔法伤害',
       'zh-TW': '魔法傷害',
@@ -260,6 +269,7 @@ export default {
     },
     type: "itemTypes.ammo",
     icon: "icon_ammo_holy",
+    tags: ['item_ammo', 'rarity_rare', 'status_ammo', 'element_light'],
     subText: {
       zh: '对不死特效',
       'zh-TW': '對不死特效',

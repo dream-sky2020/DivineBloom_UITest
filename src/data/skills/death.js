@@ -11,7 +11,8 @@ export default {
         exclusiveGroup: 'death_handler',
         exclusiveGroupPriority: 2,
         type: "skillTypes.passive",
-        category: "skillCategories.passive",
+        category: "cat_skill_passive",
+        tags: ['mech_passive', 'mech_death_trigger'],
         icon: "icon_heart_pulse",
         cost: "--",
         effects: [
@@ -51,7 +52,8 @@ export default {
         exclusiveGroup: 'death_handler',
         exclusiveGroupPriority: 1,
         type: "skillTypes.passive",
-        category: "skillCategories.passive",
+        category: "cat_skill_passive",
+        tags: ['mech_passive', 'mech_death_trigger'],
         icon: "icon_skull",
         cost: "--",
         effects: [
@@ -81,7 +83,8 @@ export default {
         exclusiveGroup: 'death_handler',
         exclusiveGroupPriority: 5,
         type: "skillTypes.passive",
-        category: "skillCategories.passive",
+        category: "cat_skill_passive",
+        tags: ['mech_passive', 'mech_death_trigger', 'status_revive'],
         icon: "icon_phoenix",
         cost: "--",
         effects: [
@@ -108,6 +111,38 @@ export default {
             en: 'Fully restore HP when it reaches zero and enter Heroic Dying state (only 10% death rate). Once per battle.'
         }
     },
+    'skill_passive_sprite_rebirth': {
+        id: 'skill_passive_sprite_rebirth',
+        name: {
+            zh: '精灵重生',
+            'zh-TW': '精靈重生',
+            en: 'Sprite Rebirth',
+            ja: '精霊の再生',
+            ko: '정령의 재생'
+        },
+        exclusiveGroup: 'death_handler',
+        exclusiveGroupPriority: 10,
+        type: "skillTypes.passive",
+        category: "cat_skill_passive",
+        tags: ['mech_passive', 'mech_death_trigger', 'status_revive'],
+        icon: "icon_revive",
+        cost: "--",
+        effects: [
+            {
+                type: "death_handler",
+                variant: "apply_status",
+                trigger: "onHpZero",
+                status: "status_spirit_form",
+                duration: 3,
+                preventDeath: true,
+                priority: 200
+            }
+        ],
+        description: {
+            zh: '生命值归零时不会死亡，而是进入3回合的【灵体化】状态。状态结束后将满血复活。',
+            en: 'Will not die when HP reaches zero, instead entering Spirit Form for 3 turns. Will revive with full HP after the state ends.'
+        }
+    },
     'skill_passive_mortal_coil': {
         id: 'skill_passive_mortal_coil',
         name: {
@@ -120,7 +155,8 @@ export default {
         exclusiveGroup: 'death_handler',
         exclusiveGroupPriority: 0,
         type: "skillTypes.passive",
-        category: "skillCategories.passive",
+        category: "cat_skill_passive",
+        tags: ['mech_passive', 'mech_death_trigger'],
         icon: "icon_human",
         cost: "--",
         effects: [

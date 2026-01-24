@@ -31,6 +31,37 @@
         </div>
       </div>
 
+      <!-- 注册表重复 ID 检查 -->
+      <div v-if="results.registry && results.registry.issues.length > 0" class="section registry-errors">
+        <h3 class="error-header">🚫 注册表异常 (重复 ID / 冲突)</h3>
+        <div class="errors">
+          <div v-for="(issue, idx) in results.registry.issues" :key="idx" class="error-item">
+            <div class="error-header">
+              <strong>[{{ issue.collection }}]</strong>: {{ issue.message }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 角色验证 -->
+      <div v-if="results.characters" class="section">
+        <h3>👥 角色数据 ({{ results.characters.valid }}/{{ results.characters.total }})</h3>
+        <div v-if="results.characters.errors.length > 0" class="errors">
+          <div v-for="error in results.characters.errors" :key="error.id" class="error-item">
+            <div class="error-header">
+              <strong>{{ error.id }}</strong>: {{ error.name }}
+            </div>
+            <div class="error-details">
+              <div v-for="(err, idx) in error.path" :key="idx" class="error-line">
+                <span class="error-path">{{ err.path || 'root' }}</span>:
+                <span class="error-message">{{ err.message }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="success-message">✅ 所有角色数据验证通过！</div>
+      </div>
+
       <!-- 技能验证 -->
       <div v-if="results.skills" class="section">
         <h3>⚔️ 技能数据 ({{ results.skills.valid }}/{{ results.skills.total }})</h3>
@@ -40,16 +71,33 @@
               <strong>{{ error.id }}</strong>: {{ error.name }}
             </div>
             <div class="error-details">
-              <div v-for="(err, idx) in error.error.errors" :key="idx" class="error-line">
-                <span class="error-path">{{ err.path.join('.') || 'root' }}</span>:
+              <div v-for="(err, idx) in error.path" :key="idx" class="error-line">
+                <span class="error-path">{{ err.path || 'root' }}</span>:
                 <span class="error-message">{{ err.message }}</span>
               </div>
             </div>
           </div>
         </div>
-        <div v-else class="success-message">
-          ✅ 所有技能数据验证通过！
+        <div v-else class="success-message">✅ 所有技能数据验证通过！</div>
+      </div>
+
+      <!-- 物品验证 -->
+      <div v-if="results.items" class="section">
+        <h3>🎒 物品数据 ({{ results.items.valid }}/{{ results.items.total }})</h3>
+        <div v-if="results.items.errors.length > 0" class="errors">
+          <div v-for="error in results.items.errors" :key="error.id" class="error-item">
+            <div class="error-header">
+              <strong>{{ error.id }}</strong>: {{ error.name }}
+            </div>
+            <div class="error-details">
+              <div v-for="(err, idx) in error.path" :key="idx" class="error-line">
+                <span class="error-path">{{ err.path || 'root' }}</span>:
+                <span class="error-message">{{ err.message }}</span>
+              </div>
+            </div>
+          </div>
         </div>
+        <div v-else class="success-message">✅ 所有物品数据验证通过！</div>
       </div>
 
       <!-- 状态验证 -->
@@ -61,43 +109,50 @@
               <strong>{{ error.id }}</strong>: {{ error.name }}
             </div>
             <div class="error-details">
-              <div v-for="(err, idx) in error.error.errors" :key="idx" class="error-line">
-                <span class="error-path">{{ err.path.join('.') || 'root' }}</span>:
+              <div v-for="(err, idx) in error.path" :key="idx" class="error-line">
+                <span class="error-path">{{ err.path || 'root' }}</span>:
                 <span class="error-message">{{ err.message }}</span>
               </div>
             </div>
           </div>
         </div>
-        <div v-else class="success-message">
-          ✅ 所有状态数据验证通过！
-        </div>
+        <div v-else class="success-message">✅ 所有状态数据验证通过！</div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
-import { validateSkillsDb, validateStatusDb } from '@/data/schemas/validator.js';
-import { skillsDb } from '@/data/skills.js';
-import { statusDb } from '@/data/status.js';
+import { validateAllGameData } from '@/data/schemas/validator.js';
 
 const isValidating = ref(false);
 const results = ref(null);
 
 const totalCount = computed(() => {
   if (!results.value) return 0;
-  return (results.value.skills?.total || 0) + (results.value.statuses?.total || 0);
+  return (results.value.skills?.total || 0) + 
+         (results.value.statuses?.total || 0) +
+         (results.value.items?.total || 0) +
+         (results.value.characters?.total || 0);
 });
 
 const totalValid = computed(() => {
   if (!results.value) return 0;
-  return (results.value.skills?.valid || 0) + (results.value.statuses?.valid || 0);
+  return (results.value.skills?.valid || 0) + 
+         (results.value.statuses?.valid || 0) +
+         (results.value.items?.valid || 0) +
+         (results.value.characters?.valid || 0);
 });
 
 const totalErrors = computed(() => {
   if (!results.value) return 0;
-  return (results.value.skills?.errors.length || 0) + (results.value.statuses?.errors.length || 0);
+  return (results.value.skills?.errors.length || 0) + 
+         (results.value.statuses?.errors.length || 0) +
+         (results.value.items?.errors.length || 0) +
+         (results.value.characters?.errors.length || 0) +
+         (results.value.registry?.issues.length || 0);
 });
 
 const successRate = computed(() => {
@@ -107,26 +162,17 @@ const successRate = computed(() => {
 
 const hasErrors = computed(() => totalErrors.value > 0);
 
-const runValidation = () => {
+const runValidation = async () => {
   isValidating.value = true;
   results.value = null;
 
-  setTimeout(() => {
-    try {
-      const skillResults = validateSkillsDb(skillsDb, false);
-      const statusResults = validateStatusDb(statusDb, false);
-
-      results.value = {
-        skills: skillResults,
-        statuses: statusResults,
-        timestamp: new Date().toISOString()
-      };
-    } catch (e) {
-      console.error('验证失败:', e);
-    } finally {
-      isValidating.value = false;
-    }
-  }, 100);
+  try {
+    results.value = await validateAllGameData();
+  } catch (e) {
+    console.error('验证失败:', e);
+  } finally {
+    isValidating.value = false;
+  }
 };
 </script>
 

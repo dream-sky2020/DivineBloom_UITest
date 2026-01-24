@@ -9,9 +9,10 @@ export default {
       ko: '신무 황제'
     },
     role: "roles.emperor",
-    element: "elements.divine",
+    element: "element_divine",
     weaponType: "weapons.sword",
     isBoss: true,
+    tags: ['roles.boss', 'element_divine', 'status_phys_attr', 'status_strength'],
     color: '#fbbf24', // Gold
     hp: 50000,
     mp: 9999,
@@ -41,9 +42,10 @@ export default {
       ko: '샤흐리야르'
     },
     role: "roles.king",
-    element: "elements.nihility",
+    element: "element_nihility",
     weaponType: "weapons.scimitar",
     isBoss: true,
+    tags: ['roles.boss', 'element_nihility', 'status_mental'],
     color: '#94a3b8', // Slate/Silver
     hp: 45000,
     mp: 9999,
@@ -73,9 +75,10 @@ export default {
       ko: '헤페이티안'
     },
     role: "roles.god_slayer",
-    element: "elements.chaos",
+    element: "element_chaos",
     weaponType: "weapons.scythe",
     isBoss: true,
+    tags: ['roles.boss', 'element_chaos', 'status_phys_attr', 'status_strength'],
     color: '#ef4444',
     hp: 60000,
     mp: 9999,
@@ -105,9 +108,10 @@ export default {
       ko: '이비천'
     },
     role: "roles.god_slayer",
-    element: "elements.water",
+    element: "element_water",
     weaponType: "weapons.scythe",
     isBoss: true,
+    tags: ['roles.boss', 'element_water', 'char_yibitian', 'status_mental'],
     color: '#10b981',
     hp: 70000,
     mp: 9999,

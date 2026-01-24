@@ -10,6 +10,7 @@ export default {
     },
     type: "itemTypes.weapon",
     icon: "icon_sword",
+    tags: ['item_weapon', 'rarity_common', 'status_phys_attr'],
     subText: {
       zh: 'ATK +10',
       'zh-TW': 'ATK +10',
@@ -37,6 +38,7 @@ export default {
     },
     type: "itemTypes.weapon",
     icon: "icon_dagger",
+    tags: ['item_weapon', 'rarity_rare', 'status_phys_attr', 'status_movement'],
     subText: {
       zh: 'ATK +8, SPD +5',
       'zh-TW': 'ATK +8, SPD +5',
@@ -59,11 +61,12 @@ export default {
       zh: '勇者之剑',
       'zh-TW': '勇者之劍',
       en: 'Hero Sword',
-      ja: '勇者の剣',
+      ja: '勇者の剑',
       ko: '용사의 검'
     },
     type: "itemTypes.weapon",
     icon: "icon_dagger",
+    tags: ['item_weapon', 'rarity_legendary', 'element_light', 'status_phys_attr'],
     subText: {
       zh: 'ATK +50',
       'zh-TW': 'ATK +50',
@@ -91,6 +94,7 @@ export default {
     },
     type: "itemTypes.weapon",
     icon: "icon_staff",
+    tags: ['item_weapon', 'rarity_rare', 'element_wood', 'status_elemental'],
     subText: {
       zh: 'MATK +15',
       'zh-TW': 'MATK +15',
@@ -120,6 +124,7 @@ export default {
     },
     type: "itemTypes.weapon",
     icon: "icon_sniper",
+    tags: ['item_weapon', 'rarity_epic', 'status_phys_attr'],
     subText: {
       zh: 'ATK +80, 暴击率 +20%',
       'zh-TW': 'ATK +80, 暴擊率 +20%',
@@ -147,6 +152,7 @@ export default {
     },
     type: "itemTypes.weapon",
     icon: "icon_machinegun",
+    tags: ['item_weapon', 'rarity_epic', 'status_phys_attr'],
     subText: {
       zh: 'ATK +60, 射速 ++',
       'zh-TW': 'ATK +60, 射速 ++',
@@ -174,6 +180,7 @@ export default {
     },
     type: "itemTypes.weapon",
     icon: "icon_pistol",
+    tags: ['item_weapon', 'rarity_epic', 'status_phys_attr', 'status_movement'],
     subText: {
       zh: 'ATK +30, SPD +10',
       'zh-TW': 'ATK +30, SPD +10',
@@ -201,6 +208,7 @@ export default {
     },
     type: "itemTypes.weapon",
     icon: "icon_shotgun",
+    tags: ['item_weapon', 'rarity_epic', 'status_phys_attr'],
     subText: {
       zh: 'ATK +90, 范围攻击',
       'zh-TW': 'ATK +90, 範圍攻擊',
@@ -228,6 +236,7 @@ export default {
     },
     type: "itemTypes.weapon",
     icon: "icon_smg",
+    tags: ['item_weapon', 'rarity_epic', 'status_phys_attr'],
     subText: {
       zh: 'ATK +45, 连击',
       'zh-TW': 'ATK +45, 連擊',

@@ -9,6 +9,7 @@ export * from './resources/item.js';
 export * from './resources/skill.js';
 export * from './resources/status.js';
 export * from './resources/map.js';
+export * from './resources/tag.js';
 
 // Component Schemas (ECS Components)
 // Re-export Schemas from component files to maintain backward compatibility for imports

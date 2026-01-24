@@ -9,7 +9,7 @@ export default {
       ko: '플레임 소드맨'
     },
     role: "roles.swordsman",
-    element: "elements.fire",
+    element: "element_fire",
     weaponType: "weapons.sword",
     hp: 4500,
     mp: 150,
@@ -22,6 +22,7 @@ export default {
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_hero_revive'],
+    tags: ['roles.hero', 'element_fire', 'status_phys_attr', 'status_strength'],
     skills: ['skill_physical_power_slash', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison', 'skill_passive_hero_revive'],
     description: {
       zh: '擅长使用火焰剑技的战士。',
@@ -41,7 +42,7 @@ export default {
       ko: '블레이즈 거너'
     },
     role: "roles.gunner",
-    element: "elements.fire", // Also uses astral energy
+    element: "element_fire", // Also uses astral energy
     weaponType: "weapons.rifle",
     hp: 3380,
     mp: 220,
@@ -54,6 +55,7 @@ export default {
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_will_to_live'],
+    tags: ['roles.hero', 'element_fire', 'status_ammo', 'status_phys_attr'],
     skills: [
       'skill_physical_spinning_slash',
       'skill_physical_mayflower_slash',
@@ -87,7 +89,7 @@ export default {
       ko: '템페스트 메이지'
     },
     role: "roles.mage",
-    element: "elements.windLight",
+    element: "element_wind_light",
     weaponType: "weapons.book",
     hp: 3300,
     mp: 300,
@@ -100,7 +102,8 @@ export default {
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_will_to_live'],
-    skills: ['skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
+    tags: ['roles.hero', 'element_wind', 'element_light', 'status_mental', 'status_elemental'],
+    skills: ['skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload', 'skill_firearm_quick_reload', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '精通风与光属性魔法的大师。',
       'zh-TW': '精通風與光屬性魔法的大師。',
@@ -119,7 +122,7 @@ export default {
       ko: '홀리 브롤러'
     },
     role: "roles.brawler",
-    element: "elements.light",
+    element: "element_light",
     weaponType: "weapons.gauntlets",
     hp: 4550,
     mp: 160,
@@ -132,6 +135,7 @@ export default {
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_hero_revive'],
+    tags: ['roles.hero', 'element_light', 'status_phys_attr', 'status_healing'],
     skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_support_shield', 'skill_support_mass_heal', 'skill_support_forward_allies', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison', 'skill_passive_hero_revive'],
     description: {
       zh: '受到光之祝福的近战格斗家。',
@@ -151,7 +155,7 @@ export default {
       ko: '돈키호테'
     },
     role: "roles.lancer",
-    element: "elements.blood",
+    element: "element_blood",
     weaponType: "weapons.spear",
     hp: 5600,
     mp: 180,
@@ -164,6 +168,7 @@ export default {
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_hero_revive'],
+    tags: ['roles.hero', 'status_blood', 'status_phys_attr', 'status_strength'],
     skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison', 'skill_passive_hero_revive'],
     description: {
       zh: '为赎罪而战的堂吉诃德家族末裔，能够使用“绯红日花”的力量。',
@@ -183,7 +188,7 @@ export default {
       ko: '가보옥'
     },
     role: "roles.mimic",
-    element: "elements.void",
+    element: "element_void",
     weaponType: "weapons.jade",
     hp: 3400,
     mp: 250,
@@ -196,6 +201,7 @@ export default {
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_will_to_live'],
+    tags: ['roles.hero', 'element_void', 'status_mental', 'status_elemental'],
     skills: [
       'skill_physical_power_slash',
       'skill_physical_spinning_slash',
@@ -241,7 +247,7 @@ export default {
       ko: '셰헤라자드'
     },
     role: "roles.storyteller",
-    element: "elements.time",
+    element: "element_time",
     weaponType: "weapons.scroll",
     hp: 3350,
     mp: 320,
@@ -254,7 +260,8 @@ export default {
     equippedActiveSkills: [],
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_will_to_live'],
-    skills: ['skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_resurrection', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload_item', 'skill_firearm_reload_reserve', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
+    tags: ['roles.hero', 'element_time', 'status_mental', 'status_elemental'],
+    skills: ['skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_resurrection', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload', 'skill_firearm_quick_reload', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '“虚假生命”的守护者，手持轮回书卷，守护着空心人的幸福。',
       'zh-TW': '“虛假生命”的守護者，手持輪迴書卷，守護著空心人的幸福。',

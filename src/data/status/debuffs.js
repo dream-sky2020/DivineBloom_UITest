@@ -24,6 +24,7 @@ export default {
       ja: '毎ターン毒ダメージを受ける。',
       ko: '매 턴 독 피해를 입는다.'
     },
+    tags: ['status_negative', 'status_debuff', 'element_wood'],
     effects: [
       { trigger: 'turnStart', type: 'damage', value: 0.05, scaling: 'maxHp' }
     ]
@@ -53,6 +54,7 @@ export default {
       ja: '炎に焼かれ、防御力が低下し継続ダメージを受ける。',
       ko: '화염에 불타 방어력이 감소하고 지속 피해를 입는다.'
     },
+    tags: ['status_negative', 'status_debuff', 'element_fire'],
     effects: [
       { trigger: 'turnStart', type: 'damage', value: 0.08, scaling: 'maxHp' },
       { trigger: 'passive', type: 'statMod', stat: 'def', value: 0.8 }
@@ -83,6 +85,7 @@ export default {
       ja: '体が凍りつき、一切の行動ができない。',
       ko: '몸이 얼어붙어 아무런 행동도 할 수 없다.'
     },
+    tags: ['status_negative', 'status_debuff', 'element_ice', 'status_stun'],
     effects: [
       { trigger: 'checkAction', type: 'stun', chance: 1.0 }
     ]
@@ -112,6 +115,7 @@ export default {
       ja: '体が痺れ、行動できないことがある。',
       ko: '몸이 마비되어 행동하지 못할 확률이 있다.'
     },
+    tags: ['status_negative', 'status_debuff', 'element_lightning', 'status_stun'],
     effects: [
       { trigger: 'checkAction', type: 'stun', chance: 0.5 }
     ]
@@ -141,6 +145,7 @@ export default {
       ja: '傷口が開き、毎ターンダメージを受ける。',
       ko: '상처가 벌어져 매 턴 피해를 입는다.'
     },
+    tags: ['status_negative', 'status_debuff', 'status_phys_attr', 'status_blood'],
     effects: [
       { trigger: 'turnStart', type: 'damage', value: 0.1, scaling: 'maxHp' }
     ]
@@ -170,6 +175,7 @@ export default {
       ja: '行動速度が大幅に低下する。',
       ko: '행동 속도가 크게 감소한다.'
     },
+    tags: ['status_negative', 'status_debuff', 'status_mental', 'status_movement'],
     effects: [
       { trigger: 'passive', type: 'statMod', stat: 'spd', value: 0.7 }
     ]
@@ -199,6 +205,7 @@ export default {
       ja: '物理防御力が低下する。',
       ko: '물리 방어력이 감소한다.'
     },
+    tags: ['status_negative', 'status_debuff', 'status_phys_attr', 'status_armor'],
     effects: [
       { trigger: 'passive', type: 'statMod', stat: 'def', value: 0.7 }
     ]
@@ -228,9 +235,30 @@ export default {
       ja: '物理攻撃力が低下する。',
       ko: '물리 공격력이 감소한다.'
     },
+    tags: ['status_negative', 'status_debuff', 'status_phys_attr', 'status_strength'],
     effects: [
       { trigger: 'passive', type: 'statMod', stat: 'atk', value: 0.7 }
     ]
+  },
+  'status_stun': {
+    id: 'status_stun',
+    name: { zh: '眩晕', en: 'Stun' },
+    type: "statusTypes.debuff",
+    icon: "icon_stun",
+    subText: { zh: '无法行动', en: 'Stunned' },
+    description: { zh: '处于眩晕状态，无法采取任何行动。', en: 'Stunned and cannot take any action.' },
+    tags: ['status_negative', 'status_debuff', 'status_stun'],
+    effects: [
+      { trigger: 'checkAction', type: 'stun', chance: 1.0 }
+    ]
+  },
+  'status_all': {
+    id: 'status_all',
+    name: { zh: '全部异常', en: 'All Debuffs' },
+    type: "statusTypes.debuff",
+    description: { zh: '代表所有异常状态的特殊标识。', en: 'Special identifier representing all status ailments.' },
+    tags: ['status_negative', 'status_debuff'],
+    effects: []
   }
 }
 

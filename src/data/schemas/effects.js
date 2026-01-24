@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID } from './common.js';
+import { ID, createStatusReference } from './common.js';
 
 // ============================================
 // 🎯 Effect System - 完整枚举定义
@@ -61,6 +61,7 @@ export const TriggerType = {
     ON_DEATH: 'on_death',
     ON_REVIVE: 'on_revive',
     ON_HP_ZERO: 'onHpZero',
+    ON_STATUS_END: 'onStatusEnd',
 
     // Passive (Always Active)
     PASSIVE: 'passive',
@@ -105,16 +106,16 @@ export const StatType = {
 
 // --- Element Types (元素类型) ---
 export const ElementType = {
-    PHYSICAL: 'elements.physical',
-    FIRE: 'elements.fire',
-    WATER: 'elements.water',
-    ICE: 'elements.ice',
-    WIND: 'elements.wind',
-    EARTH: 'elements.earth',
-    LIGHTNING: 'elements.lightning',
-    LIGHT: 'elements.light',
-    DARK: 'elements.dark',
-    NONE: 'elements.none',
+    PHYSICAL: 'element_physical',
+    FIRE: 'element_fire',
+    WATER: 'element_water',
+    ICE: 'element_ice',
+    WIND: 'element_wind',
+    EARTH: 'element_earth',
+    LIGHTNING: 'element_lightning',
+    LIGHT: 'element_light',
+    DARK: 'element_dark',
+    NONE: 'element_none',
 };
 
 // --- Status Application Mode (状态施加模式) ---
@@ -167,7 +168,7 @@ export const EffectSchema = z.object({
     }).optional(),
 
     // ===== 状态相关 =====
-    status: ID.optional(), // 状态 ID
+    status: createStatusReference().optional(), // 状态 ID
     duration: z.number().int().min(0).optional(), // 状态持续回合数
     chance: z.number().min(0).max(1).optional(), // 触发概率 (0.0 - 1.0)
     mode: z.enum(statusApplicationModeValues, {

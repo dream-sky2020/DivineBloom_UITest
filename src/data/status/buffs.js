@@ -24,6 +24,7 @@ export default {
       ja: '毎ターンHPを少量回復する。',
       ko: '매 턴 HP를 소량 회복한다.'
     },
+    tags: ['status_positive', 'status_buff', 'status_healing', 'element_wood'],
     effects: [
       { trigger: 'turnStart', type: 'heal', value: 0.1, scaling: 'maxHp' }
     ]
@@ -53,6 +54,7 @@ export default {
       ja: '物理攻撃力が一時的に上昇する。',
       ko: '물리 공격력이 일시적으로 증가한다.'
     },
+    tags: ['status_positive', 'status_buff', 'status_phys_attr', 'status_strength'],
     effects: [
       { trigger: 'passive', type: 'statMod', stat: 'atk', value: 1.2 }
     ]
@@ -82,6 +84,7 @@ export default {
       ja: '行動速度が大幅に上昇する。',
       ko: '행동 속도가 크게 증가한다.'
     },
+    tags: ['status_positive', 'status_buff', 'status_mental', 'status_movement'],
     effects: [
       { trigger: 'passive', type: 'statMod', stat: 'spd', value: 1.3 }
     ]
@@ -111,6 +114,7 @@ export default {
       ja: '物理防御力が一時的に上昇する。',
       ko: '물리 방어력이 일시적으로 증가한다.'
     },
+    tags: ['status_positive', 'status_buff', 'status_phys_attr', 'status_armor'],
     effects: [
       { trigger: 'passive', type: 'statMod', stat: 'def', value: 1.5 }
     ]
@@ -140,8 +144,9 @@ export default {
       ja: '英雄の意志が目覚め、全ての行動制限効果を無視する。',
       ko: '영웅의 의지가 각성하여 모든 행동 제한 효과를 무시한다.'
     },
+    tags: ['status_positive', 'status_buff', 'status_mental', 'status_immunity'],
     effects: [
-      { trigger: 'checkAction', type: 'immunity', status: 'stun' } // 特殊类型：阻止 checkAction 返回 false
+      { trigger: 'checkAction', type: 'immunity', status: 'status_stun' } // 特殊类型：阻止 checkAction 返回 false
     ]
   }
 }

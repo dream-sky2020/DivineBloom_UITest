@@ -10,7 +10,7 @@ export default {
             ko: '재장전'
         },
         type: "skillTypes.utility",
-        category: "skillCategories.support", // 通用分类
+        category: "cat_skill_support", // 通用分类
         icon: "icon_skill_reload",
         subText: {
             zh: '装填弹药',
@@ -27,6 +27,7 @@ export default {
             ko: '무기를 재장전한다. 예비 탄약(버프)을 우선 소모하고, 부족하면 인벤토리의 탄약을 사용한다.'
         },
         targetType: "self",
+        tags: ['cat_skill_firearm', 'status_buff'],
         cost: "5 Rounds", // 显示文本，可能需要动态化，但此处为静态描述
         costs: [
             // 优先级 0: 消耗储备弹药状态
@@ -50,7 +51,7 @@ export default {
             ko: '빠른 재장전'
         },
         type: "skillTypes.utility",
-        category: "skillCategories.support",
+        category: "cat_skill_support",
         icon: "icon_skill_reload_speed", // 假设有加速图标
         subText: {
             zh: '迅速装填',
@@ -67,6 +68,7 @@ export default {
             ko: '매우 빠르게 무기를 재장전한다. 턴을 소모하지 않는다.'
         },
         targetType: "self",
+        tags: ['cat_skill_firearm', 'status_buff', 'mech_quick'],
         consumeTurn: false, // 不消耗回合
         cost: "5 Rounds",
         costs: [

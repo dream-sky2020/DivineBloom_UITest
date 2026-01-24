@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { ID, LocalizedStringSchema, StatsSchema } from '../common.js';
+import {
+    ID,
+    LocalizedStringSchema,
+    StatsSchema,
+    createTagReference,
+    createTagsReference,
+    createStatusReference
+} from '../common.js';
 
 // --- 物品 (Item) Schema ---
 
@@ -7,16 +14,16 @@ const ItemEffectSchema = z.object({
     type: z.string(),
     value: z.number().optional(),
     percent: z.number().optional(), // 百分比效果 (0-1)
-    status: z.union([z.string(), z.number()]).optional(),
+    status: createStatusReference().optional(), // 升级校验
     duration: z.number().optional(),
     chance: z.number().optional(),
-    element: z.string().optional(),
+    element: createTagReference("引用了不存在的 Element 标签").optional(),
 });
 
 export const ItemSchema = z.object({
     id: ID,
     name: LocalizedStringSchema,
-    type: z.string(), // e.g. "itemTypes.consumable"
+    type: createTagReference("引用了不存在的 Item Category 标签"), // e.g. "cat_item_weapon"
     icon: z.string(),
     subText: LocalizedStringSchema,
     footerLeft: z.string(),
@@ -30,4 +37,7 @@ export const ItemSchema = z.object({
 
     // 装备特有 (StatsSchema 是所有属性可选，符合装备加成)
     stats: StatsSchema.optional(),
+
+    // 标签
+    tags: createTagsReference(),
 });

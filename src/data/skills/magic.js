@@ -10,11 +10,12 @@ export default {
       ko: '파이어볼'
     },
     type: "skillTypes.active",
-    category: "skillCategories.magic",
-    element: "elements.fire",
+    category: "cat_skill_magic",
+    element: "element_fire",
     targetType: "enemy",
+    tags: ['cat_skill_magic', 'element_fire'],
     effects: [
-      { type: "damage", value: 1.3, scaling: "mag", element: "elements.fire", minOffset: -0.1, maxOffset: 0.1 }
+      { type: "damage", value: 1.3, scaling: "mag", element: "element_fire", minOffset: -0.1, maxOffset: 0.1 }
     ],
     icon: "icon_fire",
     cost: "10 MP",
@@ -43,11 +44,12 @@ export default {
       ko: '아이스 샤드'
     },
     type: "skillTypes.active",
-    category: "skillCategories.magic",
-    element: "elements.ice",
+    category: "cat_skill_magic",
+    element: "element_ice",
     targetType: "enemy",
+    tags: ['cat_skill_magic', 'element_ice', 'status_debuff'],
     effects: [
-      { type: "damage", value: 1.2, scaling: "mag", element: "elements.ice", minOffset: -0.1, maxOffset: 0.1 },
+      { type: "damage", value: 1.2, scaling: "mag", element: "element_ice", minOffset: -0.1, maxOffset: 0.1 },
       { type: "applyStatus", status: 'status_freeze', chance: 0.2, duration: 1 }, // Freeze
       { type: "applyStatus", status: 'status_slow', chance: 0.3, duration: 3 }  // Slow
     ],
@@ -78,14 +80,15 @@ export default {
       ko: '체인 라이트닝'
     },
     type: "skillTypes.active",
-    category: "skillCategories.magic",
-    element: "elements.lightning",
+    category: "cat_skill_magic",
+    element: "element_lightning",
     // Changed to enemy to allow selecting the start of the chain
     targetType: "enemy",
+    tags: ['cat_skill_magic', 'element_lightning', 'status_debuff'],
     chain: 3, // Bounce 3 times
     decay: 0.85, // 85% damage per bounce
     effects: [
-      { type: "damage", value: 1.1, scaling: "mag", element: "elements.lightning", minOffset: -0.1, maxOffset: 0.1 },
+      { type: "damage", value: 1.1, scaling: "mag", element: "element_lightning", minOffset: -0.1, maxOffset: 0.1 },
       { type: "applyStatus", status: 'status_paralysis', chance: 0.3, duration: 2 }
     ],
     icon: "icon_lightning",
@@ -115,9 +118,10 @@ export default {
       ko: '평등한 역병 비'
     },
     type: "skillTypes.active",
-    category: "skillCategories.magic",
-    element: "elements.water",
+    category: "cat_skill_magic",
+    element: "element_water",
     targetType: "allUnits",
+    tags: ['cat_skill_magic', 'element_water', 'status_debuff', 'mech_aoe', 'status_healing'],
     effects: [
       { type: "plague_rain", value: 200, minOffset: -0.1, maxOffset: 0.1 }, // Heal effect
       { type: "applyStatus", status: 'status_poison', duration: 3, chance: 0.5 },   // Poison
@@ -151,9 +155,10 @@ export default {
       ko: '신의 적을 생지옥에 가두다'
     },
     type: "skillTypes.active",
-    category: "skillCategories.magic",
-    element: "elements.dark",
+    category: "cat_skill_magic",
+    element: "element_dark",
     targetType: "deadEnemy",
+    tags: ['cat_skill_magic', 'element_dark', 'status_revive', 'status_debuff'],
     effects: [
       { type: "revive_enemy", value: 0.5 },
       { type: "applyStatus", status: 'status_poison', duration: 3, chance: 0.2 }, // Poison
@@ -192,15 +197,16 @@ export default {
       ko: '메테오 샤워'
     },
     type: "skillTypes.active",
-    category: "skillCategories.magic",
-    element: "elements.fire",
+    category: "cat_skill_magic",
+    element: "element_fire",
     targetType: "allEnemies",
+    tags: ['cat_skill_magic', 'element_fire', 'mech_aoe', 'mech_multi_hit'],
     effects: [
       {
         type: "damage",
         value: 0.25, // 单次伤害较低
         scaling: "mag",
-        element: "elements.fire",
+        element: "element_fire",
         minTimes: 4,
         maxTimes: 8,
         minOffset: -0.1,

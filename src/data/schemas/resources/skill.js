@@ -1,25 +1,48 @@
 import { z } from 'zod';
-import { ID, LocalizedStringSchema } from '../common.js';
+import {
+    ID,
+    LocalizedStringSchema,
+    createTagReference,
+    createTagsReference,
+    EntityRegistry
+} from '../common.js';
 import { SkillEffectSchema } from '../effects.js';
 
 // --- 技能 (Skill) Schema ---
-// SkillEffectSchema 现在从 effects.js 导入，提供完整的类型检查
 
 const SkillCostSchema = z.object({
     type: z.enum(['mp', 'hp', 'status_duration', 'item']),
-    id: ID.optional(), // Item ID or Status ID
+    id: ID.optional(),
     amount: z.number(),
-    group: z.number().optional() // Cost priority group (0 checked first, then 1...)
+    group: z.number().optional()
+}).superRefine((data, ctx) => {
+    if (data.type === 'item' && data.id) {
+        if (!EntityRegistry.has('items', data.id)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `消耗项引用了不存在的物品 ID: "${data.id}"`,
+                path: ['id']
+            });
+        }
+    } else if (data.type === 'status_duration' && data.id) {
+        if (!EntityRegistry.has('status', data.id)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `消耗项引用了不存在的状态 ID: "${data.id}"`,
+                path: ['id']
+            });
+        }
+    }
 });
 
 export const SkillSchema = z.object({
     id: ID,
     name: LocalizedStringSchema,
-    type: z.string(), // "skillTypes.active"
-    category: z.string(), // "skillCategories.magic"
+    type: z.string(), // "skillTypes.active" (TODO: 是否也需要标签校验？)
+    category: createTagReference("引用了不存在的 Skill Category 标签"), // "cat_skill_magic"
 
     // 可选
-    element: z.string().optional(),
+    element: createTagReference("引用了不存在的 Element 标签").optional(),
     targetType: z.string().optional(), // "enemy", "allEnemies"
 
     // 显示用的消耗文本 (如 "10 MP")
@@ -34,6 +57,9 @@ export const SkillSchema = z.object({
 
     subText: LocalizedStringSchema.optional(),
     description: LocalizedStringSchema.optional(),
+
+    // 标签
+    tags: createTagsReference(),
 
     // 某些特殊技能参数
     chain: z.number().optional(),

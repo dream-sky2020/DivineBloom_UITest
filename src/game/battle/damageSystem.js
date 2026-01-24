@@ -187,7 +187,7 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null,
     }
 
     if (skill || (effect && effect.scaling)) {
-        const isMagic = (skill && skill.category === 'skillCategories.magic') || (effect && effect.scaling === 'mag');
+        const isMagic = (skill && skill.category === 'cat_skill_magic') || (effect && effect.scaling === 'mag');
         const isDefScaling = (effect && effect.scaling === 'def');
 
         if (isMagic) {
@@ -198,7 +198,7 @@ export const calculateDamage = (attacker, defender, skill = null, effect = null,
             // Adjusted MAG scaling to compensate
             atk = mag * 1.2;
             // Elemental Modifiers
-            if (skill && skill.element === 'elements.fire') multiplier *= 1.1;
+            if (skill && skill.element === 'element_fire') multiplier *= 1.1;
             // ... more element logic
         } else if (isDefScaling) {
             // Scale with Defense (e.g. Shield Bash)

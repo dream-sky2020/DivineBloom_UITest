@@ -104,6 +104,7 @@ export const iconMap = {
   icon_limit_break: "🔥", // 限界突破/破碎监牢
   icon_warning: "⚠️",
   icon_death: "💀",
+  icon_ghost: "👻",
 
   // Characters
   icon_user: "👤",

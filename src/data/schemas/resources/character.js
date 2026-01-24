@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { ID, LocalizedStringSchema } from '../common.js';
+import {
+    ID,
+    LocalizedStringSchema,
+    createTagReference,
+    createTagsReference,
+    createSkillsReference,
+    createStatusListReference
+} from '../common.js';
 
 // --- 掉落物 (Drop) Schema ---
 export const DropSchema = z.object({
@@ -13,9 +20,9 @@ export const DropSchema = z.object({
 export const CharacterSchema = z.object({
     id: ID, // 支持数字ID
     name: LocalizedStringSchema,
-    role: z.string(), // e.g. "roles.monster"
-    element: z.string(), // e.g. "elements.water"
-    weaponType: z.string(), // e.g. "weapons.none"
+    role: createTagReference("引用了不存在的 Role 标签"), // e.g. "roles.monster"
+    element: createTagReference("引用了不存在的 Element 标签"), // e.g. "elements.water"
+    weaponType: z.string(), // e.g. "weapons.none" (TODO: 是否也需要标签校验？)
 
     // --- 基础战斗属性 (Base Stats) ---
     hp: z.number(),
@@ -33,7 +40,7 @@ export const CharacterSchema = z.object({
     maxMp: z.number().optional(),
 
     statusEffects: z.array(z.object({
-        id: ID,
+        id: ID, // 这里的 ID 可能也需要校验，但 statusEffects 通常是运行时数据
         duration: z.number().int().optional().default(3),
         value: z.any().optional()
     })).optional().default([]),
@@ -45,10 +52,10 @@ export const CharacterSchema = z.object({
     actionCount: z.number().int().optional().default(0),
 
     // Skill System
-    skills: z.array(ID).optional().default([]), // All skills learned/owned
-    equippedActiveSkills: z.array(ID).optional().default([]), // Currently equipped active skills
-    equippedPassiveSkills: z.array(ID).optional().default([]), // Currently equipped passive skills
-    fixedPassiveSkills: z.array(ID).optional().default(['skill_passive_call_of_death']), // Fixed passive skills (cannot be unequipped)
+    skills: createSkillsReference("拥有的技能列表包含不存在的 ID").optional().default([]),
+    equippedActiveSkills: createSkillsReference("装备的主动技能包含不存在的 ID").optional().default([]),
+    equippedPassiveSkills: createSkillsReference("装备的被动技能包含不存在的 ID").optional().default([]),
+    fixedPassiveSkills: createSkillsReference("固定被动技能包含不存在的 ID").optional().default(['skill_passive_call_of_death']),
     activeSkillLimit: z.number().int().min(1).default(6), // Max active slots
     passiveSkillLimit: z.number().int().min(1).default(4), // Max passive slots
 
@@ -56,6 +63,9 @@ export const CharacterSchema = z.object({
 
     // 掉落物配置
     drops: z.array(DropSchema).optional().default([]),
+
+    // 标签
+    tags: createTagsReference(),
 
     // 敌人特有
     spriteId: z.string().optional().default('default'),

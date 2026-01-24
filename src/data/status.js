@@ -8,7 +8,8 @@
 // 使用 Vite 的 glob 导入功能自动加载 ./status 下的所有 .js 文件
 // eager: true 确保是同步加载，保持 statusDb 的直接可用性
 const modules = import.meta.glob('./status/*.js', { eager: true })
-import { StatusSchema, createMapValidator } from './schemas/index.js'
+import { StatusSchema, createMapValidator, EntityRegistry } from './schemas/index.js'
+import { tagsDb } from './tags.js' // 确保标签注册表先初始化
 
 const rawStatusDb = {}
 
@@ -18,6 +19,9 @@ for (const path in modules) {
   // 合并模块的默认导出到 statusDb
   Object.assign(rawStatusDb, mod.default || mod)
 }
+
+// 注册所有状态 ID
+EntityRegistry.register('status', Object.keys(rawStatusDb));
 
 // 运行时校验
 const validateStatus = createMapValidator(StatusSchema, 'StatusDb');

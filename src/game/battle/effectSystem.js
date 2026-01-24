@@ -322,6 +322,15 @@ export const processTurnStatuses = (character, context) => {
         if (decayMode === 'turn') {
             status.duration--;
             if (status.duration <= 0) {
+                // Trigger onStatusEnd effects before removal
+                if (statusDef.effects) {
+                    statusDef.effects.forEach(eff => {
+                        if (eff.trigger === 'onStatusEnd') {
+                            processEffect(eff, character, character, null, context, true);
+                        }
+                    });
+                }
+
                 character.statusEffects.splice(i, 1);
                 if (log) log('battle.statusWoreOff', { target: character.name, status: statusDef.name });
             }

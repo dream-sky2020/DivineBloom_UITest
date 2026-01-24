@@ -11,6 +11,7 @@ export default {
         },
         type: "itemTypes.consumable",
         targetType: "ally",
+        tags: ['item_consumable', 'rarity_common', 'status_healing', 'status_positive'],
         effects: [
             { type: "heal", value: 50, percent: 0.01 }
         ],
@@ -42,6 +43,7 @@ export default {
         },
         type: "itemTypes.consumable",
         targetType: "ally",
+        tags: ['item_consumable', 'rarity_rare', 'status_healing', 'status_positive'],
         effects: [
             { type: "heal", value: 200, percent: 0.05 }
         ],
@@ -73,6 +75,7 @@ export default {
         },
         type: "itemTypes.consumable",
         targetType: "allAllies",
+        tags: ['item_consumable', 'rarity_rare', 'status_healing', 'status_positive'],
         effects: [
             { type: "heal_all", value: 300, percent: 0.03 }
         ],
@@ -104,6 +107,7 @@ export default {
         },
         type: "itemTypes.consumable",
         targetType: "allAllies",
+        tags: ['item_consumable', 'rarity_epic', 'status_healing', 'status_positive'],
         effects: [
             { type: "heal_all", value: 600, percent: 0.06 }
         ],
@@ -135,6 +139,7 @@ export default {
         },
         type: "itemTypes.consumable",
         targetType: "allAllies",
+        tags: ['item_consumable', 'rarity_legendary', 'status_healing', 'status_positive'],
         effects: [
             { type: "heal_all", value: 1000, percent: 0.10 }
         ],
@@ -168,6 +173,7 @@ export default {
         },
         type: "itemTypes.consumable",
         targetType: "ally",
+        tags: ['item_consumable', 'rarity_rare', 'status_resource', 'status_positive'],
         effects: [
             { type: "recoverMp", value: 50, percent: 0.02 }
         ],

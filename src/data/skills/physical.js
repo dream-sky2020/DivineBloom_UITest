@@ -10,8 +10,9 @@ export default {
             ko: '파워 슬래시'
         },
         type: "skillTypes.active",
-        category: "skillCategories.physical",
+        category: "cat_skill_physical",
         targetType: "enemy",
+        tags: ['cat_skill_sword', 'status_debuff'],
         effects: [
             { type: "damage", value: 1.5, scaling: "atk", minOffset: -0.1, maxOffset: 0.1 },
             { type: "applyStatus", status: 'status_bleed', chance: 0.3, duration: 3 }
@@ -43,8 +44,9 @@ export default {
             ko: '회전 베기'
         },
         type: "skillTypes.active",
-        category: "skillCategories.physical",
+        category: "cat_skill_physical",
         targetType: "allEnemies",
+        tags: ['cat_skill_sword', 'mech_aoe', 'status_debuff'],
         effects: [
             { type: "damage", value: 0.8, scaling: "atk", minOffset: -0.1, maxOffset: 0.1 },
             { type: "applyStatus", status: 'status_bleed', chance: 0.2, duration: 2 }
@@ -76,8 +78,9 @@ export default {
             ko: '에메랄드 스파이크'
         },
         type: "skillTypes.active",
-        category: "skillCategories.physical",
+        category: "cat_skill_physical",
         targetType: "allOtherUnits",
+        tags: ['mech_aoe', 'status_debuff'],
         effects: [
             { type: "damage", value: 1.2, scaling: "atk", minOffset: -0.1, maxOffset: 0.1 },
             { type: "applyStatus", status: 'status_poison', chance: 0.4, duration: 3 }, // Poison
@@ -111,8 +114,9 @@ export default {
             ko: '질풍노도'
         },
         type: "skillTypes.active",
-        category: "skillCategories.physical",
+        category: "cat_skill_physical",
         targetType: "enemy",
+        tags: ['cat_skill_sword', 'mech_multi_hit'],
         effects: [
             {
                 type: "damage",
@@ -150,8 +154,9 @@ export default {
             ko: '오월우 베기'
         },
         type: "skillTypes.active",
-        category: "skillCategories.physical",
+        category: "cat_skill_physical",
         targetType: "enemy",
+        tags: ['cat_skill_sword', 'mech_multi_hit'],
         effects: [
             {
                 type: "damage",
@@ -190,8 +195,9 @@ export default {
             ko: '집중 포화'
         },
         type: "skillTypes.active",
-        category: "skillCategories.physical",
+        category: "cat_skill_physical",
         targetType: "randomEnemy",
+        tags: ['cat_skill_firearm', 'mech_multi_hit'],
         randomHits: 4,
         effects: [
             {

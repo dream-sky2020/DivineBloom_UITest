@@ -19,7 +19,7 @@
 
       <div class="content-split">
         <!-- Left: Grid List -->
-        <div class="grid-section">
+        <div class="grid-section" v-if="currentTab !== 'tags'">
           <GameDataGrid 
             :items="currentGridItems"
             :mode="currentGridMode"
@@ -29,9 +29,29 @@
           />
         </div>
 
-        <!-- Right: Detail Panel -->
-        <div class="detail-section">
-          <div v-if="selectedItem" class="detail-card">
+        <!-- Right: Detail Panel (Or Full-width Tag Grid) -->
+        <div :class="currentTab === 'tags' ? 'grid-section' : 'detail-section'">
+          <!-- New Full-width Tag Grid Page -->
+          <div v-if="currentTab === 'tags'" class="tag-grid-container">
+            <div v-for="tag in tagsList" :key="tag.id" class="tag-detail-card">
+              <div class="tag-card-header">
+                <span class="tag-color-dot" :style="{ backgroundColor: tag.color }"></span>
+                <div>
+                  <div class="tag-card-name">{{ getLocalizedText(tag.name) }}</div>
+                  <div class="tag-card-id">{{ tag.id }}</div>
+                </div>
+              </div>
+              <div class="tag-card-desc">{{ getLocalizedText(tag.description) }}</div>
+              <div class="tag-badge-preview">
+                <div class="tag-item" :style="getTagStyle(tag.id)">
+                   <span class="tag-color-dot" :style="{ backgroundColor: tag.color }"></span>
+                   {{ getLocalizedText(tag.name) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else-if="selectedItem" class="detail-card">
             <div class="detail-header">
               <div class="detail-icon-large">
                 <GameIcon :name="selectedItem.icon || 'icon_unknown'" />
@@ -74,6 +94,17 @@
                    </div>
                  </div>
               </div>
+
+              <!-- Universal Tags Display (Used for Skills, Status, Items, etc.) -->
+              <div v-if="selectedItem.tags && selectedItem.tags.length > 0" class="tags-preview">
+                 <h4 v-t="'labels.tags'"></h4>
+                 <div class="tags-list">
+                   <div v-for="tagId in selectedItem.tags" :key="tagId" class="tag-item" :style="getTagStyle(tagId)">
+                     <span class="tag-color-dot" :style="{ backgroundColor: getTagColor(tagId) }"></span>
+                     {{ getTagName(tagId) }}
+                   </div>
+                 </div>
+              </div>
             </div>
           </div>
           <div v-else class="empty-state">
@@ -95,6 +126,7 @@ import { charactersDb } from '@/data/characters.js';
 import { itemsDb } from '@/data/items.js';
 import { statusDb } from '@/data/status.js';
 import { skillsDb } from '@/data/skills.js';
+import { tagsDb } from '@/data/tags.js';
 
 const { t, locale } = useI18n();
 
@@ -111,11 +143,31 @@ const getSkillName = (skillId) => {
   return skill ? getLocalizedText(skill.name) : '???';
 };
 
+const getTagName = (tagId) => {
+  const tag = tagsDb[tagId];
+  return tag ? getLocalizedText(tag.name) : tagId;
+};
+
+const getTagStyle = (tagId) => {
+  const tag = tagsDb[tagId];
+  if (!tag || !tag.color) return {};
+  return {
+    borderColor: tag.color,
+    boxShadow: `inset 0 0 4px ${tag.color}44`
+  };
+};
+
+const getTagColor = (tagId) => {
+  const tag = tagsDb[tagId];
+  return tag?.color || '#94a3b8';
+};
+
 const tabs = computed(() => [
   { id: 'characters', label: t('panels.characters') }, 
   { id: 'items', label: t('panels.inventory') },
   { id: 'skills', label: t('panels.skills') },
-  { id: 'status', label: t('panels.status') }
+  { id: 'status', label: t('panels.status') },
+  { id: 'tags', label: t('labels.tags') }
 ]);
 
 const currentTab = ref('characters');
@@ -161,6 +213,10 @@ const statusList = computed(() => {
   }));
 });
 
+const tagsList = computed(() => {
+  return Object.values(tagsDb).sort((a, b) => a.id.localeCompare(b.id));
+});
+
 // Dynamic Configuration based on Tab
 const currentGridItems = computed(() => {
   switch (currentTab.value) {
@@ -168,6 +224,7 @@ const currentGridItems = computed(() => {
     case 'items': return itemsList.value;
     case 'skills': return skillsList.value;
     case 'status': return statusList.value;
+    case 'tags': return tagsList.value;
     default: return [];
   }
 });

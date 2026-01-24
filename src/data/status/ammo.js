@@ -25,6 +25,7 @@ export default {
             ko: '현재 남은 탄약 수. 다 쓰면 재장전이 필요하다.'
         },
         decayMode: 'none', // 不自动减少
+        tags: ['status_resource', 'status_ammo'],
         effects: []
     },
     'status_chambered_count': {
@@ -53,6 +54,7 @@ export default {
             ko: '탄약이 장전되어 있음'
         },
         decayMode: 'none', // 不自动减少
+        tags: ['status_resource', 'status_chambered'],
         effects: []
     },
 }

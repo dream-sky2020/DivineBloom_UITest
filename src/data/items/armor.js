@@ -10,6 +10,7 @@ export default {
     },
     type: "itemTypes.armor",
     icon: "icon_armor",
+    tags: ['item_armor', 'rarity_common', 'status_armor'],
     subText: {
       zh: 'DEF +5',
       'zh-TW': 'DEF +5',
@@ -37,6 +38,7 @@ export default {
     },
     type: "itemTypes.armor",
     icon: "icon_shield",
+    tags: ['item_armor', 'rarity_common', 'status_armor'],
     subText: {
       zh: 'DEF +8',
       'zh-TW': 'DEF +8',
@@ -64,6 +66,7 @@ export default {
     },
     type: "itemTypes.armor",
     icon: "icon_robe",
+    tags: ['item_armor', 'rarity_common', 'status_mental'],
     subText: {
       zh: 'MDEF +10',
       'zh-TW': 'MDEF +10',

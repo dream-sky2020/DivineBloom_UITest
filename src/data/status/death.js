@@ -19,6 +19,7 @@ export default {
         },
         decayMode: 'none',
         deathChance: 0.3,
+        tags: ['status_dying', 'status_negative'],
         effects: [
             { trigger: 'checkAction', type: 'stun', chance: 1.0 }
         ]
@@ -43,6 +44,7 @@ export default {
         },
         decayMode: 'none',
         deathChance: 1.0,
+        tags: ['status_dying', 'status_negative', 'status_fragile'],
         effects: [
             { trigger: 'checkAction', type: 'stun', chance: 1.0 }
         ]
@@ -67,8 +69,35 @@ export default {
         },
         decayMode: 'none',
         deathChance: 0.1,
+        tags: ['status_dying', 'status_positive', 'status_heroic'],
         effects: [
             { trigger: 'checkAction', type: 'stun', chance: 1.0 }
+        ]
+    },
+    'status_spirit_form': {
+        id: 'status_spirit_form',
+        name: {
+            zh: '灵体化',
+            'zh-TW': '靈體化',
+            en: 'Spirit Form',
+            ja: '霊体化',
+            ko: '영체화'
+        },
+        type: "statusTypes.special",
+        icon: "icon_ghost",
+        description: {
+            zh: '生命值已归零。进入灵体状态，无法被彻底杀死，3回合后将重生。',
+            'zh-TW': '生命值已歸零。進入靈體狀態，無法被徹底殺死，3回合後將重生。',
+            en: 'HP reached zero. Entered spirit form, cannot be killed, and will revive after 3 turns.',
+            ja: 'HPがゼロになった。霊体状態になり、完全に殺されることはなく、3ターン後に復活する。',
+            ko: '생명력이 0이 되었습니다. 영체 상태가 되어 완전히 죽지 않으며, 3턴 후 부활합니다.'
+        },
+        decayMode: 'turn',
+        deathChance: 0,
+        tags: ['status_spirit', 'status_invulnerable', 'status_rebirth'],
+        effects: [
+            { trigger: 'checkAction', type: 'stun', chance: 1.0 },
+            { trigger: 'onStatusEnd', type: 'heal', percent: 1.0 }
         ]
     },
     'status_dead': {
@@ -91,6 +120,7 @@ export default {
         },
         decayMode: 'none',
         persistent: true,
+        tags: ['status_dead', 'status_negative'],
         effects: [
             { trigger: 'checkAction', type: 'stun', chance: 1.0 }
         ]

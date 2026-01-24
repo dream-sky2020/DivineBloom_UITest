@@ -10,6 +10,7 @@ export default {
     },
     type: "itemTypes.accessory",
     icon: "icon_ring",
+    tags: ['item_accessory', 'rarity_rare', 'status_strength'],
     subText: {
       zh: 'STR +5',
       'zh-TW': 'STR +5',
@@ -37,6 +38,7 @@ export default {
     },
     type: "itemTypes.accessory",
     icon: "icon_ring",
+    tags: ['item_accessory', 'rarity_rare', 'status_armor'],
     subText: {
       zh: 'DEF +5',
       'zh-TW': 'DEF +5',

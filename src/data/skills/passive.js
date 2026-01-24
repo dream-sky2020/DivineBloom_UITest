@@ -10,7 +10,8 @@ export default {
             ko: '공격력 강화'
         },
         type: "skillTypes.passive",
-        category: "skillCategories.passive",
+        category: "cat_skill_passive",
+        tags: ['mech_passive'],
         icon: "icon_strength",
         cost: "--",
         effects: [
@@ -46,7 +47,8 @@ export default {
             ko: '마나 재생'
         },
         type: "skillTypes.passive",
-        category: "skillCategories.passive",
+        category: "cat_skill_passive",
+        tags: ['mech_passive'],
         icon: "icon_mana",
         cost: "--",
         effects: [
@@ -81,7 +83,8 @@ export default {
             ko: '영웅의 의지: 부서진 감옥'
         },
         type: "skillTypes.passive",
-        category: "skillCategories.passive",
+        category: "cat_skill_passive",
+        tags: ['mech_passive', 'status_buff'],
         icon: "icon_limit_break", // 假设复用或新加图标
         cost: "--",
         effects: [

@@ -11,7 +11,10 @@
 // 使用 Vite 的 glob 导入功能自动加载 ./skills 下的所有 .js 文件
 // eager: true 确保是同步加载，保持 skillsDb 的直接可用性
 const modules = import.meta.glob('./skills/*.js', { eager: true })
-import { SkillSchema, createMapValidator } from './schemas/index.js'
+import { SkillSchema, createMapValidator, EntityRegistry } from './schemas/index.js'
+import { tagsDb } from './tags.js' // 确保标签注册表先初始化
+import { itemsDb } from './items.js' // 技能可能消耗物品
+import { statusDb } from './status.js' // 技能效果可能引用状态
 
 const rawSkillsDb = {}
 
@@ -21,6 +24,9 @@ for (const path in modules) {
   // 合并模块的默认导出到 skillsDb
   Object.assign(rawSkillsDb, mod.default || mod)
 }
+
+// 注册所有技能 ID
+EntityRegistry.register('skills', Object.keys(rawSkillsDb));
 
 // 运行时校验
 const validateSkills = createMapValidator(SkillSchema, 'SkillsDb');

@@ -10,7 +10,7 @@ export default {
             ko: '투영 마술 · 탄환 생성'
         },
         type: "skillTypes.active",
-        category: "skillCategories.magic",
+        category: "cat_skill_magic",
         icon: "icon_skill_magic_ammo", // 假设有这个图标
         subText: {
             zh: '消耗MP制造弹药',
@@ -27,6 +27,7 @@ export default {
             ko: '마력을 소모하여 투영 마술로 예비 탄약을 일시적으로 생성한다.'
         },
         targetType: "self",
+        tags: ['cat_skill_magic', 'cat_skill_firearm', 'status_buff'],
         cost: "10 MP",
         costs: [
             { type: 'mp', amount: 10 }

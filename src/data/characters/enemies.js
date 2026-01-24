@@ -3,10 +3,11 @@ export default {
     id: 'character_slime',
     name: { zh: '史莱姆', 'zh-TW': '史萊姆', en: 'Slime', ja: 'スライム', ko: '슬라임' },
     role: "roles.monster",
-    element: "elements.water",
+    element: "element_water",
     weaponType: "weapons.none",
     hp: 150, mp: 0, atk: 10, def: 5, mag: 0, spd: 8,
     skills: ['skill_enemy_slime_shot', 'skill_passive_attack_up', 'skill_passive_call_of_death'], // Slime Shot (Active) + Attack Up (Passive)
+    tags: ['roles.monster', 'element_water', 'status_elemental', 'trait_nature'],
     spriteId: 'enemy_slime',
     description: { zh: '常见的胶状怪物。', en: 'A common gelatinous monster.' },
     drops: [
@@ -18,10 +19,11 @@ export default {
     id: 'character_vampire_bat',
     name: { zh: '吸血蝙蝠', 'zh-TW': '吸血蝙蝠', en: 'Vampire Bat', ja: '吸血コウモリ', ko: '흡혈 박쥐' },
     role: "roles.monster",
-    element: "elements.wind",
+    element: "element_wind",
     weaponType: "weapons.none",
     hp: 100, mp: 20, atk: 12, def: 2, mag: 5, spd: 18,
     skills: ['skill_enemy_vampiric_bite', 'skill_passive_call_of_death'], // Vampiric Bite
+    tags: ['roles.monster', 'element_wind', 'status_elemental'],
     spriteId: 'default',
     description: { zh: '行动敏捷的飞行怪物。', en: 'An agile flying monster.' },
     drops: [
@@ -32,10 +34,11 @@ export default {
     id: 'character_wasteland_wolf',
     name: { zh: '荒原狼', 'zh-TW': '荒原狼', en: 'Wasteland Wolf', ja: '荒野の狼', ko: '황무지 늑대' },
     role: "roles.monster",
-    element: "elements.earth",
+    element: "element_earth",
     weaponType: "weapons.claw",
     hp: 300, mp: 0, atk: 20, def: 8, mag: 0, spd: 14,
     skills: ['skill_enemy_pack_bite', 'skill_passive_attack_up', 'skill_passive_call_of_death'], // Pack Bite + Attack Up
+    tags: ['roles.monster', 'element_earth', 'status_phys_attr'],
     spriteId: 'default',
     description: { zh: '凶猛的群居野兽。', en: 'A ferocious pack beast.' },
     drops: [
@@ -47,10 +50,11 @@ export default {
     id: 'character_heavy_guard',
     name: { zh: '重装守卫', 'zh-TW': '重裝守衛', en: 'Heavy Guard', ja: 'ヘビーガード', ko: '헤비 가드' },
     role: "roles.monster",
-    element: "elements.metal",
+    element: "element_metal",
     weaponType: "weapons.shield",
     hp: 500, mp: 50, atk: 25, def: 20, mag: 0, spd: 6,
     skills: ['skill_enemy_shield_bash', 'skill_support_shield', 'skill_passive_call_of_death'], // Shield Bash + Shield (Buff)
+    tags: ['roles.monster', 'element_metal', 'status_phys_attr', 'status_armor'],
     spriteId: 'default',
     description: { zh: '全副武装的巡逻者。', en: 'A fully armed patroller.' },
     drops: [
@@ -62,7 +66,7 @@ export default {
     id: 'character_wounded_scout',
     name: { zh: '负伤的斥候', en: 'Wounded Scout' },
     role: "roles.monster",
-    element: "elements.wind",
+    element: "element_wind",
     weaponType: "weapons.dagger",
     hp: 200, mp: 10, atk: 15, def: 5, mag: 0, spd: 15,
     // 演示：开场半血，且自带流血状态
@@ -70,10 +74,26 @@ export default {
     statusEffects: [
       { id: 'status_bleed', duration: 5 }
     ],
+    tags: ['roles.monster', 'element_wind', 'status_phys_attr', 'status_blood', 'trait_dying'],
     spriteId: 'default',
     description: { zh: '一名在战斗中负伤的敌人斥候，看起来已经虚弱不堪。', en: 'An enemy scout wounded in battle, looking quite weak.' },
     drops: [
       { itemId: 'item_material_slime_gel', chance: 0.5, minQty: 1, maxQty: 1 }
+    ]
+  },
+  'character_flesh_sprite': {
+    id: 'character_flesh_sprite',
+    name: { zh: '食肉精灵', 'zh-TW': '食肉精靈', en: 'Flesh Sprite', ja: '肉食精霊', ko: '식육 정령' },
+    role: "roles.monster",
+    element: "element_wind",
+    weaponType: "weapons.none",
+    hp: 400, mp: 100, atk: 35, def: 15, mag: 40, spd: 25,
+    skills: ['skill_passive_sprite_rebirth', 'skill_enemy_vampiric_bite'],
+    tags: ['roles.monster', 'element_wind', 'trait_spirit', 'trait_rebirth'],
+    spriteId: 'default',
+    description: { zh: '一种贪婪的精灵，即便肉身毁灭也能通过灵体不断重生。', en: 'A greedy sprite that can constantly revive through its spirit form even if its physical body is destroyed.' },
+    drops: [
+      { itemId: 'item_material_essence', chance: 0.3, minQty: 1, maxQty: 1 }
     ]
   }
 }

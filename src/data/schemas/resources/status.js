@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID, LocalizedStringSchema } from '../common.js';
+import { ID, LocalizedStringSchema, createTagReference, createTagsReference } from '../common.js';
 import { StatusEffectSchema } from '../effects.js';
 
 // --- 状态 (Status) Schema ---
@@ -8,7 +8,7 @@ import { StatusEffectSchema } from '../effects.js';
 export const StatusSchema = z.object({
     id: ID,
     name: LocalizedStringSchema,
-    type: z.string(), // "statusTypes.buff"
+    type: z.string(), // "statusTypes.buff" (TODO: 是否也需要标签校验？)
     icon: z.string().optional(),
     subText: LocalizedStringSchema.optional(),
     description: LocalizedStringSchema.optional(),
@@ -21,6 +21,9 @@ export const StatusSchema = z.object({
 
     // 战斗属性
     deathChance: z.number().min(0).max(1).optional(), // 濒死状态下的死亡概率
+
+    // 标签 (用于分类、驱散逻辑等)
+    tags: createTagsReference(),
 
     effects: z.array(StatusEffectSchema).optional().default([])
 });

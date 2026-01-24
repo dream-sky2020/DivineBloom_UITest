@@ -11,8 +11,9 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "ally",
+    tags: ['item_consumable', 'rarity_common', 'status_positive'],
     effects: [
-      { type: "cureStatus", status: "poison" }
+      { type: "cureStatus", status: "status_poison" }
     ],
     icon: "icon_herb",
     subText: {
@@ -42,8 +43,9 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "allAllies",
+    tags: ['item_consumable', 'rarity_epic', 'status_positive', 'status_immunity'],
     effects: [
-      { type: "cureStatus", status: "all" }
+      { type: "cureStatus", status: "status_all" }
     ],
     icon: "icon_potion_splash",
     subText: {
@@ -75,6 +77,7 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "deadAlly",
+    tags: ['item_consumable', 'rarity_rare', 'status_positive', 'status_rebirth'],
     effects: [
       { type: "revive", value: 0.2 }
     ],
@@ -106,6 +109,7 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "allDeadAllies",
+    tags: ['item_consumable', 'rarity_epic', 'status_positive', 'status_rebirth'],
     effects: [
       { type: "revive", value: 0.5 }
     ],
@@ -139,8 +143,9 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "enemy",
+    tags: ['item_consumable', 'rarity_rare', 'status_phys_attr', 'element_fire', 'status_negative'],
     effects: [
-      { type: "damage", element: "fire", value: 300 },
+      { type: "damage", element: "element_fire", value: 300 },
       { type: "applyStatus", status: "status_burn", duration: 3, chance: 1.0 }
     ],
     icon: "icon_bomb",
@@ -171,8 +176,9 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "allEnemies",
+    tags: ['item_consumable', 'rarity_epic', 'status_phys_attr', 'element_fire', 'status_negative'],
     effects: [
-      { type: "damage", element: "fire", value: 300 },
+      { type: "damage", element: "element_fire", value: 300 },
       { type: "applyStatus", status: "status_burn", duration: 3, chance: 1.0 }
     ],
     icon: "icon_bomb",
@@ -203,8 +209,9 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "enemy",
+    tags: ['item_consumable', 'rarity_rare', 'status_phys_attr', 'element_ice', 'status_negative'],
     effects: [
-      { type: "damage", element: "ice", value: 300 },
+      { type: "damage", element: "element_ice", value: 300 },
       { type: "applyStatus", status: "status_freeze", duration: 3, chance: 1.0 }
     ],
     icon: "icon_bomb_ice",
@@ -235,8 +242,9 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "allEnemies",
+    tags: ['item_consumable', 'rarity_epic', 'status_phys_attr', 'element_ice', 'status_negative'],
     effects: [
-      { type: "damage", element: "ice", value: 300 },
+      { type: "damage", element: "element_ice", value: 300 },
       { type: "applyStatus", status: "status_freeze", duration: 3, chance: 1.0 }
     ],
     icon: "icon_bomb_ice",
@@ -269,6 +277,7 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "allAllies",
+    tags: ['item_consumable', 'rarity_rare', 'status_positive', 'status_healing'],
     effects: [
       { type: "fullRestore" }
     ],
@@ -302,6 +311,7 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "allUnits",
+    tags: ['item_consumable', 'rarity_legendary', 'status_elemental', 'element_ice', 'status_negative'],
     effects: [
       { type: "damage", value: 2000 },
       { type: "applyStatus", status: "status_freeze", duration: 5, chance: 1.0 }
@@ -334,6 +344,7 @@ export default {
     },
     type: "itemTypes.consumable",
     targetType: "allUnits",
+    tags: ['item_consumable', 'rarity_legendary', 'status_elemental', 'element_lightning', 'status_negative'],
     effects: [
       { type: "damage", value: 2000 },
       { type: "applyStatus", status: "status_paralysis", duration: 5, chance: 1.0 }

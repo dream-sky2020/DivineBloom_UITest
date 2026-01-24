@@ -216,6 +216,103 @@
     font-size: 0.9rem;
 }
 
+.tags-preview {
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+}
+
+.tags-preview h4 {
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-item {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid #475569;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.25rem;
+    color: #e2e8f0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+}
+
+.tag-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* 标签详情页专用样式 */
+.tag-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.tag-detail-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid #475569;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.tag-detail-card:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+}
+
+.tag-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.75rem;
+}
+
+.tag-card-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.tag-card-id {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+}
+
+.tag-card-desc {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+.tag-badge-preview {
+    align-self: flex-start;
+}
+
 .boss-badge {
     display: inline-block;
     background-color: #ef4444;
