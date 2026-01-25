@@ -8,6 +8,12 @@ export default {
         description: { zh: '涉及生命恢复的效果。', en: 'Effects involving HP restoration.', 'zh-TW': '涉及生命恢復的效果。', ja: 'HP回復に関する効果。', ko: '생명력 회복과 관련된 효과.' },
         color: '#00ff88'
     },
+    'status_cure': {
+        id: 'status_cure',
+        name: { zh: '净化', 'zh-TW': '淨化', en: 'Cure/Purify', ja: '浄化', ko: '정화' },
+        description: { zh: '使目标从负面状态中恢复或净化的效果。', en: 'Effects that remove negative status or purify the target.', 'zh-TW': '使目標從負面狀態中恢復或淨化的效果。', ja: '対象の負の状態を解除または浄化する効果。', ko: '대상의 부정적인 상태를 제거하거나 정화하는 효과.' },
+        color: '#ccffff'
+    },
     'status_buff': {
         id: 'status_buff',
         name: { zh: '增益', 'zh-TW': '增益', en: 'Buff', ja: '強化', ko: '버프' },

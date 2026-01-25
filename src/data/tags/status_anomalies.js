@@ -8,6 +8,12 @@ export default {
         description: { zh: '导致行动无法执行的状态。', en: 'A status that prevents actions from being executed.', 'zh-TW': '導致行動無法執行的狀態。', ja: '行動が実行できなくなる状態。', ko: '행동을 실행할 수 없게 만드는 상태.' },
         color: '#ffff88'
     },
+    'status_poison': {
+        id: 'status_poison',
+        name: { zh: '中毒', en: 'Poison', 'zh-TW': '中毒', ja: '毒', ko: '중독' },
+        description: { zh: '由毒素引起的持续性生命流失效果。', en: 'Persistent life drain effect caused by toxins.', 'zh-TW': '由毒素引起的持續性生命流失效果。', ja: '毒素による持続的な生命力減少効果。', ko: '독소로 인한 지속적인 생명력 감소 효과.' },
+        color: '#88ff00'
+    },
     'status_blood': {
         id: 'status_blood',
         name: { zh: '鲜血', en: 'Blood', 'zh-TW': '鮮血', ja: '血', ko: '혈액' },
