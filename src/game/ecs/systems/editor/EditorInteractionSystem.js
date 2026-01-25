@@ -1,6 +1,6 @@
 import { world } from '@/game/ecs/world'
 import { Visuals } from '@schema/visuals'
-import { editorManager } from '@/game/interface/editor/EditorManager'
+import { editorManager } from '@/game/editor/core/EditorCore'
 
 /**
  * Editor Interaction System

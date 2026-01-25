@@ -27,7 +27,7 @@ import { GlobalEntity } from '@/game/ecs/entities/definitions/GlobalEntity'
 import { EditorGridRenderSystem } from '@/game/ecs/systems/render/EditorGridRenderSystem'
 import { EditorInteractionSystem } from '@/game/ecs/systems/editor/EditorInteractionSystem'
 import { EditorHighlightRenderSystem } from '@/game/ecs/systems/editor/EditorHighlightRenderSystem'
-import { editorManager } from '@/game/interface/editor/EditorManager'
+import { editorManager } from '@/game/editor/core/EditorCore'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('WorldScene')

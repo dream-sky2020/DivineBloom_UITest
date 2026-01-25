@@ -4,7 +4,7 @@ import { DialogueExecuteSystem } from '@/game/ecs/systems/execute/DialogueExecut
 import { TeleportExecuteSystem } from '@/game/ecs/systems/execute/TeleportExecuteSystem'
 import { EditorInteractionSystem } from '@/game/ecs/systems/editor/EditorInteractionSystem'
 import { entityTemplateRegistry } from '@/game/ecs/entities/internal/EntityTemplateRegistry'
-import { editorManager } from '@/game/interface/editor/EditorManager'
+import { editorManager } from '@/game/editor/core/EditorCore'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('ExecuteSystem')

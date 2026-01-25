@@ -854,6 +854,10 @@ export const useBattleStore = defineStore('battle', () => {
         partySlots.value = [];
     };
 
+    const clearLog = () => {
+        battleLog.value = [];
+    };
+
     const log = (keyOrMsg, params = {}) => {
 
         if (typeof keyOrMsg === 'string') {
@@ -904,6 +908,7 @@ export const useBattleStore = defineStore('battle', () => {
         runAway,
         lastBattleResult,
         adjustBoost,
+        clearLog,
         reset
     };
 });

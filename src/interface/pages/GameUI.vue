@@ -184,6 +184,9 @@
                <button @click="toggleEditMode" :class="{ active: isEditMode }">
                  {{ isEditMode ? '关闭编辑器 (Ctrl+E)' : '开启编辑器 (Ctrl+E)' }}
                </button>
+               <button @click="editorManager.resetToWorkspace('world-editor')">
+                 🔄 重置编辑器布局
+               </button>
                
                <!-- 大地图专属操作 -->
                <template v-if="currentSystem === 'world-map'">
@@ -254,7 +257,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGameStore } from '@/stores/game';
 import { gameManager } from '@/game/ecs/GameManager';
-import { editorManager } from '@/game/interface/editor/EditorManager';
+import { editorManager } from '@/game/editor/core/EditorCore';
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader';
 import { createLogger } from '@/utils/logger';
 
@@ -267,7 +270,7 @@ import BattleSystem from '@/interface/pages/systems/BattleSystem.vue';
 import DialogueSystem from '@/interface/pages/systems/DialogueSystem.vue';
 import DevToolsSystem from '@/interface/pages/systems/DevToolsSystem.vue';
 import DevTools from '@/interface/pages/DevTools.vue';
-import TabbedPanelGroup from '@/interface/pages/editor/TabbedPanelGroup.vue';
+import TabbedPanelGroup from '@/interface/editor/components/TabbedPanelGroup.vue';
 
 // Context Menu State
 const contextMenu = ref({

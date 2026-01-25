@@ -1,5 +1,5 @@
 <template>
-  <BasePanel 
+  <EditorPanel 
     :title="editorManager.getPanelTitle('scene-explorer')" 
     :icon="editorManager.getPanelIcon('scene-explorer')" 
     :is-enabled="editorManager.isPanelEnabled('scene-explorer')"
@@ -55,16 +55,16 @@
         </button>
       </div>
     </div>
-  </BasePanel>
+  </EditorPanel>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, inject, toRaw } from 'vue'
 import { world } from '@/game/ecs/world'
 import { gameManager } from '@/game/ecs/GameManager'
-import { editorManager } from '@/game/interface/editor/EditorManager'
+import { editorManager } from '@/game/editor/core/EditorCore'
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
-import BasePanel from './BasePanel.vue'
+import EditorPanel from '../components/EditorPanel.vue'
 
 const { openContextMenu } = inject('editorContextMenu');
 

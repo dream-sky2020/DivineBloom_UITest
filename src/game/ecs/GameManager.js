@@ -7,7 +7,7 @@ import { useGameStore } from '@/stores/game'
 import { dialoguesDb } from '@schema/dialogues'
 import { getMapData } from '@schema/maps'
 import { createLogger } from '@/utils/logger'
-import { editorManager } from '@/game/interface/editor/EditorManager'
+import { editorManager } from '@/game/editor/core/EditorCore'
 
 const logger = createLogger('GameManager')
 
