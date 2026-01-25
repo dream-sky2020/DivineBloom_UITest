@@ -119,7 +119,7 @@ export const ValidationConfig = {
 在浏览器控制台或代码中：
 
 ```javascript
-import { setValidationMode } from '@/data/schemas/config.js';
+import { setValidationMode } from '@schema/config.js';
 
 // 切换到严格模式
 setValidationMode('strict');

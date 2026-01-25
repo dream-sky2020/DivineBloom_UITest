@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { world } from '@/game/ecs/world'
-import { PlayerConfig } from '@/data/assets'
+import { PlayerConfig } from '@schema/assets'
 import { Visuals } from '@/game/ecs/entities/components/Visuals'
 import { Physics } from '@/game/ecs/entities/components/Physics'
 import { Detectable } from '@/game/ecs/entities/components/Triggers'

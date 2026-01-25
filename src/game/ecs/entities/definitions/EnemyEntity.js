@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ID } from '@/data/schemas/common'
+import { ID } from '@schema/common'
 import { world } from '@/game/ecs/world'
 import { DetectArea, Trigger, DetectInput, Detectable } from '@/game/ecs/entities/components/Triggers'
 import { Visuals } from '@/game/ecs/entities/components/Visuals'

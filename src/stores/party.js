@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { charactersDb } from '@/data/characters';
-import { skillsDb } from '@/data/skills';
+import { charactersDb } from '@schema/characters';
+import { skillsDb } from '@schema/skills';
 
 export const usePartyStore = defineStore('party', () => {
     // 存储队伍成员的运行时状态

@@ -1,5 +1,5 @@
-import { statusDb } from '@/data/status';
-import { skillsDb } from '@/data/skills';
+import { statusDb } from '@schema/status';
+import { skillsDb } from '@schema/skills';
 import { applyStatus, removeStatus } from '@/game/battle/statusSystem';
 
 /**

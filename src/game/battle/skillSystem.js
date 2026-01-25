@@ -1,5 +1,5 @@
-import { statusDb } from '@/data/status';
-import { skillsDb } from '@/data/skills';
+import { statusDb } from '@schema/status';
+import { skillsDb } from '@schema/skills';
 
 /**
  * 解析连锁技能 (Chain Skill) 的命中序列

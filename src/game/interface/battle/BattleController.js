@@ -1,7 +1,7 @@
 import { computed, ref, watch } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { storeToRefs } from 'pinia';
-import { skillsDb } from '@/data/skills';
+import { skillsDb } from '@schema/skills';
 
 export class BattleController {
     constructor() {

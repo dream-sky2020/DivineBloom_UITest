@@ -188,7 +188,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { usePartyStore } from '@/stores/party';
-import { skillsDb } from '@/data/skills';
+import { skillsDb } from '@schema/skills';
 import { useI18n } from 'vue-i18n';
 import GameIcon from '@/interface/ui/GameIcon.vue';
 import GameDataGrid from '@/interface/ui/GameDataGrid.vue';

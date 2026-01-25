@@ -122,11 +122,11 @@ import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import GameDataGrid from '@/interface/ui/GameDataGrid.vue';
 import GameIcon from '@/interface/ui/GameIcon.vue';
-import { charactersDb } from '@/data/characters.js';
-import { itemsDb } from '@/data/items.js';
-import { statusDb } from '@/data/status.js';
-import { skillsDb } from '@/data/skills.js';
-import { tagsDb } from '@/data/tags.js';
+import { charactersDb } from '@schema/characters.js';
+import { itemsDb } from '@schema/items.js';
+import { statusDb } from '@schema/status.js';
+import { skillsDb } from '@schema/skills.js';
+import { tagsDb } from '@schema/tags.js';
 
 const { t, locale } = useI18n();
 

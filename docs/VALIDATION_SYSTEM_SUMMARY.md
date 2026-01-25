@@ -83,7 +83,7 @@ mode: 'strict'
 ### 快速切换模式
 
 ```javascript
-import { setValidationMode } from '@/data/schemas/config.js';
+import { setValidationMode } from '@schema/config.js';
 
 // 在浏览器控制台运行
 setValidationMode('strict');  // 严格模式

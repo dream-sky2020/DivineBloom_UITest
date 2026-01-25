@@ -1,7 +1,7 @@
 import { EntityManager } from '@/game/ecs/entities/EntityManager'
 import { BackgroundEntity } from '@/game/ecs/entities/definitions/BackgroundEntity'
 import { SceneEntity } from '@/game/ecs/entities/definitions/SceneEntity'
-import { PlayerConfig } from '@/data/assets'
+import { PlayerConfig } from '@schema/assets'
 import Enemies from '@/data/characters/enemies'
 import { world } from '@/game/ecs/world'
 import { SceneMigration } from './entities/internal/SceneMigration'

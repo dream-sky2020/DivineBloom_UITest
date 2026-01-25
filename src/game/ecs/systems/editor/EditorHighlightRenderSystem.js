@@ -1,5 +1,5 @@
 import { EditorInteractionSystem } from './EditorInteractionSystem';
-import { Visuals } from '@/data/visuals';
+import { Visuals } from '@schema/visuals';
 import { world } from '@/game/ecs/world';
 
 /**

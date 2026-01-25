@@ -1,6 +1,6 @@
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
 import { ResourceDeclaration } from './ResourceDeclaration'
-import { Visuals as VisualDefs } from '@/data/visuals'
+import { Visuals as VisualDefs } from '@schema/visuals'
 import { world } from '@/game/ecs/world'
 import { createLogger } from '@/utils/logger'
 

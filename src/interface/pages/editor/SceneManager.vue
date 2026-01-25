@@ -54,7 +54,7 @@
 
 <script setup>
 import { computed, ref, inject } from 'vue'
-import { maps } from '@/data/maps'
+import { maps } from '@schema/maps'
 import { useGameStore } from '@/stores/game'
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
 import { gameManager } from '@/game/ecs/GameManager'

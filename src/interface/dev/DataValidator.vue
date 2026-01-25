@@ -24,6 +24,10 @@
             <span class="label">❌ 失败:</span>
             <span class="value">{{ totalErrors }}</span>
           </div>
+          <div v-if="translationIssues.length > 0" class="stat warning">
+            <span class="label">🌐 漏译:</span>
+            <span class="value">{{ translationIssues.length }}</span>
+          </div>
           <div class="stat">
             <span class="label">成功率:</span>
             <span class="value">{{ successRate }}%</span>
@@ -32,12 +36,31 @@
       </div>
 
       <!-- 注册表重复 ID 检查 -->
-      <div v-if="results.registry && results.registry.issues.length > 0" class="section registry-errors">
+      <div v-if="registryIssues.length > 0" class="section registry-errors">
         <h3 class="error-header">🚫 注册表异常 (重复 ID / 冲突)</h3>
         <div class="errors">
-          <div v-for="(issue, idx) in results.registry.issues" :key="idx" class="error-item">
+          <div v-for="(issue, idx) in registryIssues" :key="idx" class="error-item">
             <div class="error-header">
               <strong>[{{ issue.collection }}]</strong>: {{ issue.message }}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 翻译审计结果 -->
+      <div v-if="translationIssues.length > 0" class="section translation-audit">
+        <h3 class="warning-header">🌐 翻译审计 (多语言缺失)</h3>
+        <div class="errors">
+          <div v-for="(issue, idx) in translationIssues" :key="idx" class="error-item" :class="issue.severity">
+            <div class="error-header">
+              <span class="severity-badge" :class="issue.severity">{{ issue.severity.toUpperCase() }}</span>
+              <strong class="entity-id">{{ issue.id }}</strong>
+              <span class="path-separator">»</span>
+              <span class="error-path">{{ issue.path }}</span>
+            </div>
+            <div class="error-details">
+              <span class="missing-label">缺失语言:</span>
+              <span v-for="lang in issue.missing" :key="lang" class="lang-tag">{{ lang }}</span>
             </div>
           </div>
         </div>
@@ -125,7 +148,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { validateAllGameData } from '@/data/schemas/validator.js';
+import { validateAllGameData } from '@schema/validator.js';
 
 const isValidating = ref(false);
 const results = ref(null);
@@ -161,6 +184,16 @@ const successRate = computed(() => {
 });
 
 const hasErrors = computed(() => totalErrors.value > 0);
+
+const registryIssues = computed(() => {
+  if (!results.value?.registry?.issues) return [];
+  return results.value.registry.issues.filter(i => i.type !== 'translation_gap');
+});
+
+const translationIssues = computed(() => {
+  if (!results.value?.registry?.issues) return [];
+  return results.value.registry.issues.filter(i => i.type === 'translation_gap');
+});
 
 const runValidation = async () => {
   isValidating.value = true;
@@ -274,6 +307,11 @@ const runValidation = async () => {
   background: #fef5f5;
 }
 
+.stat.warning {
+  border-color: #ffa000;
+  background: #fff9f0;
+}
+
 .stat .label {
   font-weight: bold;
   color: #212121;
@@ -325,6 +363,59 @@ const runValidation = async () => {
   font-weight: bold;
   color: #d32f2f;
   margin-bottom: 8px;
+}
+
+.warning-header {
+  color: #ef6c00 !important;
+}
+
+.error-item.warning {
+  border-left-color: #ffa000;
+}
+
+.severity-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8em;
+  margin-right: 8px;
+  color: white;
+}
+
+.severity-badge.error {
+  background: #f44336;
+}
+
+.severity-badge.warning {
+  background: #ffa000;
+}
+
+.entity-id {
+  color: #2c3e50;
+  font-size: 1.1em;
+  background: #ecf0f1;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.path-separator {
+  margin: 0 8px;
+  color: #95a5a6;
+}
+
+.missing-label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.lang-tag {
+  display: inline-block;
+  padding: 1px 5px;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin-right: 4px;
+  font-size: 0.85em;
 }
 
 .error-details {

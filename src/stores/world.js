@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { MapSaveStateSchema } from '@/data/schemas/save';
+import { MapSaveStateSchema } from '@schema/save';
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader';
 import { createLogger } from '@/utils/logger';
 

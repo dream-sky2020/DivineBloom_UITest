@@ -12,7 +12,7 @@ const aiRegistry = {
     'character_yibitian': yibitianAI
 };
 
-import { skillsDb } from '@/data/skills';
+import { skillsDb } from '@schema/skills';
 
 const defaultAI = (context) => {
     // Universal AI: Use skills in sequence (Loop), single target skills pick random alive target

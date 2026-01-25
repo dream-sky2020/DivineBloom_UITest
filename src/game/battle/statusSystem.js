@@ -1,4 +1,4 @@
-import { statusDb } from '@/data/status';
+import { statusDb } from '@schema/status';
 
 export const applyStatus = (target, statusId, duration = 3, value = null, context, silent = false) => {
     const { log } = context;

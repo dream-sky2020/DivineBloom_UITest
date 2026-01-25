@@ -1,4 +1,4 @@
-import { statusDb } from '@/data/status';
+import { statusDb } from '@schema/status';
 import { calculateDamage, applyDamage, applyHeal } from './damageSystem';
 import { applyStatus, removeStatus } from './statusSystem';
 

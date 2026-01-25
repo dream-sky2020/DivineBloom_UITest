@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { charactersDb } from '@/data/characters';
-import { skillsDb } from '@/data/skills';
-import { itemsDb } from '@/data/items';
+import { charactersDb } from '@schema/characters';
+import { skillsDb } from '@schema/skills';
+import { itemsDb } from '@schema/items';
 import { useInventoryStore } from './inventory';
 import { usePartyStore } from './party';
 import { getEnemyAction } from '@/game/ai';

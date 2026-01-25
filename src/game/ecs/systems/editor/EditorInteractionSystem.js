@@ -1,5 +1,5 @@
 import { world } from '@/game/ecs/world'
-import { Visuals } from '@/data/visuals'
+import { Visuals } from '@schema/visuals'
 import { editorManager } from '@/game/interface/editor/EditorManager'
 
 /**

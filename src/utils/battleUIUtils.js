@@ -1,4 +1,4 @@
-import { statusDb } from '@/data/status';
+import { statusDb } from '@schema/status';
 
 export const getRoleColor = (role) => {
     if (!role) return '#94a3b8';

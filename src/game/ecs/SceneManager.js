@@ -1,7 +1,7 @@
 import { world, clearWorld } from '@/game/ecs/world'
 import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
 import { EntityManager } from '@/game/ecs/entities/EntityManager'
-import { getMapData } from '@/data/maps'
+import { getMapData } from '@schema/maps'
 import { createLogger } from '@/utils/logger'
 import { SceneLifecycle } from '@/game/ecs/resources/SceneLifecycle'
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID } from '@/data/schemas/common'; // Fix import path to point to common.js
+import { ID } from '@schema/common'; // Fix import path to point to common.js
 
 // --- Actions Schema Definitions ---
 

@@ -1,5 +1,5 @@
 // src/game/battle/timeSystem.js
-import { statusDb } from '@/data/status';
+import { statusDb } from '@schema/status';
 
 const ATB_SPEED_MULTIPLIER = 2.0; 
 const MAX_ATB = 100;

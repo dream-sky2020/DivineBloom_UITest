@@ -1,7 +1,7 @@
 // src/stores/inventory.js
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { itemsDb } from '@/data/items';
+import { itemsDb } from '@schema/items';
 
 function getAllDefinedItems(count = 10) {
   return Object.keys(itemsDb).map(id => ({

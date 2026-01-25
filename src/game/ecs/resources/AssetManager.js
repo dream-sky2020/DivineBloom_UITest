@@ -1,4 +1,4 @@
-import { AssetManifest } from '@/data/assets'
+import { AssetManifest } from '@schema/assets'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('AssetManager')

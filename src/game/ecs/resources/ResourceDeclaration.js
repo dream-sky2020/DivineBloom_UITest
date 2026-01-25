@@ -1,4 +1,4 @@
-import { Visuals as VisualDefs } from '@/data/visuals'
+import { Visuals as VisualDefs } from '@schema/visuals'
 import Enemies from '@/data/characters/enemies'
 
 /**
