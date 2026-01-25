@@ -1,4 +1,5 @@
 export default {
+  // --- Poison Series (中毒系列) ---
   'status_poison': {
     id: 'status_poison',
     name: {
@@ -10,6 +11,7 @@ export default {
     },
     type: "statusTypes.debuff",
     icon: "icon_poison",
+    dispelLevel: 0, // 基础状态，最容易被驱散
     subText: {
       zh: '持续伤害',
       'zh-TW': '持續傷害',
@@ -18,15 +20,78 @@ export default {
       ko: '지속 피해'
     },
     description: {
-      zh: '每回合受到毒素伤害。',
-      'zh-TW': '每回合受到毒素傷害。',
-      en: 'Takes poison damage each turn.',
-      ja: '毎ターン毒ダメージを受ける。',
-      ko: '매 턴 독 피해를 입는다.'
+      zh: '每回合受到轻微毒素伤害。',
+      'zh-TW': '每回合受到轻微毒素傷害。',
+      en: 'Takes minor poison damage each turn.',
+      ja: '毎ターン軽度の毒ダメージを受ける。',
+      ko: '매 턴 가벼운 독 피해를 입는다.'
     },
-    tags: ['status_negative', 'status_debuff', 'element_wood'],
+    tags: ['status_negative', 'status_debuff', 'element_wood', 'status_poison'],
     effects: [
       { trigger: 'turnStart', type: 'damage', value: 0.05, scaling: 'maxHp' }
+    ]
+  },
+  'status_venom': {
+    id: 'status_venom',
+    name: {
+      zh: '剧毒',
+      'zh-TW': '劇毒',
+      en: 'Venom',
+      ja: '猛毒',
+      ko: '맹독'
+    },
+    type: "statusTypes.debuff",
+    icon: "icon_poison",
+    dispelLevel: 1, // 需要 1 级及以上的驱散
+    subText: {
+      zh: '重度持续伤害',
+      'zh-TW': '重度持續傷害',
+      en: 'Severe DoT',
+      ja: '強い継続ダメージ',
+      ko: '심각한 지속 피해'
+    },
+    description: {
+      zh: '被猛烈的毒素侵蚀，每回合受到显著伤害。',
+      'zh-TW': '被猛烈的毒素侵蝕，每回合受到顯著傷害。',
+      en: 'Corroded by strong venom, takes significant damage each turn.',
+      ja: '猛毒に侵され、毎ターン大きなダメージを受ける。',
+      ko: '강력한 독에 침식되어 매 턴 큰 피해를 입는다.'
+    },
+    tags: ['status_negative', 'status_debuff', 'element_wood', 'status_poison'],
+    effects: [
+      { trigger: 'turnStart', type: 'damage', value: 0.1, scaling: 'maxHp' }
+    ]
+  },
+  'status_bone_corroding_venom': {
+    id: 'status_bone_corroding_venom',
+    name: {
+      zh: '蚀骨剧毒',
+      'zh-TW': '蝕骨劇毒',
+      en: 'Bone-Corroding Venom',
+      ja: '蝕骨の猛毒',
+      ko: '식골맹독'
+    },
+    type: "statusTypes.debuff",
+    icon: "icon_poison",
+    dispelLevel: 2, // 需要 2 级及以上的强力驱散
+    subText: {
+      zh: '致命伤害 & 破防',
+      'zh-TW': '致命傷害 & 破防',
+      en: 'Deadly DoT & Def Down',
+      ja: '致命的ダメージ & 防御低下',
+      ko: '치명적인 피해 & 방어 감소'
+    },
+    description: {
+      zh: '毒素已深入骨髓，造成大量持续伤害并大幅降低防御力。',
+      'zh-TW': '毒素已深入骨髓，造成大量持續傷害並大幅降低防禦力。',
+      en: 'Venom has reached the marrow, causing massive DoT and significantly reducing defense.',
+      ja: '毒が骨の髄まで浸透し、大量の継続ダメージと防御力の大幅な低下を引き起こす。',
+      ko: '독이 뼛속까지 침투하여 대량의 지속 피해를 입히고 방어력을 크게 감소시킨다.'
+    },
+    tags: ['status_negative', 'status_debuff', 'element_dark', 'status_poison'],
+    effects: [
+      { trigger: 'turnStart', type: 'damage', value: 0.15, scaling: 'maxHp' },
+      { trigger: 'passive', type: 'statMod', stat: 'def', value: 0.6 } // 额外降低 40% 防御
     ]
   },
   'status_burn': {
@@ -242,8 +307,8 @@ export default {
   },
   'status_stun': {
     id: 'status_stun',
-    name: { 
-      zh: '眩晕', 
+    name: {
+      zh: '眩晕',
       'zh-TW': '眩暈',
       en: 'Stun',
       ja: '眩暈',
@@ -251,15 +316,15 @@ export default {
     },
     type: "statusTypes.debuff",
     icon: "icon_stun",
-    subText: { 
-      zh: '无法行动', 
+    subText: {
+      zh: '无法行动',
       'zh-TW': '無法行動',
       en: 'Stunned',
       ja: '行動不能',
       ko: '행동 불가'
     },
-    description: { 
-      zh: '处于眩晕状态，无法采取任何行动。', 
+    description: {
+      zh: '处于眩晕状态，无法采取任何行动。',
       'zh-TW': '處於眩暈狀態，無法採取任何行動。',
       en: 'Stunned and cannot take any action.',
       ja: 'スタン状態になり、一切の行動ができなくなる。',
@@ -272,16 +337,16 @@ export default {
   },
   'status_all': {
     id: 'status_all',
-    name: { 
-      zh: '全部异常', 
+    name: {
+      zh: '全部异常',
       'zh-TW': '全部異常',
       en: 'All Debuffs',
       ja: '全異常状態',
       ko: '모든 상태 이상'
     },
     type: "statusTypes.debuff",
-    description: { 
-      zh: '代表所有异常状态的特殊标识。', 
+    description: {
+      zh: '代表所有异常状态的特殊标识。',
       'zh-TW': '代表所有異常狀態的特殊標識。',
       en: 'Special identifier representing all status ailments.',
       ja: 'すべての異常状態を表す特殊な識別子。',
