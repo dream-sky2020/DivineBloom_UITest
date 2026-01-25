@@ -198,5 +198,79 @@ export default {
             ja: '自分以外の味方全員を鼓舞し、行動速度を上昇させる。',
             ko: '자신을 제외한 모든 아군을 격려하여 행동 속도를 증가시킨다.'
         }
+    },
+    'skill_support_dispel': {
+        id: 'skill_support_dispel',
+        name: {
+            zh: '净化术',
+            'zh-TW': '淨化術',
+            en: 'Dispel',
+            ja: 'デスペル',
+            ko: '디스펠'
+        },
+        type: "skillTypes.active",
+        category: "cat_skill_support",
+        targetType: "ally",
+        tags: ['status_cure'],
+        effects: [
+            { 
+                type: "cureStatus", 
+                tags: ['statusTypes.debuff'], 
+                dispelLevel: 1 
+            }
+        ],
+        icon: "icon_dispel",
+        cost: "15 MP",
+        subText: {
+            zh: '单体净化',
+            'zh-TW': '單體淨化',
+            en: 'Single Dispel',
+            ja: '単体解除',
+            ko: '단일 해제'
+        },
+        description: {
+            zh: '移除己方单体目标的所有常规负面状态（驱散等级 1）。',
+            'zh-TW': '移除己方單體目標的所有正規負面狀態（驅散等級 1）。',
+            en: 'Removes all normal debuffs from a single ally (Dispel Level 1).',
+            ja: '味方単体の通常の弱体効果をすべて解除する（解除レベル 1）。',
+            ko: '아군 한 명의 모든 일반 약화 효과를 제거한다 (해제 레벨 1).'
+        }
+    },
+    'skill_support_mass_dispel': {
+        id: 'skill_support_mass_dispel',
+        name: {
+            zh: '圣洁领域',
+            'zh-TW': '聖潔領域',
+            en: 'Holy Field',
+            ja: 'ホーリーフィールド',
+            ko: '홀리 필드'
+        },
+        type: "skillTypes.active",
+        category: "cat_skill_support",
+        targetType: "allAllies",
+        tags: ['status_cure', 'mech_aoe'],
+        effects: [
+            { 
+                type: "cureStatus", 
+                tags: ['statusTypes.debuff'], 
+                dispelLevel: 2 
+            }
+        ],
+        icon: "icon_dispel_all",
+        cost: "50 MP",
+        subText: {
+            zh: '群体高级净化',
+            'zh-TW': '群體高級淨化',
+            en: 'AoE High Dispel',
+            ja: '全体高位解除',
+            ko: '광역 상급 해제'
+        },
+        description: {
+            zh: '释放圣洁力量，移除己方全体目标的大部分负面状态（驱散等级 2）。',
+            'zh-TW': '釋放聖潔力量，移除己方全體目標的大部分負面狀態（驅散等級 2）。',
+            en: 'Releases holy power to remove most debuffs from all allies (Dispel Level 2).',
+            ja: '清らかな力を放ち、味方全員のほとんどの弱体効果を解除する（解除レベル 2）。',
+            ko: '성결한 힘을 방출하여 아군 전원의 대부분의 약화 효과를 제거한다 (해제 레벨 2).'
+        }
     }
 }

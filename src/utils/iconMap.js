@@ -67,6 +67,8 @@ export const iconMap = {
   icon_lightning: "⚡",
   icon_heal: "💚",
   icon_heal_all: "💖", // Mass Heal
+  icon_dispel: "🧼",
+  icon_dispel_all: "🫧",
   icon_revive: "✨",
   icon_revive_all: "🌟", // Mass Revive Skill
   icon_strength: "🦾",

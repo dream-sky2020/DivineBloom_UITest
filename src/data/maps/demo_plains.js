@@ -157,6 +157,27 @@ export const demo_plains = {
             spriteId: 'npc_elder',
             sx: 0, sy: 0,
             scale: 0.8
+        },
+        {
+            x: 800, y: 1200,
+            dialogueId: 'welcome',
+            name: 'Don Quixote',
+            spriteId: 'char_donquixote',
+            scale: 0.2 // 大幅减小缩放比例，适应高分辨率精灵图
+        },
+        {
+            x: 950, y: 1200,
+            dialogueId: 'welcome',
+            name: 'Flesh Sprite',
+            spriteId: 'char_fleshsprite',
+            scale: 0.2
+        },
+        {
+            x: 1100, y: 1200,
+            dialogueId: 'welcome',
+            name: 'Jia Baoyu',
+            spriteId: 'char_jiabaoyu',
+            scale: 0.2
         }
     ]
 }

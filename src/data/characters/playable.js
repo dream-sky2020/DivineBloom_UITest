@@ -103,7 +103,7 @@ export default {
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_will_to_live'],
     tags: ['roles.hero', 'element_wind', 'element_light', 'status_mental', 'status_elemental'],
-    skills: ['skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload', 'skill_firearm_quick_reload', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
+    skills: ['skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_forward_allies', 'skill_support_dispel', 'skill_support_mass_dispel', 'skill_firearm_shoot', 'skill_firearm_reload', 'skill_firearm_quick_reload', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '精通风与光属性魔法的大师。',
       'zh-TW': '精通風與光屬性魔法的大師。',
@@ -136,7 +136,7 @@ export default {
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_hero_revive'],
     tags: ['roles.hero', 'element_light', 'status_phys_attr', 'status_healing'],
-    skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_support_shield', 'skill_support_mass_heal', 'skill_support_forward_allies', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison', 'skill_passive_hero_revive'],
+    skills: ['skill_physical_power_slash', 'skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_support_shield', 'skill_support_mass_heal', 'skill_support_forward_allies', 'skill_support_dispel', 'skill_support_mass_dispel', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison', 'skill_passive_hero_revive'],
     description: {
       zh: '受到光之祝福的近战格斗家。',
       'zh-TW': '受到光之祝福的近戰格鬥家。',
@@ -220,6 +220,8 @@ export default {
       'skill_support_mass_resurrection',
       'skill_support_mass_heal',
       'skill_support_forward_allies',
+      'skill_support_dispel',
+      'skill_support_mass_dispel',
       'skill_passive_attack_up',
       'skill_passive_mana_regen',
       'skill_passive_heroic_will_shattered_prison',
@@ -261,7 +263,7 @@ export default {
     equippedPassiveSkills: [],
     fixedPassiveSkills: ['skill_passive_will_to_live'],
     tags: ['roles.hero', 'element_time', 'status_mental', 'status_elemental'],
-    skills: ['skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_resurrection', 'skill_support_forward_allies', 'skill_firearm_shoot', 'skill_firearm_reload', 'skill_firearm_quick_reload', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
+    skills: ['skill_physical_emerald_spike', 'skill_physical_flurry', 'skill_physical_mayflower_slash', 'skill_physical_concentrated_fire', 'skill_magic_fireball', 'skill_magic_ice_shard', 'skill_magic_chain_lightning', 'skill_magic_equal_plague_rain', 'skill_magic_meteor_shower', 'skill_support_heal', 'skill_support_resurrection', 'skill_support_forward_allies', 'skill_support_dispel', 'skill_support_mass_dispel', 'skill_firearm_shoot', 'skill_firearm_reload', 'skill_firearm_quick_reload', 'skill_magic_projection_ammo', 'skill_passive_attack_up', 'skill_passive_mana_regen', 'skill_passive_heroic_will_shattered_prison'],
     description: {
       zh: '“虚假生命”的守护者，手持轮回书卷，守护着空心人的幸福。',
       'zh-TW': '“虛假生命”的守護者，手持輪迴書卷，守護著空心人的幸福。',

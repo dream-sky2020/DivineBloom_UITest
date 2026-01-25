@@ -46,6 +46,37 @@ export const Visuals = {
         }
     },
 
+    'char_donquixote': {
+        assetId: 'char_donquixote',
+        layout: { type: 'grid', cols: 1, rows: 1 },
+        anchor: { x: 0.5, y: 1.0 },
+        animations: {
+            'idle': { frames: [0], speed: 0, loop: false },
+            'walk': { frames: [0], speed: 8, loop: true },
+            'default': { frames: [0] }
+        }
+    },
+    'char_fleshsprite': {
+        assetId: 'char_fleshsprite',
+        layout: { type: 'grid', cols: 1, rows: 1 },
+        anchor: { x: 0.5, y: 1.0 },
+        animations: {
+            'idle': { frames: [0], speed: 0, loop: false },
+            'walk': { frames: [0], speed: 8, loop: true },
+            'default': { frames: [0] }
+        }
+    },
+    'char_jiabaoyu': {
+        assetId: 'char_jiabaoyu',
+        layout: { type: 'grid', cols: 1, rows: 1 },
+        anchor: { x: 0.5, y: 1.0 },
+        animations: {
+            'idle': { frames: [0], speed: 0, loop: false },
+            'walk': { frames: [0], speed: 8, loop: true },
+            'default': { frames: [0] }
+        }
+    },
+
     // --- 敌人 ---
     'enemy_slime': {
         assetId: 'enemy_slime',

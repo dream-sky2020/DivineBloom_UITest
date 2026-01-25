@@ -178,7 +178,7 @@ class SchemasManager {
         }
 
         const data = await loader();
-        return this._validators.map.parse(data);
+        return this._validators.map(data);
     }
 }
 

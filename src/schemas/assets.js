@@ -6,6 +6,9 @@ export const AssetManifest = {
   'player_sprite': '/assets/characters/player.png', // 暂时用svg冒充png方便测试
   'npc_guide': '/assets/characters/guide.png',
   'npc_elder': '/assets/characters/elder.png',
+  'char_donquixote': '/assets/characters/donquixote_scene_1.png',
+  'char_fleshsprite': '/assets/characters/fleshsprite_scene_1.png',
+  'char_jiabaoyu': '/assets/characters/jiabaoyu_scene_1.png',
 
   // Enemies
   'enemy_slime': '/assets/characters/slime.png',

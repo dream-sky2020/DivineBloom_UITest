@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ID, createStatusReference } from './common.js';
+import { ID, createStatusReference, createTagsReference } from './common.js';
 
 // ============================================
 // 🎯 Effect System - 完整枚举定义
@@ -169,6 +169,8 @@ export const EffectSchema = z.object({
 
     // ===== 状态相关 =====
     status: createStatusReference().optional(), // 状态 ID
+    tags: createTagsReference().optional(), // 标签引用 (用于批量驱散/判定)
+    dispelLevel: z.number().int().min(0).optional(), // 驱散强度/对抗等级
     duration: z.number().int().min(0).optional(), // 状态持续回合数
     chance: z.number().min(0).max(1).optional(), // 触发概率 (0.0 - 1.0)
     mode: z.enum(statusApplicationModeValues, {

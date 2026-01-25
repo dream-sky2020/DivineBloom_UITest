@@ -22,6 +22,7 @@ export const StatusSchema = z.object({
 
     // 战斗属性
     deathChance: z.number().min(0).max(1).optional(), // 濒死状态下的死亡概率
+    dispelLevel: z.number().int().min(0).optional().default(0), // 驱散对抗等级 (等级越高越难被驱散)
 
     // 标签 (用于分类、驱散逻辑等)
     tags: createTagsReference(),

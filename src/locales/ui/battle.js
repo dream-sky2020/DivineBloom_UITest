@@ -38,6 +38,7 @@ export default {
   statusApplied: { zh: '{target} 受到了 {status} 的影响!', 'zh-TW': '{target} 受到了 {status} 的影響!', en: '{target} is affected by {status}!', ja: '{target}は{status}を受けた！', ko: '{target}에게 {status} 적용!' },
   statusExtended: { zh: '{target} 的 {status} 持续时间延长!', 'zh-TW': '{target} 的 {status} 持續時間延長!', en: "{target}'s {status} extended!", ja: '{target}の{status}が延長された！', ko: '{target}의 {status} 지속시간 연장!' },
   statusCured: { zh: '{target} 的 {status} 已治愈。', 'zh-TW': '{target} 的 {status} 已治癒。', en: "{target} is no longer {status}.", ja: '{target}の{status}が治った。', ko: '{target}의 {status} 치료됨.' },
+  statusCuredNone: { zh: '{target} 的状态未能被驱散。', 'zh-TW': '{target} 的狀態未能被驅散。', en: "{target}'s status could not be dispelled.", ja: '{target}のステータスを解除できなかった。', ko: '{target}의 상태를 제거하지 못했습니다.' },
   buffCast: { zh: '{user} 对 {target} 施加了增益', 'zh-TW': '{user} 對 {target} 施加了增益', en: '{user} casts buff on {target}', ja: '{user}は{target}に強化をかけた', ko: '{user}가 {target}에게 버프 시전' },
   partyRestored: { zh: '队伍状态已完全恢复!', 'zh-TW': '隊伍狀態已完全恢復!', en: 'Party fully restored!', ja: 'パーティの状態が全回復した！', ko: '파티 상태 완전 회복!' },
 

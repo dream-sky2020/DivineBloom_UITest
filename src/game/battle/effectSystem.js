@@ -197,28 +197,56 @@ const _executeSingleEffect = (effect, target, actor, skill, context, silent, pre
             }
             break;
         case 'cureStatus':
-            if (target) {
-                if (effect.status === 'all') {
-                    if (target.statusEffects) {
-                        const idsToRemove = [];
-                        target.statusEffects.forEach(status => {
-                            const statusDef = statusDb[status.id];
-                            if (statusDef && statusDef.type === 'statusTypes.debuff') {
+            if (target && target.statusEffects) {
+                const effectDispelLevel = effect.dispelLevel || 0;
+                const idsToRemove = [];
+
+                if (effect.tags && Array.isArray(effect.tags)) {
+                    // 按标签驱散 (例如：驱散所有 'debuff' 标签的状态)
+                    target.statusEffects.forEach(status => {
+                        const statusDef = statusDb[status.id];
+                        if (!statusDef) return;
+
+                        // 检查状态是否包含目标标签中的任意一个
+                        const hasMatchingTag = statusDef.tags && statusDef.tags.some(tag => effect.tags.includes(tag));
+                        const statusDispelLevel = statusDef.dispelLevel || 0;
+
+                        if (hasMatchingTag && statusDispelLevel <= effectDispelLevel) {
+                            idsToRemove.push(status.id);
+                        }
+                    });
+                } else if (effect.status === 'all') {
+                    // 驱散所有 debuff (带等级判定)
+                    target.statusEffects.forEach(status => {
+                        const statusDef = statusDb[status.id];
+                        if (statusDef && statusDef.type === 'statusTypes.debuff') {
+                            const statusDispelLevel = statusDef.dispelLevel || 0;
+                            if (statusDispelLevel <= effectDispelLevel) {
                                 idsToRemove.push(status.id);
                             }
-                        });
+                        }
+                    });
+                } else if (effect.status) {
+                    // 按 ID 或旧名驱散
+                    let sId = effect.status;
+                    if (sId === 'poison') sId = 1; // Legacy mapping
 
-                        idsToRemove.forEach(id => {
-                            removeStatus(target, id, context, silent);
-                        });
+                    const status = target.statusEffects.find(s => s.id === sId);
+                    if (status) {
+                        const statusDef = statusDb[status.id];
+                        const statusDispelLevel = (statusDef && statusDef.dispelLevel) || 0;
+                        if (statusDispelLevel <= effectDispelLevel) {
+                            idsToRemove.push(status.id);
+                        }
                     }
-                } else {
-                    // Map string "poison" to ID 1, etc.
-                    let sId = null;
-                    if (effect.status === 'poison') sId = 1;
+                }
 
-                    if (sId) removeStatus(target, sId, context, silent);
-                    else if (!silent && log) log('battle.statusCured', { target: target.name, status: effect.status });
+                if (idsToRemove.length > 0) {
+                    idsToRemove.forEach(id => {
+                        removeStatus(target, id, context, silent);
+                    });
+                } else if (!silent && log && effect.status !== 'all' && !effect.tags) {
+                    log('battle.statusCuredNone', { target: target.name });
                 }
             }
             break;

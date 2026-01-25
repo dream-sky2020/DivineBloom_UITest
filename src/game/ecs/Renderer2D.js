@@ -39,6 +39,10 @@ export class Renderer2D {
         ctx.clearRect(0, 0, w, h)
         ctx.fillStyle = this.clearColor
         ctx.fillRect(0, 0, w, h)
+
+        // 启用高质量图像平滑，减少缩放时的毛刺感
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = 'high'
     }
 
     /**
@@ -70,11 +74,12 @@ export class Renderer2D {
         const dw = sw * scale
         const dh = sh * scale
 
-        const dx = x - dw * spr.ax
-        const dy = y - dh * spr.ay
+        // 对坐标进行取整，防止亚像素渲染导致的模糊和部分毛刺感
+        const dx = Math.round(x - dw * spr.ax)
+        const dy = Math.round(y - dh * spr.ay)
 
         // 直接绘制精灵（已移除阴影）
-        ctx.drawImage(img, spr.sx, spr.sy, sw, sh, dx, dy, dw, dh)
+        ctx.drawImage(img, spr.sx, spr.sy, sw, sh, dx, dy, Math.round(dw), Math.round(dh))
     }
 
     // 辅助绘图方法
