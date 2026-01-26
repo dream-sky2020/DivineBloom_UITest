@@ -58,7 +58,7 @@ export const PlayerEntity = {
       bounds: Physics.Bounds(),
 
       sprite: Sprite.create('hero', { scale }),
-      animation: Animation.createFromVisual('hero', 'idle'),
+      animation: Animation.create('idle'),
 
       // [NEW] 添加 Inspector
       inspector: Inspector.create({ 

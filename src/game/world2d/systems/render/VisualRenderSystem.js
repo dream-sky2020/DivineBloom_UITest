@@ -31,29 +31,46 @@ export const VisualRenderSystem = {
   },
 
   updateAnimation(entity, dt) {
-    const { animation } = entity
-    if (!animation || animation.paused) return
+    const { sprite, animation } = entity
+    if (!sprite || !animation || animation.paused) return
 
-    const state = animation.animations[animation.currentState]
-    if (!state || state.frames.length <= 1) {
+    // --- 核心改进：响应式重置 ---
+    // 如果 sprite.id 变了，或者这是第一次同步，重置动画状态
+    if (animation.lastSyncedId !== sprite.id) {
+      animation.frameIndex = 0
+      animation.timer = 0
+      animation.lastSyncedId = sprite.id
+    }
+
+    // 从全局配置获取动画定义
+    const def = Visuals[sprite.id]
+    if (!def || !def.animations) return
+
+    const animDef = def.animations[animation.currentState] || 
+                    def.animations['default'] || 
+                    def.animations['idle']
+    
+    if (!animDef || !animDef.frames || animDef.frames.length <= 1) {
       animation.frameIndex = 0
       return
     }
 
-    animation.timer += dt * animation.speedMultiplier
+    // 计算当前帧的时长 (支持全局配置中的 speed)
+    // 如果配置里是 speed: 8，表示每秒 8 帧，则一帧 125ms
+    const speed = animDef.speed || 10
+    const frameDuration = 1 / speed
 
-    const currentFrame = state.frames[animation.frameIndex]
-    const frameDuration = (currentFrame?.duration || 100) / 1000 // 转为秒
+    animation.timer += dt * animation.speedMultiplier
 
     if (animation.timer >= frameDuration) {
       animation.timer -= frameDuration
       animation.frameIndex++
 
-      if (animation.frameIndex >= state.frames.length) {
-        if (state.loop !== false) {
+      if (animation.frameIndex >= animDef.frames.length) {
+        if (animDef.loop !== false) {
           animation.frameIndex = 0
         } else {
-          animation.frameIndex = state.frames.length - 1
+          animation.frameIndex = animDef.frames.length - 1
         }
       }
     }

@@ -125,7 +125,7 @@ export const EnemyEntity = {
       aiState: AI.State(isStunned, options.stunnedTimer),
 
       sprite: Sprite.create(visualId, { scale: options.scale }),
-      animation: Animation.createFromVisual(visualId, isStunned ? 'stunned' : 'idle'),
+      animation: Animation.create(isStunned ? 'stunned' : 'idle'),
 
       // [NEW] 添加 Inspector 映射
       inspector: Inspector.create({

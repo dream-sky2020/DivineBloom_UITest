@@ -77,7 +77,7 @@ export const NPCEntity = {
       bounds: Physics.Bounds(),
 
       sprite: Sprite.create(spriteId, { scale }),
-      animation: Animation.createFromVisual(spriteId, 'default'),
+      animation: Animation.create('default'),
 
       // [NEW] 添加 Inspector
       inspector: Inspector.create({ 

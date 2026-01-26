@@ -62,7 +62,7 @@ export const DecorationEntity = {
 
         if (spriteId) {
             spriteComponent = Sprite.create(spriteId, { scale });
-            animationComponent = Animation.createFromVisual(spriteId, 'default');
+            animationComponent = Animation.create('default');
         } else if (rect) {
             spriteComponent = Sprite.create('rect', { tint: rect.color });
             rectComponent = { width: rect.width, height: rect.height, color: rect.color };
