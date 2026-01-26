@@ -7,6 +7,12 @@
   align-items: center;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .entity-type-tag {
   font-size: 10px;
   background: var(--editor-border-light);
@@ -17,21 +23,36 @@
   font-weight: bold;
 }
 
-.header-delete-btn {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--editor-color-danger);
-  border: 1px solid var(--editor-color-danger);
+.unsaved-dot {
+  color: var(--editor-color-warning);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.header-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
   padding: 4px 10px;
   border-radius: var(--editor-radius-sm);
   font-size: 11px;
   cursor: pointer;
-  transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 4px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
 }
 
-.header-delete-btn:hover {
+.delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--editor-color-danger);
+  border-color: var(--editor-color-danger);
+}
+
+.delete-btn:hover {
   background: var(--editor-color-danger);
   color: white;
 }
@@ -48,39 +69,84 @@
   border-radius: var(--editor-radius-md);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s;
+}
+
+.inspector-group-section.is-editing {
+  border-color: var(--editor-color-primary);
+  box-shadow: 0 0 0 1px var(--editor-color-primary);
 }
 
 .group-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: var(--editor-bg-header);
-  cursor: pointer;
-  user-select: none;
   border-bottom: 1px solid var(--editor-border-light);
-  transition: background 0.2s;
 }
 
-.group-header:hover {
-  background: var(--editor-border-light);
-}
-
-.group-header.is-collapsed {
-  border-bottom: none;
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1;
+  user-select: none;
 }
 
 .group-title {
   font-size: 11px;
   font-weight: 700;
-  color: var(--editor-color-primary);
+  color: var(--editor-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.is-editing .group-title {
+  color: var(--editor-color-primary);
 }
 
 .group-icon {
   font-size: 10px;
   color: var(--editor-text-dim);
+  width: 12px;
+}
+
+.group-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.mini-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--editor-text-dim);
+  transition: all 0.2s;
+}
+
+.edit-btn:hover {
+  background: var(--editor-color-primary);
+  color: white;
+}
+
+.confirm-btn {
+  background: #10b981;
+  color: white;
+}
+
+.cancel-btn {
+  background: #ef4444;
+  color: white;
 }
 
 .group-content {
@@ -88,6 +154,25 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.is-editing .group-content {
+  background: rgba(var(--editor-color-primary-rgb), 0.03);
+}
+
+/* 输入框状态 */
+input.readonly-input, 
+textarea.readonly-input {
+  background: transparent !important;
+  border-color: transparent !important;
+  padding-left: 0;
+  cursor: default;
+  color: var(--editor-text-dim);
+}
+
+.checkbox-label.is-disabled {
+  cursor: default;
+  color: var(--editor-text-dim);
 }
 
 .prop-section {

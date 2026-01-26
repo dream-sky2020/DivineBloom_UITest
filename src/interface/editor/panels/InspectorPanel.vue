@@ -6,106 +6,128 @@
   >
     <template v-if="localEntityState">
       <div class="inspector-header">
-        <span 
-          class="entity-type-tag"
-          :style="localEntityState.inspector?.tagColor ? { backgroundColor: localEntityState.inspector.tagColor, color: 'white' } : {}"
-        >
-          {{ localEntityState.inspector?.tagName || localEntityState.type || 'ENTITY' }}
-        </span>
-        <button 
-          v-if="localEntityState.inspector?.allowDelete !== false" 
-          class="header-delete-btn" 
-          @click="confirmDelete"
-          title="删除实体"
-        >
-          🗑️ 删除
-        </button>
-      </div>
-    <div class="inspector-body">
-      <!-- 🎯 方案：声明式 Inspector 映射 -->
-      <template v-if="localEntityState.inspector">
-        <div v-for="group in groupedFields" :key="group.name" class="inspector-group-section">
-          <div 
-            class="group-header" 
-            @click="toggleGroup(group.name)"
-            :class="{ 'is-collapsed': collapsedGroups[group.name] }"
+        <div class="header-left">
+          <span 
+            class="entity-type-tag"
+            :style="localEntityState.inspector?.tagColor ? { backgroundColor: localEntityState.inspector.tagColor, color: 'white' } : {}"
           >
-            <span class="group-title">{{ group.name }}</span>
-            <span class="group-icon">{{ collapsedGroups[group.name] ? '▶' : '▼' }}</span>
-          </div>
-          
-          <div v-show="!collapsedGroups[group.name]" class="group-content">
-            <div v-for="field in group.fields" :key="field.path" class="prop-group" :class="{ 'checkbox-group': field.type === 'checkbox' }">
-              <div v-if="field.type !== 'checkbox'" class="label-row">
-                <label>{{ field.label }}</label>
-                <span v-if="field.tip" class="info-icon" :title="field.tip">?</span>
+            {{ localEntityState.inspector?.tagName || localEntityState.type || 'ENTITY' }}
+          </span>
+          <span v-if="activeEditingGroup" class="unsaved-dot" title="正在编辑中">•</span>
+        </div>
+        <div class="header-actions">
+          <button 
+            v-if="localEntityState.inspector?.allowDelete !== false" 
+            class="action-btn delete-btn" 
+            @click="confirmDelete"
+            title="删除实体"
+          >
+            🗑️ 删除
+          </button>
+        </div>
+      </div>
+      <div class="inspector-body">
+        <!-- 🎯 方案：局部声明式 Inspector 映射 -->
+        <template v-if="localEntityState.inspector">
+          <div v-for="group in groupedFields" :key="group.name" class="inspector-group-section" :class="{ 'is-editing': activeEditingGroup === group.name }">
+            <div class="group-header">
+              <div class="header-main" @click="toggleGroup(group.name)">
+                <span class="group-icon">{{ collapsedGroups[group.name] ? '▶' : '▼' }}</span>
+                <span class="group-title">{{ group.name }}</span>
               </div>
-
-              <!-- 根据类型渲染不同的 Input -->
-              <!-- 数字类型 -->
-              <input 
-                v-if="field.type === 'number'"
-                :value="formatNumber(getNestedValue(localEntityState, field.path), field.props)"
-                @input="setNestedValue(localEntityState, field.path, Number($event.target.value))"
-                type="number"
-                v-bind="field.props"
-              />
-
-              <!-- 文本类型 -->
-              <input 
-                v-else-if="field.type === 'text'"
-                :value="getNestedValue(localEntityState, field.path)"
-                @input="setNestedValue(localEntityState, field.path, $event.target.value)"
-                type="text"
-                v-bind="field.props"
-              />
-
-              <!-- 布尔/复选框类型 -->
-              <div v-else-if="field.type === 'checkbox'" class="checkbox-container">
-                <label class="checkbox-label">
-                  <input 
-                    :checked="getNestedValue(localEntityState, field.path)"
-                    @change="setNestedValue(localEntityState, field.path, $event.target.checked)"
-                    type="checkbox"
-                    v-bind="field.props"
-                  />
-                  <span class="checkbox-text">{{ field.label }}</span>
-                </label>
-                <span v-if="field.tip" class="info-icon" :title="field.tip">?</span>
+              
+              <!-- 分组操作按钮 -->
+              <div class="group-actions">
+                <template v-if="activeEditingGroup === group.name">
+                  <button class="mini-btn confirm-btn" @click.stop="saveGroupEdit(group.fields)" title="保存修改">✔</button>
+                  <button class="mini-btn cancel-btn" @click.stop="cancelGroupEdit()" title="取消修改">✖</button>
+                </template>
+                <button v-else class="mini-btn edit-btn" @click.stop="enterGroupEdit(group.name, group.fields)" title="编辑该组">✎</button>
               </div>
+            </div>
+            
+            <div v-show="!collapsedGroups[group.name]" class="group-content">
+              <div v-for="field in group.fields" :key="field.path" class="prop-group" :class="{ 'checkbox-group': field.type === 'checkbox' }">
+                <div v-if="field.type !== 'checkbox'" class="label-row">
+                  <label>{{ field.label }}</label>
+                  <span v-if="field.tip" class="info-icon" :title="field.tip">?</span>
+                </div>
 
-              <!-- JSON 类型 (用于对象/数组) -->
-              <textarea 
-                v-else-if="field.type === 'json'"
-                class="json-textarea"
-                :value="formatJson(getNestedValue(localEntityState, field.path))"
-                @change="updateJsonValue(localEntityState, field.path, $event.target.value)"
-                v-bind="field.props"
-                rows="5"
-              ></textarea>
+                <!-- 根据类型渲染不同的 Input -->
+                <!-- 核心逻辑：如果是正在编辑的分组，绑定到 groupDraftData；否则从 localEntityState 实时读取 -->
+                
+                <!-- 数字类型 -->
+                <input 
+                  v-if="field.type === 'number'"
+                  :value="formatNumber(getNestedValue(activeEditingGroup === group.name ? groupDraftData : localEntityState, field.path, lastUpdate), field.props)"
+                  @input="activeEditingGroup === group.name && setNestedValue(groupDraftData, field.path, Number($event.target.value))"
+                  :readonly="activeEditingGroup !== group.name"
+                  :class="{ 'readonly-input': activeEditingGroup !== group.name }"
+                  type="number"
+                  v-bind="field.props"
+                />
 
-              <!-- 只读文本 -->
-              <div v-else-if="field.type === 'readonly'" class="readonly-text">
-                {{ getNestedValue(localEntityState, field.path) }}
-              </div>
+                <!-- 文本类型 -->
+                <input 
+                  v-else-if="field.type === 'text'"
+                  :value="getNestedValue(activeEditingGroup === group.name ? groupDraftData : localEntityState, field.path, lastUpdate)"
+                  @input="activeEditingGroup === group.name && setNestedValue(groupDraftData, field.path, $event.target.value)"
+                  :readonly="activeEditingGroup !== group.name"
+                  :class="{ 'readonly-input': activeEditingGroup !== group.name }"
+                  type="text"
+                  v-bind="field.props"
+                />
 
-              <!-- 颜色类型 -->
-              <input 
-                v-else-if="field.type === 'color'"
-                :value="getNestedValue(localEntityState, field.path)"
-                @input="setNestedValue(localEntityState, field.path, $event.target.value)"
-                type="color"
-                v-bind="field.props"
-              />
+                <!-- 布尔/复选框类型 -->
+                <div v-else-if="field.type === 'checkbox'" class="checkbox-container">
+                  <label class="checkbox-label" :class="{ 'is-disabled': activeEditingGroup !== group.name }">
+                    <input 
+                      :checked="getNestedValue(activeEditingGroup === group.name ? groupDraftData : localEntityState, field.path, lastUpdate)"
+                      @change="activeEditingGroup === group.name && setNestedValue(groupDraftData, field.path, $event.target.checked)"
+                      :disabled="activeEditingGroup !== group.name"
+                      type="checkbox"
+                      v-bind="field.props"
+                    />
+                    <span class="checkbox-text">{{ field.label }}</span>
+                  </label>
+                  <span v-if="field.tip" class="info-icon" :title="field.tip">?</span>
+                </div>
 
-              <!-- 其他类型占位 -->
-              <div v-else class="unsupported-type">
-                不支持的字段类型: {{ field.type }}
+                <!-- JSON 类型 (用于对象/数组) -->
+                <textarea 
+                  v-else-if="field.type === 'json'"
+                  class="json-textarea"
+                  :class="{ 'readonly-input': activeEditingGroup !== group.name }"
+                  :value="formatJson(getNestedValue(activeEditingGroup === group.name ? groupDraftData : localEntityState, field.path, lastUpdate))"
+                  @change="activeEditingGroup === group.name && updateJsonValue(groupDraftData, field.path, $event.target.value)"
+                  :readonly="activeEditingGroup !== group.name"
+                  v-bind="field.props"
+                  rows="5"
+                ></textarea>
+
+                <!-- 只读文本 -->
+                <div v-else-if="field.type === 'readonly'" class="readonly-text">
+                  {{ getNestedValue(activeEditingGroup === group.name ? groupDraftData : localEntityState, field.path, lastUpdate) }}
+                </div>
+
+                <!-- 颜色类型 -->
+                <input 
+                  v-else-if="field.type === 'color'"
+                  :value="getNestedValue(activeEditingGroup === group.name ? groupDraftData : localEntityState, field.path, lastUpdate)"
+                  @input="activeEditingGroup === group.name && setNestedValue(groupDraftData, field.path, $event.target.value)"
+                  :disabled="activeEditingGroup !== group.name"
+                  type="color"
+                  v-bind="field.props"
+                />
+
+                <!-- 其他类型占位 -->
+                <div v-else class="unsupported-type">
+                  不支持的字段类型: {{ field.type }}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </template>
+        </template>
 
         <!-- 只有在没有 inspector 时才显示旧的硬编码内容 (或者作为兜底) -->
         <template v-else>
@@ -286,7 +308,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, toRaw, computed } from 'vue'
+import { ref, onMounted, onUnmounted, toRaw, computed, watch } from 'vue'
 import { world } from '@world2d/world'
 import { editorManager } from '@/game/editor/core/EditorCore'
 import EditorPanel from '../components/EditorPanel.vue'
@@ -294,6 +316,10 @@ import EditorPanel from '../components/EditorPanel.vue'
 // 属性编辑同步
 const localEntityState = ref(null)
 const lastUpdate = ref(Date.now())
+
+// 局部编辑状态管理
+const activeEditingGroup = ref(null)
+const groupDraftData = ref({})
 
 // 分组展开收起状态
 const collapsedGroups = ref({})
@@ -320,6 +346,52 @@ const groupedFields = computed(() => {
 
   return groups;
 });
+
+/**
+ * 进入分组编辑模式
+ */
+const enterGroupEdit = (groupName, fields) => {
+  // 如果当前已经在编辑别的组，先提示或自动保存（这里选择先切换）
+  activeEditingGroup.value = groupName;
+  const draft = {};
+  fields.forEach(field => {
+    const val = getNestedValue(localEntityState.value, field.path);
+    // 简单的深拷贝实现 (处理对象和基本类型)
+    setNestedValue(draft, field.path, val !== undefined ? JSON.parse(JSON.stringify(val)) : undefined);
+  });
+  groupDraftData.value = draft;
+};
+
+/**
+ * 保存分组修改
+ */
+const saveGroupEdit = (fields) => {
+  if (!localEntityState.value) return;
+  
+  fields.forEach(field => {
+    const draftVal = getNestedValue(groupDraftData.value, field.path);
+    setNestedValue(localEntityState.value, field.path, draftVal);
+  });
+  
+  activeEditingGroup.value = null;
+  groupDraftData.value = {};
+  console.log('Inspector: Group changes saved');
+};
+
+/**
+ * 取消分组编辑
+ */
+const cancelGroupEdit = () => {
+  activeEditingGroup.value = null;
+  groupDraftData.value = {};
+};
+
+// 监听实体切换 (重置编辑状态)
+watch(() => editorManager.selectedEntity, (newEntity) => {
+  localEntityState.value = newEntity;
+  activeEditingGroup.value = null;
+  groupDraftData.value = {};
+}, { immediate: true });
 
 const confirmDelete = () => {
   const entity = localEntityState.value;
@@ -352,14 +424,9 @@ const confirmDelete = () => {
 // 刷新频率控制
 let rafId = 0
 const syncEntityData = () => {
-  const currentSelected = editorManager.selectedEntity
-  if (currentSelected) {
-    localEntityState.value = currentSelected
-    // 更新时间戳，触发那些依赖它的计算属性或显示
-    lastUpdate.value = Date.now()
-  } else {
-    localEntityState.value = null
-  }
+  // 不再在这里直接赋值 localEntityState.value，而是通过上面的 watch 监听
+  // 但我们仍然可以保持 RAF 来刷新 UI 上的时间戳或其他动态数据
+  lastUpdate.value = Date.now()
   rafId = requestAnimationFrame(syncEntityData)
 }
 
@@ -385,10 +452,15 @@ const syncLegacyInteraction = () => {
 
 /**
  * 获取嵌套对象属性
+ * @param {Object} obj 目标对象
+ * @param {string} path 属性路径
+ * @param {number} [_trigger] 额外的响应式触发器 (如 lastUpdate)
  */
-const getNestedValue = (obj, path) => {
+const getNestedValue = (obj, path, _trigger) => {
   if (!obj || !path) return undefined;
-  return path.split('.').reduce((prev, curr) => prev ? prev[curr] : undefined, obj);
+  // 如果 obj 是 ref，需要取其 value
+  const targetObj = obj.value || obj;
+  return path.split('.').reduce((prev, curr) => prev ? prev[curr] : undefined, targetObj);
 }
 
 /**
@@ -398,10 +470,11 @@ const setNestedValue = (obj, path, value) => {
   if (!obj || !path) return;
   const parts = path.split('.');
   const last = parts.pop();
+  const targetRoot = obj.value || obj; // 处理可能是 ref 的情况
   const target = parts.reduce((prev, curr) => {
     if (!prev[curr]) prev[curr] = {};
     return prev[curr];
-  }, obj);
+  }, targetRoot);
   target[last] = value;
 }
 
