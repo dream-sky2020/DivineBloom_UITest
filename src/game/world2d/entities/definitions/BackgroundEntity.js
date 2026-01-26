@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { world } from '@world2d/world'
-import { Visuals } from '@world2d/entities/components/Visuals'
+import { Sprite } from '@world2d/entities/components/Sprite'
 import { Inspector } from '@world2d/entities/components/Inspector'
 import { createLogger } from '@/utils/logger'
 
@@ -36,7 +36,8 @@ export const BackgroundEntity = {
             type: 'background_ground',
             name: 'Ground',
             position: { x: 0, y: 0 },
-            visual: Visuals.Rect(d.width, d.height, d.color),
+            sprite: Sprite.create('rect', { tint: d.color }),
+            rect: { width: d.width, height: d.height },
             zIndex: -100, // 最底层
             // [NEW] 添加 Inspector
             inspector: Inspector.create({

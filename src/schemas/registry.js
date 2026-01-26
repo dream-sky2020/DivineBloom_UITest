@@ -19,11 +19,14 @@ export * from './resources/tag.js';
 
 // Component Schemas (ECS Components)
 export {
-    VisualSpriteSchema,
-    VisualRectSchema,
-    VisualVisionSchema,
-    VisualComponentSchema
-} from '@world2d/entities/components/Visuals.js';
+    SpriteComponentSchema
+} from '@world2d/entities/components/Sprite.js';
+
+export {
+    AnimationComponentSchema,
+    AnimationFrameSchema,
+    AnimationLoopSchema
+} from '@world2d/entities/components/Animation.js';
 
 export {
     DetectAreaSchema,

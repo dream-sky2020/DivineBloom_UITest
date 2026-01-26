@@ -2,7 +2,8 @@ import { z } from 'zod'
 import { ID } from '@schema/common'
 import { world } from '@world2d/world'
 import { DetectArea, Trigger, DetectInput, Detectable } from '@world2d/entities/components/Triggers'
-import { Visuals } from '@world2d/entities/components/Visuals'
+import { Sprite } from '@world2d/entities/components/Sprite'
+import { Animation } from '@world2d/entities/components/Animation'
 import { Physics } from '@world2d/entities/components/Physics'
 import { AI } from '@world2d/entities/components/AI'
 import { Actions } from '@world2d/entities/components/Actions'
@@ -47,8 +48,8 @@ const INSPECTOR_FIELDS = [
   { path: 'name', label: '名称', type: 'text', tip: '敌人在场景中的标识名' },
   { path: 'position.x', label: '坐标 X', type: 'number', props: { step: 1 } },
   { path: 'position.y', label: '坐标 Y', type: 'number', props: { step: 1 } },
-  { path: 'visual.id', label: '精灵 ID', type: 'text', tip: '对应资源库中的敌人图片' },
-  { path: 'visual.scale', label: '缩放', type: 'number', props: { step: 0.1, min: 0.1 } },
+  { path: 'sprite.id', label: '精灵 ID', type: 'text', tip: '对应资源库中的敌人图片' },
+  { path: 'sprite.scale', label: '缩放', type: 'number', props: { step: 0.1, min: 0.1 } },
   { path: 'aiConfig.type', label: 'AI 类型', type: 'text', tip: 'chase(追逐), flee(逃跑), patrol(巡逻), idle(静止)' },
   { path: 'aiConfig.visionRadius', label: '视野半径', type: 'number', tip: '敌人发现目标的距离', props: { min: 0 } },
   { path: 'aiConfig.speed', label: '移动速度', type: 'number', props: { step: 10, min: 0 } },
@@ -123,11 +124,8 @@ export const EnemyEntity = {
 
       aiState: AI.State(isStunned, options.stunnedTimer),
 
-      visual: Visuals.Sprite(
-        visualId,
-        options.scale,
-        isStunned ? 'stunned' : 'idle'
-      ),
+      sprite: Sprite.create(visualId, { scale: options.scale }),
+      animation: Animation.createFromVisual(visualId, isStunned ? 'stunned' : 'idle'),
 
       // [NEW] 添加 Inspector 映射
       inspector: Inspector.create({
@@ -144,7 +142,7 @@ export const EnemyEntity = {
   },
 
   serialize(entity) {
-    const { position, aiState, aiConfig, interaction, visual, name } = entity
+    const { position, aiState, aiConfig, interaction, sprite, visual, name } = entity
     return {
       type: 'enemy',
       x: position.x,
@@ -168,8 +166,8 @@ export const EnemyEntity = {
         detectedState: aiConfig.detectedState,
         stunDuration: aiConfig.stunDuration,
         chaseExitMultiplier: aiConfig.chaseExitMultiplier,
-        spriteId: visual.id,
-        scale: visual.scale
+        spriteId: sprite?.id || visual?.id,
+        scale: sprite?.scale || visual?.scale
       }
     }
   }

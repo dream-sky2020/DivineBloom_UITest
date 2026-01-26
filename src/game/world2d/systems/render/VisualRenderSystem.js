@@ -14,53 +14,46 @@ const logger = createLogger('VisualRenderSystem')
  * @property {object} visual
  */
 
-const renderEntities = world.with('position', 'visual')
+const renderEntities = world.with('position').any('visual', 'sprite')
 
 export const VisualRenderSystem = {
   // 定义渲染层级 (Z-Index)
   LAYER: 20,
 
   /**
-   * 更新动画帧 (原 AnimationSystem 的职责)
+   * 更新动画帧
    * @param {number} dt 
    */
   update(dt) {
-    for (const entity of renderEntities) {
-      if (!entity.visual) {
-        logger.warn(`Entity ${entity.id || 'N/A'} missing visual component!`);
-        continue;
-      }
+    for (const entity of world.with('animation')) {
       this.updateAnimation(entity, dt)
     }
   },
 
   updateAnimation(entity, dt) {
-    const { visual } = entity
-    const def = Visuals[visual.id]
-    if (!def) return
+    const { animation } = entity
+    if (!animation || animation.paused) return
 
-    const animName = visual.state || 'default'
-    const anim = def.animations[animName] || def.animations['default'] || def.animations['idle']
-    if (!anim) return
-
-    if (anim.frames.length <= 1) {
-      visual.frameIndex = 0
+    const state = animation.animations[animation.currentState]
+    if (!state || state.frames.length <= 1) {
+      animation.frameIndex = 0
       return
     }
 
-    visual.timer += dt * (visual.speedMultiplier || 1)
+    animation.timer += dt * animation.speedMultiplier
 
-    // 如果是 loop=false 且播放完了，保持最后一帧
-    const frameDuration = 1 / (anim.speed || 10)
-    if (visual.timer >= frameDuration) {
-      visual.timer -= frameDuration
-      visual.frameIndex++
+    const currentFrame = state.frames[animation.frameIndex]
+    const frameDuration = (currentFrame?.duration || 100) / 1000 // 转为秒
 
-      if (visual.frameIndex >= anim.frames.length) {
-        if (anim.loop !== false) { // 默认 loop true
-          visual.frameIndex = 0
+    if (animation.timer >= frameDuration) {
+      animation.timer -= frameDuration
+      animation.frameIndex++
+
+      if (animation.frameIndex >= state.frames.length) {
+        if (state.loop !== false) {
+          animation.frameIndex = 0
         } else {
-          visual.frameIndex = anim.frames.length - 1
+          animation.frameIndex = state.frames.length - 1
         }
       }
     }
@@ -70,49 +63,36 @@ export const VisualRenderSystem = {
    * @param {import('@world2d/GameEngine').Renderer2D} renderer 
    */
   draw(renderer) {
-    // 1. 收集实体 (排除纯地面)
+    // 1. 收集实体
     const entities = []
     for (const entity of renderEntities) {
-      if (!entity.position || !entity.visual) continue;
+      if (!entity.position) continue;
+      if (!entity.sprite && !entity.visual) continue;
 
-      // 仅排除 background_ground 类型，其余全部由本系统渲染
+      // 仅排除 background_ground 类型
       if (entity.type === 'background_ground') continue;
 
       entities.push(entity)
     }
 
-    // 2. 排序 (Z-Index First, then Y-Sort for entities)
+    // ... 排序逻辑保持不变 ...
     entities.sort((a, b) => {
       const zA = a.zIndex || 0
       const zB = b.zIndex || 0
-
       if (zA !== zB) return zA - zB
-
-      // 同层级下，如果是普通实体 (z=0)，按 Y 轴排序
-      if (zA === 0) {
-        return a.position.y - b.position.y
-      }
-
+      if (zA === 0) return a.position.y - b.position.y
       return 0
     })
 
-    // 3. 剔除与绘制
+    // ... 剔除与绘制 ...
     const viewW = renderer.width || 9999
     const viewH = renderer.height || 9999
     const camera = renderer.camera
-
-    // Defensive check for camera
-    if (!camera) {
-      logger.error('Camera not initialized!');
-      return;
-    }
+    if (!camera) return;
 
     const cullMargin = 100
-
     const isVisible = (pos) => {
-      // Defensive check for pos
       if (typeof pos.x !== 'number' || typeof pos.y !== 'number') return false;
-
       return !(pos.x < camera.x - cullMargin ||
         pos.x > camera.x + viewW + cullMargin ||
         pos.y < camera.y - cullMargin ||
@@ -126,78 +106,67 @@ export const VisualRenderSystem = {
   },
 
   drawVisual(renderer, entity) {
-    const { visual, position } = entity
+    // 优先使用新的 sprite 组件，兼容旧的 visual 组件
+    const sprite = entity.sprite || entity.visual;
+    const { position, animation } = entity;
+
+    if (!sprite || sprite.visible === false) return;
 
     // --- Rect Support ---
-    if (visual.type === 'rect') {
+    if (sprite.type === 'rect' || entity.rect) {
+      const rect = entity.rect || sprite;
       const camera = renderer.camera
-      renderer.ctx.fillStyle = visual.color || 'magenta' // fallback color
-      // 使用相机偏移绘制矩形
+      renderer.ctx.fillStyle = sprite.tint || rect.color || 'magenta'
+      renderer.ctx.globalAlpha = sprite.opacity !== undefined ? sprite.opacity : 1.0;
+      
       renderer.ctx.fillRect(
-        position.x - (camera?.x || 0),
-        position.y - (camera?.y || 0),
-        visual.width || 10,
-        visual.height || 10
+        position.x + (sprite.offsetX || 0) - (camera?.x || 0),
+        position.y + (sprite.offsetY || 0) - (camera?.y || 0),
+        rect.width || 10,
+        rect.height || 10
       )
-      return
-    }
-
-    // --- Vision Support (Deprecated) ---
-    // Vision is now handled by AIVisionRenderSystem.
-    // If we encounter a 'vision' type visual, just ignore it to prevent errors.
-    if (visual.type === 'vision') {
+      renderer.ctx.globalAlpha = 1.0;
       return
     }
 
     // --- Sprite Support ---
-    // Defensive check
-    if (!visual.id) {
-      // 降低日志频率，避免在某些特殊实体（如纯色块）没有配置 id 时刷屏
-      if (Math.random() < 0.01) {
-        logger.warn(`Visual component missing 'id'. Entity: ${entity.type || 'N/A'} (ID: ${entity.id || 'N/A'})`);
-      }
-      return;
-    }
+    if (!sprite.id) return;
 
-    const def = Visuals[visual.id]
-
+    const def = Visuals[sprite.id]
     if (!def) {
-      // Fallback placeholder
       renderer.drawCircle(position.x, position.y, 10, 'red')
-      if (Math.random() < 0.01) logger.warn(`Missing visual definition for: ${visual.id}`)
       return
     }
 
     const texture = renderer.assetManager.getTexture(def.assetId)
-    if (!texture) {
-      // Only warn occasionally to avoid spamming console
-      if (Math.random() < 0.01) logger.warn(`Missing texture for asset: ${def.assetId}`)
-      return
+    if (!texture) return
+
+    // 获取当前帧索引
+    let frameIndex = 0;
+    if (animation) {
+      frameIndex = animation.frameIndex;
+    } else if (sprite.frameIndex !== undefined) {
+      frameIndex = sprite.frameIndex; // 兼容旧逻辑
     }
 
-    const animName = visual.state || 'default'
-    const anim = def.animations[animName] || def.animations['default'] || def.animations['idle']
-
+    // 获取当前动画定义以获取 frameId
+    const animName = animation?.currentState || sprite.state || 'default'
+    const animDef = def.animations[animName] || def.animations['default'] || def.animations['idle']
+    
     let frameId = 0
-    if (anim && anim.frames.length > 0) {
-      // Safe access
-      if (visual.frameIndex === undefined) visual.frameIndex = 0;
-
-      if (visual.frameIndex >= anim.frames.length) visual.frameIndex = 0
-      frameId = anim.frames[visual.frameIndex]
+    if (animDef && animDef.frames.length > 0) {
+      const idx = Math.min(frameIndex, animDef.frames.length - 1);
+      frameId = animDef.frames[idx];
     }
 
     let sx = 0, sy = 0, sw = 0, sh = 0
-
     if (def.layout.type === 'grid') {
       const cols = def.layout.cols || 1
       const rows = def.layout.rows || 1
       const tileW = def.layout.width || (texture.width ? texture.width / cols : 32)
       const tileH = def.layout.height || (texture.height ? texture.height / rows : 32)
-
       const col = frameId % cols
       const row = Math.floor(frameId / cols)
-
       sx = col * tileW
       sy = row * tileH
       sw = tileW
@@ -212,7 +181,17 @@ export const VisualRenderSystem = {
       ay: def.anchor?.y ?? 1.0
     }
 
-    const scale = visual.scale !== undefined ? visual.scale : 1.0
-    renderer.drawSprite(texture, spriteDef, position, scale)
+    // 应用颜色和偏移
+    const drawPos = {
+      x: position.x + (sprite.offsetX || 0),
+      y: position.y + (sprite.offsetY || 0)
+    };
+
+    const scale = sprite.scale !== undefined ? sprite.scale : 1.0
+    
+    // 如果有 tint/opacity，可能需要更复杂的绘制逻辑，目前 drawSprite 可能不支持
+    // 这里先简单处理 scale
+    renderer.drawSprite(texture, spriteDef, drawPos, scale)
   }
 }
+

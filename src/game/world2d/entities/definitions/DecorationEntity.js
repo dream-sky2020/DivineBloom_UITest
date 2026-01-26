@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { world } from '@world2d/world'
-import { Visuals } from '@world2d/entities/components/Visuals'
+import { Sprite } from '@world2d/entities/components/Sprite'
+import { Animation } from '@world2d/entities/components/Animation'
 import { Physics } from '@world2d/entities/components/Physics'
 import { Inspector } from '@world2d/entities/components/Inspector'
 
@@ -39,8 +40,8 @@ const INSPECTOR_FIELDS = [
     { path: 'position.x', label: '坐标 X', type: 'number', props: { step: 1 } },
     { path: 'position.y', label: '坐标 Y', type: 'number', props: { step: 1 } },
     { path: 'zIndex', label: '层级', type: 'number', tip: '控制重叠顺序，背景通常在 -50 以下', props: { step: 1 } },
-    { path: 'visual.id', label: '资源 ID', type: 'text', tip: '对应 assets 中的 ID' },
-    { path: 'visual.scale', label: '缩放比例', type: 'number', props: { step: 0.1, min: 0.1 } }
+    { path: 'sprite.id', label: '资源 ID', type: 'text', tip: '对应 assets 中的 ID' },
+    { path: 'sprite.scale', label: '缩放比例', type: 'number', props: { step: 0.1, min: 0.1 } }
 ];
 
 export const DecorationEntity = {
@@ -54,15 +55,20 @@ export const DecorationEntity = {
         const { x, y, name, config } = result.data;
         const { spriteId, scale, zIndex, rect, collider: customCollider } = config;
 
-        let visualComponent;
+        let spriteComponent;
+        let animationComponent;
+        let rectComponent;
         let collider = null;
 
         if (spriteId) {
-            visualComponent = Visuals.Sprite(spriteId, scale);
+            spriteComponent = Sprite.create(spriteId, { scale });
+            animationComponent = Animation.createFromVisual(spriteId, 'default');
         } else if (rect) {
-            visualComponent = Visuals.Rect(rect.width, rect.height, rect.color);
+            spriteComponent = Sprite.create('rect', { tint: rect.color });
+            rectComponent = { width: rect.width, height: rect.height, color: rect.color };
         } else {
-            visualComponent = Visuals.Rect(20, 20, 'magenta');
+            spriteComponent = Sprite.create('rect', { tint: 'magenta' });
+            rectComponent = { width: 20, height: 20, color: 'magenta' };
         }
 
         // 🎯 碰撞体处理逻辑
@@ -81,7 +87,9 @@ export const DecorationEntity = {
             type: 'decoration',
             name: name,
             position: { x, y },
-            visual: visualComponent,
+            sprite: spriteComponent,
+            animation: animationComponent,
+            rect: rectComponent,
             zIndex: zIndex,
             // 🎯 添加 Inspector 映射组件
             inspector: Inspector.create({
@@ -98,19 +106,22 @@ export const DecorationEntity = {
     },
 
     serialize(entity) {
+        const sprite = entity.sprite || entity.visual;
+        const rect = entity.rect || (sprite?.type === 'rect' ? sprite : undefined);
+        
         return {
             type: 'decoration',
             x: entity.position.x,
             y: entity.position.y,
             name: entity.name,
             config: {
-                spriteId: entity.visual.type === 'sprite' ? entity.visual.id : undefined,
-                scale: entity.visual.scale,
+                spriteId: sprite?.id !== 'rect' ? sprite?.id : undefined,
+                scale: sprite?.scale,
                 zIndex: entity.zIndex,
-                rect: entity.visual.type === 'rect' ? {
-                    width: entity.visual.width,
-                    height: entity.visual.height,
-                    color: entity.visual.color
+                rect: rect ? {
+                    width: rect.width,
+                    height: rect.height,
+                    color: rect.color || sprite?.tint
                 } : undefined,
                 collider: entity.collider ? { ...entity.collider } : undefined
             }

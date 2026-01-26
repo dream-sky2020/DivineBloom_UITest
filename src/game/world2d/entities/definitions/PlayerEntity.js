@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { world } from '@world2d/world'
 import { PlayerConfig } from '@schema/assets'
-import { Visuals } from '@world2d/entities/components/Visuals'
+import { Sprite } from '@world2d/entities/components/Sprite'
+import { Animation } from '@world2d/entities/components/Animation'
 import { Physics } from '@world2d/entities/components/Physics'
 import { Detectable } from '@world2d/entities/components/Triggers'
 import { Inspector } from '@world2d/entities/components/Inspector'
@@ -23,7 +24,7 @@ const INSPECTOR_FIELDS = [
   { path: 'position.y', label: '坐标 Y', type: 'number' },
   { path: 'speed', label: '基础速度', type: 'number', props: { min: 0, step: 10 } },
   { path: 'fastSpeed', label: '奔跑速度', type: 'number', props: { min: 0, step: 10 } },
-  { path: 'visual.scale', label: '缩放', type: 'number', props: { min: 0.1, step: 0.1 } }
+  { path: 'sprite.scale', label: '缩放', type: 'number', props: { min: 0.1, step: 0.1 } }
 ];
 
 export const PlayerEntity = {
@@ -56,11 +57,8 @@ export const PlayerEntity = {
 
       bounds: Physics.Bounds(),
 
-      visual: Visuals.Sprite(
-        'hero',
-        scale
-        // default state 'idle' is fine
-      ),
+      sprite: Sprite.create('hero', { scale }),
+      animation: Animation.createFromVisual('hero', 'idle'),
 
       // [NEW] 添加 Inspector
       inspector: Inspector.create({ 
@@ -78,7 +76,7 @@ export const PlayerEntity = {
       x: entity.position.x,
       y: entity.position.y,
       name: entity.name,
-      scale: entity.visual.scale
+      scale: entity.sprite?.scale || 0.7
     }
   }
 }

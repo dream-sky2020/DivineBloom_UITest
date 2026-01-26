@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { world } from '@world2d/world'
 import { DetectArea, DetectInput, Trigger } from '@world2d/entities/components/Triggers'
-import { Visuals } from '@world2d/entities/components/Visuals'
+import { Sprite } from '@world2d/entities/components/Sprite'
+import { Animation } from '@world2d/entities/components/Animation'
 import { Physics } from '@world2d/entities/components/Physics'
 import { Actions } from '@world2d/entities/components/Actions'
 import { Inspector } from '@world2d/entities/components/Inspector'
@@ -28,8 +29,8 @@ const INSPECTOR_FIELDS = [
   { path: 'position.y', label: '坐标 Y', type: 'number', props: { step: 1 } },
   { path: 'actionDialogue.dialogueId', label: '对话 ID', type: 'text', tip: '对应 dialogues 文件夹中的配置' },
   { path: 'detectArea.radius', label: '交互半径', type: 'number', tip: '玩家靠近多少距离可以触发对话', props: { min: 10 } },
-  { path: 'visual.id', label: '立绘 ID', type: 'text' },
-  { path: 'visual.scale', label: '缩放比例', type: 'number', props: { step: 0.1, min: 0.1 } }
+  { path: 'sprite.id', label: '立绘 ID', type: 'text' },
+  { path: 'sprite.scale', label: '缩放比例', type: 'number', props: { step: 0.1, min: 0.1 } }
 ];
 
 export const NPCEntity = {
@@ -75,11 +76,8 @@ export const NPCEntity = {
       
       bounds: Physics.Bounds(),
 
-      visual: Visuals.Sprite(
-        spriteId, 
-        scale,
-        'default'
-      ),
+      sprite: Sprite.create(spriteId, { scale }),
+      animation: Animation.createFromVisual(spriteId, 'default'),
 
       // [NEW] 添加 Inspector
       inspector: Inspector.create({ 
@@ -100,8 +98,8 @@ export const NPCEntity = {
       config: {
         dialogueId: entity.interaction.id,
         range: entity.interaction.range,
-        spriteId: entity.visual.id,
-        scale: entity.visual.scale
+        spriteId: entity.sprite?.id || entity.visual?.id,
+        scale: entity.sprite?.scale || entity.visual?.scale
       }
     }
   }
