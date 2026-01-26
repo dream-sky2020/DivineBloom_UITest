@@ -1,7 +1,7 @@
 import { ref } from 'vue';
-import { gameManager } from '@/game/ecs/GameManager';
+import { gameManager } from '@world2d/GameManager';
 import { useGameStore } from '@/stores/game';
-import { world } from '@/game/ecs/world';
+import { world } from '@world2d/world';
 
 export class WorldMapController {
     constructor() {

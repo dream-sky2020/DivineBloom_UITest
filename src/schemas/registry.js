@@ -23,69 +23,69 @@ export {
     VisualRectSchema,
     VisualVisionSchema,
     VisualComponentSchema
-} from '@/game/ecs/entities/components/Visuals.js';
+} from '@world2d/entities/components/Visuals.js';
 
 export {
     DetectAreaSchema,
     TriggerRuleSchema,
     TriggerSchema,
     DetectInputSchema
-} from '@/game/ecs/entities/components/Triggers.js';
+} from '@world2d/entities/components/Triggers.js';
 
 export {
     PhysicsVelocitySchema,
     PhysicsBoundsSchema,
     ColliderSchema
-} from '@/game/ecs/entities/components/Physics.js';
+} from '@world2d/entities/components/Physics.js';
 
 export {
     AIConfigSchema,
     AIStateSchema
-} from '@/game/ecs/entities/components/AI.js';
+} from '@world2d/entities/components/AI.js';
 
 export {
     ActionBattleSchema,
     ActionDialogueSchema,
     ActionTeleportSchema
-} from '@/game/ecs/entities/components/Actions.js';
+} from '@world2d/entities/components/Actions.js';
 
 export {
     BattleResultSchema
-} from '@/game/ecs/entities/components/BattleResult.js';
+} from '@world2d/entities/components/BattleResult.js';
 
 // Entity Definition Schemas
 export {
     PortalEntitySchema
-} from '@/game/ecs/entities/definitions/PortalEntity.js';
+} from '@world2d/entities/definitions/PortalEntity.js';
 
 export {
     NPCEntitySchema
-} from '@/game/ecs/entities/definitions/NPCEntity.js';
+} from '@world2d/entities/definitions/NPCEntity.js';
 
 export {
     EnemyEntitySchema
-} from '@/game/ecs/entities/definitions/EnemyEntity.js';
+} from '@world2d/entities/definitions/EnemyEntity.js';
 
 export {
     PlayerEntitySchema
-} from '@/game/ecs/entities/definitions/PlayerEntity.js';
+} from '@world2d/entities/definitions/PlayerEntity.js';
 
 export {
     BackgroundGroundSchema
-} from '@/game/ecs/entities/definitions/BackgroundEntity.js';
+} from '@world2d/entities/definitions/BackgroundEntity.js';
 
 export {
     DecorationEntitySchema
-} from '@/game/ecs/entities/definitions/DecorationEntity.js';
+} from '@world2d/entities/definitions/DecorationEntity.js';
 
 export {
     GlobalEntitySchema
-} from '@/game/ecs/entities/definitions/GlobalEntity.js';
+} from '@world2d/entities/definitions/GlobalEntity.js';
 
 export {
     SceneConfigSchema
-} from '@/game/ecs/entities/components/SceneConfig.js';
+} from '@world2d/entities/components/SceneConfig.js';
 
 export {
     ObstacleEntitySchema
-} from '@/game/ecs/entities/definitions/ObstacleEntity.js';
+} from '@world2d/entities/definitions/ObstacleEntity.js';

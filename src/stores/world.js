@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { MapSaveStateSchema } from '@schema/save';
-import { ScenarioLoader } from '@/game/ecs/ScenarioLoader';
+import { ScenarioLoader } from '@world2d/ScenarioLoader';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('WorldStore');

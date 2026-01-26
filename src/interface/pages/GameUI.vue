@@ -256,9 +256,9 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGameStore } from '@/stores/game';
-import { gameManager } from '@/game/ecs/GameManager';
+import { gameManager } from '@world2d/GameManager';
 import { editorManager } from '@/game/editor/core/EditorCore';
-import { ScenarioLoader } from '@/game/ecs/ScenarioLoader';
+import { ScenarioLoader } from '@world2d/ScenarioLoader';
 import { createLogger } from '@/utils/logger';
 
 import MainMenuSystem from '@/interface/pages/systems/MainMenuSystem.vue';
@@ -303,9 +303,9 @@ const openContextMenu = (e, items) => {
 
 // Provide context menu to children
 import { provide } from 'vue';
-import { world } from '@/game/ecs/world';
-import { entityTemplateRegistry } from '@/game/ecs/entities/internal/EntityTemplateRegistry';
-import { EditorInteractionSystem } from '@/game/ecs/systems/editor/EditorInteractionSystem';
+import { world } from '@world2d/world';
+import { entityTemplateRegistry } from '@world2d/entities/internal/EntityTemplateRegistry';
+import { EditorInteractionSystem } from '@world2d/systems/editor/EditorInteractionSystem';
 import { toRaw } from 'vue';
 provide('editorContextMenu', { openContextMenu, closeContextMenu });
 

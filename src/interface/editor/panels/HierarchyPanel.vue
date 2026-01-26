@@ -60,10 +60,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, inject, toRaw } from 'vue'
-import { world } from '@/game/ecs/world'
-import { gameManager } from '@/game/ecs/GameManager'
+import { world } from '@world2d/world'
+import { gameManager } from '@world2d/GameManager'
 import { editorManager } from '@/game/editor/core/EditorCore'
-import { ScenarioLoader } from '@/game/ecs/ScenarioLoader'
+import { ScenarioLoader } from '@world2d/ScenarioLoader'
 import EditorPanel from '../components/EditorPanel.vue'
 
 const { openContextMenu } = inject('editorContextMenu');

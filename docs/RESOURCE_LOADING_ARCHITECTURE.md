@@ -140,7 +140,7 @@ class GameEngine {
 ### 在 SceneManager 中使用
 
 ```javascript
-import { SceneLifecycle } from '@/game/ecs/resources/SceneLifecycle'
+import { SceneLifecycle } from '@world2d/resources/SceneLifecycle'
 
 async _handleMapSwitch({ mapId, entryId }) {
     // 加载地图数据

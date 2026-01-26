@@ -175,7 +175,7 @@ ECS 世界层
 
 ### 编程使用
 ```javascript
-import { entityTemplateRegistry } from '@/game/ecs/entities/internal/EntityTemplateRegistry'
+import { entityTemplateRegistry } from '@world2d/entities/internal/EntityTemplateRegistry'
 
 // 创建实体
 const entity = entityTemplateRegistry.createEntity('npc', {

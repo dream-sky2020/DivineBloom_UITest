@@ -251,7 +251,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, toRaw } from 'vue'
-import { world } from '@/game/ecs/world'
+import { world } from '@world2d/world'
 import { editorManager } from '@/game/editor/core/EditorCore'
 import EditorPanel from '../components/EditorPanel.vue'
 

@@ -13,7 +13,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@styles': path.resolve(__dirname, './src/styles'),
       '@schema': path.resolve(__dirname, './src/schemas'),
-      '@data': path.resolve(__dirname, './src/data')
+      '@data': path.resolve(__dirname, './src/data'),
+      '@world2d': path.resolve(__dirname, './src/game/world2d')
     }
   }
 })

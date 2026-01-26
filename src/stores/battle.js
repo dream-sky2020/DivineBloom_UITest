@@ -16,8 +16,8 @@ import { calculateDrops, mergeDrops } from '@/game/battle/lootSystem';
 import { getUnitDisplayData } from '@/game/battle/displaySystem';
 
 // ECS Integration
-import { world } from '@/game/ecs/world';
-import { BattleResult } from '@/game/ecs/entities/components/BattleResult';
+import { world } from '@world2d/world';
+import { BattleResult } from '@world2d/entities/components/BattleResult';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('BattleStore');

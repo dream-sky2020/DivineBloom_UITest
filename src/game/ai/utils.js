@@ -1,5 +1,5 @@
 /**
- * @param {import('@/game/ecs/world').Entity} entity
+ * @param {import('@world2d/world').Entity} entity
  * @param {string} newState
  */
 export function changeState(entity, newState) {
@@ -11,7 +11,7 @@ export function changeState(entity, newState) {
 }
 
 /**
- * @param {import('@/game/ecs/world').Entity} entity
+ * @param {import('@world2d/world').Entity} entity
  * @param {number} distSq
  * @param {object} playerPos
  * @returns {boolean}

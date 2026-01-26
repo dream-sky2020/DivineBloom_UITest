@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
-import { entityTemplateRegistry } from '@/game/ecs/entities/internal/EntityTemplateRegistry';
-import { world } from '@/game/ecs/world';
+import { entityTemplateRegistry } from '@world2d/entities/internal/EntityTemplateRegistry';
+import { world } from '@world2d/world';
 import { editorManager } from '@/game/editor/core/EditorCore';
 import { createLogger } from '@/utils/logger';
 
