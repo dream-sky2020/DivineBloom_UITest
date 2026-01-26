@@ -14,7 +14,7 @@ const logger = createLogger('VisualRenderSystem')
  * @property {object} visual
  */
 
-const renderEntities = world.with('position').any('visual', 'sprite')
+const renderEntities = world.with('position')
 
 export const VisualRenderSystem = {
   // 定义渲染层级 (Z-Index)
@@ -46,10 +46,10 @@ export const VisualRenderSystem = {
     const def = Visuals[sprite.id]
     if (!def || !def.animations) return
 
-    const animDef = def.animations[animation.currentState] || 
-                    def.animations['default'] || 
-                    def.animations['idle']
-    
+    const animDef = def.animations[animation.currentState] ||
+      def.animations['default'] ||
+      def.animations['idle']
+
     if (!animDef || !animDef.frames || animDef.frames.length <= 1) {
       animation.frameIndex = 0
       return
@@ -135,7 +135,7 @@ export const VisualRenderSystem = {
       const camera = renderer.camera
       renderer.ctx.fillStyle = sprite.tint || rect.color || 'magenta'
       renderer.ctx.globalAlpha = sprite.opacity !== undefined ? sprite.opacity : 1.0;
-      
+
       renderer.ctx.fillRect(
         position.x + (sprite.offsetX || 0) - (camera?.x || 0),
         position.y + (sprite.offsetY || 0) - (camera?.y || 0),
@@ -169,7 +169,7 @@ export const VisualRenderSystem = {
     // 获取当前动画定义以获取 frameId
     const animName = animation?.currentState || sprite.state || 'default'
     const animDef = def.animations[animName] || def.animations['default'] || def.animations['idle']
-    
+
     let frameId = 0
     if (animDef && animDef.frames.length > 0) {
       const idx = Math.min(frameIndex, animDef.frames.length - 1);
@@ -205,7 +205,7 @@ export const VisualRenderSystem = {
     };
 
     const scale = sprite.scale !== undefined ? sprite.scale : 1.0
-    
+
     // 如果有 tint/opacity，可能需要更复杂的绘制逻辑，目前 drawSprite 可能不支持
     // 这里先简单处理 scale
     renderer.drawSprite(texture, spriteDef, drawPos, scale)

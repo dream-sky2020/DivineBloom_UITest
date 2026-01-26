@@ -17,13 +17,19 @@ const logger = createLogger('ScenarioLoader')
 const ENTITY_FACTORIES = {
     // 背景层工厂
     background: (config) => {
+        // 准备传给 SceneConfig 的扁平化数据
+        const sceneData = {
+            ...config,
+            groundColor: config.background?.groundColor || config.groundColor || '#000'
+        }
+        
         // 创建场景配置实体 (ECS 数据驱动)
-        SceneEntity.create(config)
+        SceneEntity.create(sceneData)
 
-        if (config && config.groundColor) {
+        if (sceneData.groundColor) {
             const groundW = config.width || 2000
             const groundH = config.height || 2000
-            BackgroundEntity.createGround(groundW, groundH, config.groundColor)
+            BackgroundEntity.createGround(groundW, groundH, sceneData.groundColor)
         }
     },
 
@@ -130,7 +136,9 @@ export class ScenarioLoader {
             id: source.id,
             width: source.width || 800,
             height: source.height || 600,
-            groundColor: source.background?.groundColor || '#000',
+            background: {
+                groundColor: source.background?.groundColor || '#000'
+            },
             entryPoints: source.entryPoints,
             spawnPoint: source.spawnPoint
         }
@@ -271,9 +279,10 @@ export class ScenarioLoader {
         } else {
             // 备选方案：尝试从世界中查找地面实体以获取背景色和尺寸
             const groundEntity = Array.from(world).find(e => e.type === 'background_ground');
-            groundColor = groundEntity?.visual?.color || '#000';
-            groundW = groundEntity?.visual?.width || 3200;
-            groundH = groundEntity?.visual?.height || 2400;
+            // 兼容新版 sprite.tint 和旧版 visual.color
+            groundColor = groundEntity?.sprite?.tint || groundEntity?.visual?.color || '#000';
+            groundW = groundEntity?.rect?.width || groundEntity?.visual?.width || 3200;
+            groundH = groundEntity?.rect?.height || groundEntity?.visual?.height || 2400;
             sceneName = 'Unknown Scene';
         }
 
@@ -282,7 +291,9 @@ export class ScenarioLoader {
             name: sceneName,
             width: groundW,
             height: groundH,
-            groundColor: groundColor
+            background: {
+                groundColor: groundColor
+            }
         }
 
         return {

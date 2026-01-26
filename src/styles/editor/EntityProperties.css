@@ -56,13 +56,19 @@
   margin-bottom: var(--editor-spacing-md);
   display: flex;
   flex-direction: column;
-  gap: var(--editor-spacing-xs);
+  gap: 6px;
 }
 
 .label-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 2px;
+}
+
+.label-row label {
+  font-weight: 600;
+  color: var(--editor-text-muted);
 }
 
 .info-icon {
@@ -119,6 +125,33 @@ input:focus {
   cursor: default;
 }
 
+.json-textarea {
+  background: var(--editor-bg-main);
+  border: 1px solid var(--editor-border-light);
+  border-radius: var(--editor-radius-sm);
+  padding: 6px 8px;
+  color: var(--editor-text-primary);
+  font-size: 11px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  width: 100%;
+  resize: vertical;
+}
+
+.json-textarea:focus {
+  outline: none;
+  border-color: var(--editor-color-primary);
+}
+
+.readonly-text {
+  background: var(--editor-bg-header);
+  border: 1px solid var(--editor-border-light);
+  border-radius: var(--editor-radius-sm);
+  padding: 6px 8px;
+  color: var(--editor-text-muted);
+  font-size: 11px;
+  min-height: 24px;
+}
+
 .global-badge {
   display: inline-block;
   background: #7c3aed;
@@ -130,12 +163,43 @@ input:focus {
   text-transform: uppercase;
 }
 
+.prop-group.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--editor-bg-header);
+  padding: 8px 10px;
+  border-radius: var(--editor-radius-sm);
+  border: 1px solid var(--editor-border-light);
+  margin-top: 4px;
+}
+
+.checkbox-container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: var(--editor-spacing-sm);
+  gap: 10px;
   cursor: pointer;
   color: var(--editor-text-primary);
+  font-size: 12px;
+  flex: 1;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--editor-color-primary);
+}
+
+.checkbox-text {
+  font-weight: 500;
 }
 
 .unsupported-type {

@@ -6,6 +6,8 @@ import { Timer, TimerSchema } from '@world2d/entities/components/Timer';
 import { Inspector } from '@world2d/entities/components/Inspector';
 import { Commands } from '@world2d/entities/components/Commands';
 import { MousePosition } from '@world2d/entities/components/MousePosition';
+import { Party, PartySchema } from '@world2d/entities/components/Party';
+import { Inventory, InventorySchema } from '@world2d/entities/components/Inventory';
 
 // --- Schema Definition ---
 export const GlobalEntitySchema = z.object({
@@ -22,19 +24,26 @@ export const GlobalEntitySchema = z.object({
         lastPressed: z.record(z.string(), z.boolean()).default({})
     }).optional().default({ lastPressed: {} }),
     // [NEW] 场景时间计时器
-    timer: TimerSchema.optional().default({ totalTime: 0, running: true })
+    timer: TimerSchema.optional().default({ totalTime: 0, running: true }),
+    // [NEW] 玩家进度数据组件
+    party: PartySchema.optional(),
+    inventory: InventorySchema.optional()
 });
 
 // --- Entity Definition ---
 
 const INSPECTOR_FIELDS = [
-    { path: 'timer.totalTime', label: '运行总时长', type: 'number', tip: '场景运行的累计秒数', props: { readonly: true } },
-    { path: 'timer.running', label: '计时器状态', type: 'checkbox', tip: '是否继续计时' },
-    { path: 'camera.x', label: '相机 X', type: 'number' },
-    { path: 'camera.y', label: '相机 Y', type: 'number' },
+    { path: 'timer.totalTime', label: '运行总时长', type: 'number', tip: '场景运行的累计秒数', props: { readonly: true, step: 0.001 } },
+    { path: 'timer.running', label: '启用计时器', type: 'checkbox', tip: '控制场景时间的流动' },
+    { path: 'camera.x', label: '相机位置 X', type: 'number', props: { step: 1 } },
+    { path: 'camera.y', label: '相机位置 Y', type: 'number', props: { step: 1 } },
     { path: 'camera.lerp', label: '相机平滑系数', type: 'number', tip: '0-1 之间，1 为即时跟随', props: { step: 0.01, min: 0, max: 1 } },
-    { path: 'mousePosition.worldX', label: '鼠标世界坐标 X', type: 'number', tip: '鼠标在游戏世界中的 X 坐标', props: { readonly: true } },
-    { path: 'mousePosition.worldY', label: '鼠标世界坐标 Y', type: 'number', tip: '鼠标在游戏世界中的 Y 坐标', props: { readonly: true } }
+    { path: 'mousePosition.worldX', label: '鼠标 X (世界)', type: 'number', tip: '鼠标在游戏世界中的 X 坐标', props: { readonly: true } },
+    { path: 'mousePosition.worldY', label: '鼠标 Y (世界)', type: 'number', tip: '鼠标在游戏世界中的 Y 坐标', props: { readonly: true } },
+    { path: 'inventory.length', label: '背包物品总数', type: 'number', tip: '当前持有的不同物品数量', props: { readonly: true } },
+    { path: 'party.members', label: '队伍成员状态 (详细)', type: 'json', tip: '所有角色的详细属性数据', props: { readonly: true } },
+    { path: 'party.formation', label: '当前阵型配置', type: 'json', tip: '当前的队伍插槽分配', props: { readonly: true } },
+    { path: 'inventory', label: '背包物品清单', type: 'json', tip: '当前背包内所有物品 ID 和数量', props: { readonly: true } }
 ];
 
 export const GlobalEntity = {
@@ -50,7 +59,7 @@ export const GlobalEntity = {
             return null;
         }
 
-        const { pendingBattleResult, camera: cameraData, inputState, timer: timerData } = result.data;
+        const { pendingBattleResult, camera: cameraData, inputState, timer: timerData, party: partyData, inventory: invData } = result.data;
 
         // Check uniqueness
         const existing = world.with('globalManager').first;
@@ -73,6 +82,10 @@ export const GlobalEntity = {
 
             // [NEW] 初始化计时器
             timer: Timer.create(timerData),
+
+            // [NEW] 初始化队伍和背包
+            party: Party.create(partyData),
+            inventory: Inventory.create(invData),
 
             // [NEW] 鼠标位置追踪
             mousePosition: MousePosition.create(),
@@ -132,6 +145,14 @@ export const GlobalEntity = {
                 totalTime: entity.timer.totalTime,
                 running: entity.timer.running
             };
+        }
+
+        // [NEW] 保存队伍和背包状态
+        if (entity.party) {
+            data.party = entity.party;
+        }
+        if (entity.inventory) {
+            data.inventory = entity.inventory;
         }
 
         return data;

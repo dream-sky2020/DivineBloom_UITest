@@ -9,9 +9,9 @@ const logger = createLogger('BackgroundEntity')
 // --- Schema Definitions ---
 
 export const BackgroundGroundSchema = z.object({
-    width: z.number(),
-    height: z.number(),
-    color: z.string()
+    width: z.number().default(2000),
+    height: z.number().default(2000),
+    color: z.string().default('#000000')
 });
 
 // --- Entity Definition ---

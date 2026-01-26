@@ -8,7 +8,7 @@ import { world } from '@world2d/world'
  * 目前仅负责地面纯色填充。
  */
 
-const renderEntities = world.with('position', 'visual')
+const renderEntities = world.with('position')
 
 export const BackgroundRenderSystem = {
     LAYER: 10,
@@ -20,10 +20,10 @@ export const BackgroundRenderSystem = {
         const camera = renderer.camera
         if (!camera) return
 
-        // 1. 收集背景实体 (Z < 0)
+        // 1. 收集背景实体 (Z < 0 或者 type 为 background_ground)
         const entities = []
         for (const entity of renderEntities) {
-            if (entity.zIndex !== undefined && entity.zIndex < 0) {
+            if ((entity.zIndex !== undefined && entity.zIndex < 0) || entity.type === 'background_ground') {
                 entities.push(entity)
             }
         }
@@ -38,19 +38,26 @@ export const BackgroundRenderSystem = {
     },
 
     drawVisual(renderer, entity) {
-        const { visual, position } = entity
+        const sprite = entity.sprite || entity.visual
+        const rect = entity.rect || (sprite?.type === 'rect' ? sprite : null)
+        const { position } = entity
         const camera = renderer.camera
 
-        // 仅处理矩形填充 (地面)
-        if (visual.type === 'rect') {
-            renderer.ctx.fillStyle = visual.color || '#000'
-            // 地面通常是 (0,0) 开始的巨大矩形，需要减去相机偏移
+        if (!position || !camera) return
+
+        // 仅处理矩形填充 (地面或其他背景块)
+        if (rect) {
+            // 优先从 sprite.tint 获取颜色，兼容 visual.color
+            renderer.ctx.fillStyle = sprite?.tint || entity.visual?.color || '#000'
+            renderer.ctx.globalAlpha = sprite?.opacity ?? 1.0
+
             renderer.ctx.fillRect(
-                position.x - camera.x,
-                position.y - camera.y,
-                visual.width || 2000,
-                visual.height || 2000
+                position.x - camera.x + (sprite?.offsetX || 0),
+                position.y - camera.y + (sprite?.offsetY || 0),
+                rect.width || 2000,
+                rect.height || 2000
             )
+            renderer.ctx.globalAlpha = 1.0
         }
     }
 }

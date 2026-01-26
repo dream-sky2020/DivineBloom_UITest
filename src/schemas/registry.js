@@ -23,9 +23,7 @@ export {
 } from '@world2d/entities/components/Sprite.js';
 
 export {
-    AnimationComponentSchema,
-    AnimationFrameSchema,
-    AnimationLoopSchema
+    AnimationComponentSchema
 } from '@world2d/entities/components/Animation.js';
 
 export {
@@ -55,6 +53,14 @@ export {
 export {
     BattleResultSchema
 } from '@world2d/entities/components/BattleResult.js';
+
+export {
+    PartySchema
+} from '@world2d/entities/components/Party.js';
+
+export {
+    InventorySchema
+} from '@world2d/entities/components/Inventory.js';
 
 // Entity Definition Schemas
 export {

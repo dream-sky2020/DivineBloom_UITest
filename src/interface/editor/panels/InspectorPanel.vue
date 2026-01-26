@@ -27,8 +27,8 @@
           <section class="prop-section">
             <h4>实体属性 (Inspector)</h4>
             
-            <div v-for="field in localEntityState.inspector.fields" :key="field.path" class="prop-group">
-              <div class="label-row">
+            <div v-for="field in localEntityState.inspector.fields" :key="field.path" class="prop-group" :class="{ 'checkbox-group': field.type === 'checkbox' }">
+              <div v-if="field.type !== 'checkbox'" class="label-row">
                 <label>{{ field.label }}</label>
                 <span v-if="field.tip" class="info-icon" :title="field.tip">?</span>
               </div>
@@ -37,7 +37,7 @@
               <!-- 数字类型 -->
               <input 
                 v-if="field.type === 'number'"
-                :value="getNestedValue(localEntityState, field.path)"
+                :value="formatNumber(getNestedValue(localEntityState, field.path), field.props)"
                 @input="setNestedValue(localEntityState, field.path, Number($event.target.value))"
                 type="number"
                 v-bind="field.props"
@@ -53,15 +53,33 @@
               />
 
               <!-- 布尔/复选框类型 -->
-              <label v-else-if="field.type === 'checkbox'" class="checkbox-label">
-                <input 
-                  :checked="getNestedValue(localEntityState, field.path)"
-                  @change="setNestedValue(localEntityState, field.path, $event.target.checked)"
-                  type="checkbox"
-                  v-bind="field.props"
-                />
-                {{ field.label }}
-              </label>
+              <div v-else-if="field.type === 'checkbox'" class="checkbox-container">
+                <label class="checkbox-label">
+                  <input 
+                    :checked="getNestedValue(localEntityState, field.path)"
+                    @change="setNestedValue(localEntityState, field.path, $event.target.checked)"
+                    type="checkbox"
+                    v-bind="field.props"
+                  />
+                  <span class="checkbox-text">{{ field.label }}</span>
+                </label>
+                <span v-if="field.tip" class="info-icon" :title="field.tip">?</span>
+              </div>
+
+              <!-- JSON 类型 (用于对象/数组) -->
+              <textarea 
+                v-else-if="field.type === 'json'"
+                class="json-textarea"
+                :value="formatJson(getNestedValue(localEntityState, field.path))"
+                @change="updateJsonValue(localEntityState, field.path, $event.target.value)"
+                v-bind="field.props"
+                rows="5"
+              ></textarea>
+
+              <!-- 只读文本 -->
+              <div v-else-if="field.type === 'readonly'" class="readonly-text">
+                {{ getNestedValue(localEntityState, field.path) }}
+              </div>
 
               <!-- 其他类型占位 -->
               <div v-else class="unsupported-type">
@@ -341,6 +359,43 @@ const setNestedValue = (obj, path, value) => {
     return prev[curr];
   }, obj);
   target[last] = value;
+}
+
+/**
+ * 格式化 JSON 数据
+ */
+const formatJson = (value) => {
+  if (value === undefined || value === null) return '';
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch (e) {
+    return String(value);
+  }
+}
+
+/**
+ * 更新 JSON 数据
+ */
+const updateJsonValue = (obj, path, value) => {
+  try {
+    const parsed = JSON.parse(value);
+    setNestedValue(obj, path, parsed);
+  } catch (e) {
+    console.error('Invalid JSON input', e);
+  }
+}
+
+/**
+ * 格式化数字，防止出现超长浮点数
+ */
+const formatNumber = (value, props = {}) => {
+  if (typeof value !== 'number') return value;
+  
+  // 如果是只读的或者是计时器这种高频变动的，限制小数位数
+  if (props.readonly || value.toString().length > 10) {
+    return Number(value.toFixed(3));
+  }
+  return value;
 }
 </script>
 
