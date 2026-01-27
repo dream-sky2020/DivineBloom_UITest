@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SpriteComponentSchema = z.object({
+export const SpriteSchema = z.object({
   id: z.string(), // 对应资源ID (e.g., 'hero', 'slime')
   scale: z.number().default(1),
   visible: z.boolean().default(true),
@@ -20,30 +20,22 @@ export const SpriteComponentSchema = z.object({
 });
 
 export const Sprite = {
+  /**
+   * 创建精灵组件
+   * @param {string} id 
+   * @param {Partial<z.infer<typeof SpriteSchema>>} options 
+   */
   create(id, options = {}) {
     const rawData = { 
       id, 
       ...options 
     };
-    const result = SpriteComponentSchema.safeParse(rawData);
-    if (result.success) {
-      return result.data;
-    } else {
+    const result = SpriteSchema.safeParse(rawData);
+    if (!result.success) {
       console.error(`[Sprite] Validation failed for id: ${id}`, result.error);
-      return { 
-        id: id || 'error', 
-        scale: 1, 
-        visible: true,
-        opacity: 1,
-        brightness: 1,
-        contrast: 1,
-        offsetX: 0,
-        offsetY: 0,
-        rotation: 0,
-        flipX: false,
-        flipY: false
-      };
+      return SpriteSchema.parse({ id: id || 'error' });
     }
+    return result.data;
   }
 };
 

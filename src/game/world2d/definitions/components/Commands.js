@@ -1,3 +1,12 @@
+import { z } from 'zod';
+
+/**
+ * Commands Component Schema
+ */
+export const CommandsSchema = z.object({
+    queue: z.array(z.any()).default([])
+});
+
 /**
  * Commands Component
  * 
@@ -7,11 +16,15 @@
 export const Commands = {
     /**
      * 创建 Commands 组件
-     * @param {Array} initialCommands 初始命令
+     * @param {Array|Partial<z.infer<typeof CommandsSchema>>} data 初始命令或配置
      */
-    create(initialCommands = []) {
-        return {
-            queue: initialCommands
-        };
+    create(data = []) {
+        const input = Array.isArray(data) ? { queue: data } : data;
+        const result = CommandsSchema.safeParse(input);
+        if (!result.success) {
+            console.warn('[Commands] Validation failed, using defaults', result.error);
+            return CommandsSchema.parse({});
+        }
+        return result.data;
     }
 };

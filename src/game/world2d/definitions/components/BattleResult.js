@@ -2,12 +2,14 @@ import { z } from 'zod';
 
 // --- Schema Definition ---
 export const BattleResultSchema = z.object({
-    uuid: z.string(), // 触发战斗的实体 UUID
-    result: z.object({
-        win: z.boolean().default(false),
-        fled: z.boolean().default(false),
-        drops: z.array(z.string()).optional(),
-        exp: z.number().optional()
+    battleResult: z.object({
+        uuid: z.string(), // 触发战斗的实体 UUID
+        result: z.object({
+            win: z.boolean().default(false),
+            fled: z.boolean().default(false),
+            drops: z.array(z.string()).optional(),
+            exp: z.number().optional()
+        })
     })
 });
 
@@ -20,12 +22,18 @@ export const BattleResult = {
      * @param {object} result 
      */
     Data(uuid, result) {
-        return {
+        const input = {
             battleResult: {
                 uuid,
                 result
             }
         };
+        const validation = BattleResultSchema.safeParse(input);
+        if (!validation.success) {
+            console.error('[BattleResult] Validation failed', validation.error);
+            return input; // Fallback to raw input
+        }
+        return validation.data;
     }
 }
 

@@ -27,7 +27,7 @@ export const ShapeType = {
 /**
  * 碰撞体组件 Schema
  */
-export const ColliderSchema = z.object({
+export const PhysicsColliderSchema = z.object({
   type: z.nativeEnum(ShapeType).default(ShapeType.CIRCLE),
   radius: z.number().default(15),
   width: z.number().default(30),
@@ -54,7 +54,12 @@ export const Physics = {
    */
   Velocity(x, y) {
     const result = PhysicsVelocitySchema.safeParse({ x, y });
-    return result.success ? result.data : { x: 0, y: 0 };
+    if (result.success) {
+      return result.data;
+    } else {
+      console.warn('[Physics] Velocity validation failed', result.error);
+      return PhysicsVelocitySchema.parse({});
+    }
   },
 
   /**
@@ -62,25 +67,10 @@ export const Physics = {
    * @param {Object} config 
    */
   Collider(config = {}) {
-    const result = ColliderSchema.safeParse(config);
+    const result = PhysicsColliderSchema.safeParse(config);
     if (!result.success) {
       console.error('[Physics] Collider validation failed', result.error);
-      // 返回默认值
-      return {
-        type: ShapeType.CIRCLE,
-        radius: 15,
-        width: 30,
-        height: 30,
-        rotation: 0,
-        p1: { x: 0, y: -10 },
-        p2: { x: 0, y: 10 },
-        isStatic: false,
-        isTrigger: false,
-        layer: 1,
-        mask: 0xFFFFFFFF,
-        offsetX: 0,
-        offsetY: 0
-      };
+      return PhysicsColliderSchema.parse({});
     }
     return result.data;
   },
@@ -104,6 +94,11 @@ export const Physics = {
    */
   Bounds(minX, maxX, minY, maxY) {
     const result = PhysicsBoundsSchema.safeParse({ minX, maxX, minY, maxY });
-    return result.success ? result.data : { minX: 0, maxX: 9999, minY: 0, maxY: 9999 };
+    if (result.success) {
+      return result.data;
+    } else {
+      console.warn('[Physics] Bounds validation failed', result.error);
+      return PhysicsBoundsSchema.parse({});
+    }
   }
 }

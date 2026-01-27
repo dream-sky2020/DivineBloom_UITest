@@ -24,8 +24,12 @@ const INSPECTOR_FIELDS = [
 // --- Entity Definition ---
 
 export const BackgroundEntity = {
-    createGround(width, height, color) {
-        const result = BackgroundGroundSchema.safeParse({ width, height, color });
+    /**
+     * 创建地面实体
+     * @param {Partial<z.infer<typeof BackgroundGroundSchema>>} data 
+     */
+    create(data = {}) {
+        const result = BackgroundGroundSchema.safeParse(data);
         if (!result.success) {
             logger.error('Ground validation failed', result.error);
             return null;
@@ -54,7 +58,19 @@ export const BackgroundEntity = {
         return world.add(entity);
     },
 
+    /**
+     * 旧版兼容方法
+     */
+    createGround(width, height, color) {
+        return this.create({ width, height, color });
+    },
+
     serialize(entity) {
-        return null
+        return {
+            type: 'background_ground',
+            width: entity.rect?.width,
+            height: entity.rect?.height,
+            color: entity.sprite?.tint
+        };
     }
 }

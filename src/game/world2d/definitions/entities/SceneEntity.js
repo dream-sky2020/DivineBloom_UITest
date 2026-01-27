@@ -36,5 +36,11 @@ export const SceneEntity = {
         });
 
         return world.add(entity);
+    },
+
+    serialize(entity) {
+        return {
+            ...entity.sceneConfig
+        };
     }
 };

@@ -1,26 +1,37 @@
+import { z } from 'zod';
+
+/**
+ * Camera Component Schema
+ */
+export const CameraSchema = z.object({
+  x: z.number().default(0),
+  y: z.number().default(0),
+  targetX: z.number().default(0),
+  targetY: z.number().default(0),
+  lerp: z.number().min(0).max(1).default(0.1),
+  useBounds: z.boolean().default(true),
+  deadZone: z.object({
+    width: z.number().default(100),
+    height: z.number().default(100)
+  }).default({ width: 100, height: 100 }),
+  // 目标实体引用 (通常是玩家)
+  targetEntity: z.any().nullable().default(null)
+});
+
 /**
  * Camera Component Definition
  */
 export const Camera = {
   /**
-   * @param {object} params
-   * @param {number} [params.x]
-   * @param {number} [params.y]
-   * @param {number} [params.lerp] 缓动系数 (0-1), 1 为即时跟随
-   * @param {boolean} [params.useBounds] 是否应用边界限制
-   * @param {object} [params.deadZone] 死区设置 { width, height }
+   * 创建相机组件
+   * @param {Partial<z.infer<typeof CameraSchema>>} data 
    */
-  create({ x = 0, y = 0, lerp = 0.1, useBounds = true, deadZone = { width: 100, height: 100 } } = {}) {
-    return {
-      x,
-      y,
-      targetX: x,
-      targetY: y,
-      lerp,
-      useBounds,
-      deadZone,
-      // 目标实体引用 (通常是玩家)
-      targetEntity: null
+  create(data = {}) {
+    const result = CameraSchema.safeParse(data);
+    if (!result.success) {
+      console.warn('[Camera] Validation failed, using defaults', result.error);
+      return CameraSchema.parse({});
     }
+    return result.data;
   }
-}
+};

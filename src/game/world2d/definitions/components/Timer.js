@@ -10,13 +10,15 @@ export const TimerSchema = z.object({
 export const Timer = {
     /**
      * 创建计时器组件
-     * @param {object} data 
+     * @param {Partial<z.infer<typeof TimerSchema>>} data 
      * @returns 
      */
     create(data = {}) {
-        return {
-            totalTime: data.totalTime || 0,
-            running: data.running !== undefined ? data.running : true
-        };
+        const result = TimerSchema.safeParse(data);
+        if (!result.success) {
+            console.warn('[Timer] Validation failed, using defaults', result.error);
+            return TimerSchema.parse({});
+        }
+        return result.data;
     }
 };

@@ -21,21 +21,13 @@ export const SceneConfigSchema = z.object({
  */
 export const SceneConfig = {
     /**
-     * @param {z.infer<typeof SceneConfigSchema>} data 
+     * @param {Partial<z.infer<typeof SceneConfigSchema>>} data 
      */
     create(data = {}) {
         const result = SceneConfigSchema.safeParse(data);
         if (!result.success) {
             console.error('[SceneConfig] Validation failed', result.error);
-            // 返回一个基于输入数据的部分合法对象或默认对象
-            return {
-                id: data.id || 'unknown',
-                name: data.name || 'Unknown Scene',
-                width: data.width || 800,
-                height: data.height || 600,
-                groundColor: data.groundColor || '#000000',
-                gravity: { x: 0, y: 0 }
-            };
+            return SceneConfigSchema.parse({ id: data.id || 'unknown' });
         }
         return result.data;
     }

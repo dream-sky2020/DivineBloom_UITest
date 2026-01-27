@@ -80,85 +80,42 @@ export const DetectableSchema = z.object({
 export const Detectable = (labels = [], shape = 'point') => {
   const config = Array.isArray(labels) ? { labels, shape } : { labels: [labels], shape };
   const result = DetectableSchema.safeParse(config);
-  return result.success ? result.data : { labels: [], shape: 'point' };
+  if (!result.success) {
+    console.warn('[Detectable] Validation failed', result.error);
+    return DetectableSchema.parse({});
+  }
+  return result.data;
 }
 
 export const DetectArea = (config = {}) => {
-  if (!DetectAreaSchema) {
-    console.warn('[DetectArea] Schema undefined, using fallback');
-    return {
-      shape: 'circle',
-      radius: 0,
-      size: { w: 0, h: 0 },
-      offset: { x: 0, y: 0 },
-      results: [],
-      target: 'actors',
-      includeTags: ['player'],
-      excludeTags: ['ghost']
-    };
-  }
-
   const result = DetectAreaSchema.safeParse(config);
 
   if (result.success) {
     return result.data;
   } else {
     console.error('[DetectArea] Schema validation failed', result.error);
-    // Fallback: ensure minimal valid structure
-    return {
-      shape: 'circle',
-      radius: 0,
-      size: { w: 0, h: 0 },
-      offset: { x: 0, y: 0 },
-      results: [],
-      target: 'actors',
-      includeTags: ['player'],
-      excludeTags: ['ghost']
-    };
+    return DetectAreaSchema.parse({});
   }
 }
 
 export const DetectInput = (config = {}) => {
-  if (!DetectInputSchema) {
-    return { keys: ['Interact'], isPressed: false, justPressed: false };
-  }
-
   const result = DetectInputSchema.safeParse(config);
 
   if (result.success) {
     return result.data;
   } else {
     console.error('[DetectInput] Schema validation failed', result.error);
-    // Fallback based on schema defaults
-    return {
-      keys: ['Interact'],
-      isPressed: false,
-      justPressed: false
-    };
+    return DetectInputSchema.parse({});
   }
 }
 
 export const Trigger = (config = {}) => {
-  if (!TriggerSchema) {
-    return { rules: [], actions: [], active: true, triggered: false, cooldownTimer: 0 };
-  }
-
   const result = TriggerSchema.safeParse(config);
 
   if (result.success) {
     return result.data;
   } else {
     console.error('[Trigger] Schema validation failed', result.error);
-    // Fallback: Safe empty trigger
-    return {
-      rules: [],
-      actions: [],
-      active: true,
-      triggered: false,
-      cooldownTimer: 0,
-      oneShot: false,
-      oneShotExecuted: false,
-      wasInside: false
-    };
+    return TriggerSchema.parse({});
   }
 }

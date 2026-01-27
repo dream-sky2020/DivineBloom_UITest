@@ -37,34 +37,6 @@ export const AIStateSchema = z.object({
 
 // --- AI Factory ---
 
-// Helper for fallback AI config
-const createFallbackAIConfig = (type) => ({
-  type: type || 'wander',
-  visionRadius: 120,
-  speed: 80,
-  visionType: 'circle',
-  visionAngle: Math.PI / 2,
-  visionProximity: 40,
-  suspicionTime: 0,
-  minYRatio: 0.35,
-  patrolRadius: 150,
-  detectedState: 'chase',
-  stunDuration: 5,
-  chaseExitMultiplier: 1.5
-});
-
-const createFallbackAIState = (defaultState) => ({
-  state: defaultState || 'wander',
-  timer: 0,
-  suspicion: 0,
-  moveDir: { x: 0, y: 0 },
-  facing: { x: 1, y: 0 },
-  colorHex: '#eab308',
-  alertAnim: 0,
-  starAngle: 0,
-  justEntered: true
-});
-
 export const AI = {
   /**
    * AI 配置组件
@@ -72,7 +44,6 @@ export const AI = {
    */
   Config(type, visionRadius, speed, extraOptions = {}) {
     // 预处理: 将角度转换为弧度 (这是业务逻辑，非默认值逻辑，保留在此)
-    // 如果未提供，传 undefined 给 Schema，让 Schema 使用默认值
     const visionAngle = (extraOptions.visionAngle !== undefined)
       ? extraOptions.visionAngle * (Math.PI / 180)
       : undefined;
@@ -86,7 +57,6 @@ export const AI = {
       visionProximity: extraOptions.visionProximity,
       suspicionTime: extraOptions.suspicionTime,
       minYRatio: extraOptions.minYRatio,
-      // --- New Optimized Configs ---
       homePosition: extraOptions.homePosition,
       patrolRadius: extraOptions.patrolRadius,
       detectedState: extraOptions.detectedState,
@@ -94,14 +64,12 @@ export const AI = {
       chaseExitMultiplier: extraOptions.chaseExitMultiplier
     };
 
-    if (!AIConfigSchema) return createFallbackAIConfig(type);
-
     const result = AIConfigSchema.safeParse(input);
     if (result.success) {
       return result.data;
     } else {
       console.error('[AI] Config validation failed', result.error);
-      return createFallbackAIConfig(type);
+      return AIConfigSchema.parse({ type });
     }
   },
 
@@ -109,20 +77,17 @@ export const AI = {
    * AI 状态组件
    */
   State(isStunned, stunnedTimer, defaultState) {
-    // Construct intent data
     const input = {
       state: isStunned ? 'stunned' : defaultState,
       timer: isStunned ? (stunnedTimer || 3.0) : 0
     };
-
-    if (!AIStateSchema) return createFallbackAIState(defaultState);
 
     const result = AIStateSchema.safeParse(input);
     if (result.success) {
       return result.data;
     } else {
       console.error('[AI] State validation failed', result.error);
-      return createFallbackAIState(defaultState);
+      return AIStateSchema.parse({ state: input.state });
     }
   }
 }

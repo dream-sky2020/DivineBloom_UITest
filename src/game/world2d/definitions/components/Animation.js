@@ -1,10 +1,9 @@
 import { z } from 'zod';
 
 /**
- * 动画组件 (状态存储)
- * 不再存储具体的帧数据，只存储播放状态
+ * 动画组件 Schema
  */
-export const AnimationComponentSchema = z.object({
+export const AnimationSchema = z.object({
   currentState: z.string().default('idle'),
   frameIndex: z.number().default(0),
   timer: z.number().default(0),
@@ -16,14 +15,17 @@ export const AnimationComponentSchema = z.object({
 });
 
 export const Animation = {
-  create(initialState = 'idle') {
-    const result = AnimationComponentSchema.safeParse({ currentState: initialState });
-    return result.success ? result.data : {
-      currentState: initialState,
-      frameIndex: 0,
-      timer: 0,
-      speedMultiplier: 1,
-      paused: false
-    };
+  /**
+   * 创建动画组件
+   * @param {string|Partial<z.infer<typeof AnimationSchema>>} data 
+   */
+  create(data = 'idle') {
+    const input = typeof data === 'string' ? { currentState: data } : data;
+    const result = AnimationSchema.safeParse(input);
+    if (!result.success) {
+      console.warn('[Animation] Validation failed, using defaults', result.error);
+      return AnimationSchema.parse({});
+    }
+    return result.data;
   }
 };

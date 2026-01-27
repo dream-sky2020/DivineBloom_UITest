@@ -19,11 +19,11 @@ export * from './resources/tag.js';
 
 // Component Schemas (ECS Components)
 export {
-    SpriteComponentSchema
+    SpriteSchema
 } from '@components';
 
 export {
-    AnimationComponentSchema
+    AnimationSchema
 } from '@components';
 
 export {
@@ -36,7 +36,7 @@ export {
 export {
     PhysicsVelocitySchema,
     PhysicsBoundsSchema,
-    ColliderSchema
+    PhysicsColliderSchema
 } from '@components';
 
 export {
@@ -45,9 +45,9 @@ export {
 } from '@components';
 
 export {
-    ActionBattleSchema,
-    ActionDialogueSchema,
-    ActionTeleportSchema
+    ActionsBattleSchema,
+    ActionsDialogueSchema,
+    ActionsTeleportSchema
 } from '@components';
 
 export {

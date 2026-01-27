@@ -26,12 +26,12 @@ export const PartySchema = z.object({
 export const Party = {
     /**
      * 创建队伍组件
-     * @param {z.infer<typeof PartySchema>} data 
+     * @param {Partial<z.infer<typeof PartySchema>>} data 
      */
     create(data = {}) {
         const result = PartySchema.safeParse(data);
         if (!result.success) {
-            console.warn('[Party Component] Validation failed, using defaults', result.error);
+            console.warn('[Party] Validation failed, using defaults', result.error);
             return PartySchema.parse({});
         }
         return result.data;

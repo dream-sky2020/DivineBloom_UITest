@@ -1,23 +1,30 @@
+import { z } from 'zod';
+
+/**
+ * MousePosition Component Schema
+ * 记录鼠标在游戏世界中的坐标位置
+ */
+export const MousePositionSchema = z.object({
+    worldX: z.number().default(0),
+    worldY: z.number().default(0),
+    screenX: z.number().default(0),
+    screenY: z.number().default(0)
+});
+
 /**
  * MousePosition Component
- * 
- * 记录鼠标在游戏世界中的坐标位置
  */
 export const MousePosition = {
     /**
      * 创建 MousePosition 组件
-     * @param {Object} config 配置信息
-     * @param {number} config.worldX 鼠标在世界中的 X 坐标
-     * @param {number} config.worldY 鼠标在世界中的 Y 坐标
-     * @param {number} config.screenX 鼠标在屏幕上的 X 坐标
-     * @param {number} config.screenY 鼠标在屏幕上的 Y 坐标
+     * @param {Partial<z.infer<typeof MousePositionSchema>>} data 配置信息
      */
-    create({ worldX = 0, worldY = 0, screenX = 0, screenY = 0 } = {}) {
-        return {
-            worldX,
-            worldY,
-            screenX,
-            screenY
-        };
+    create(data = {}) {
+        const result = MousePositionSchema.safeParse(data);
+        if (!result.success) {
+            console.warn('[MousePosition] Validation failed, using defaults', result.error);
+            return MousePositionSchema.parse({});
+        }
+        return result.data;
     }
 };

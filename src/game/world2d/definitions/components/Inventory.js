@@ -21,8 +21,8 @@ export const Inventory = {
     create(data = []) {
         const result = InventorySchema.safeParse(data);
         if (!result.success) {
-            console.warn('[Inventory Component] Validation failed, using defaults', result.error);
-            return [];
+            console.warn('[Inventory] Validation failed, using defaults', result.error);
+            return InventorySchema.parse([]);
         }
         return result.data;
     }

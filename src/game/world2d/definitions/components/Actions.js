@@ -3,17 +3,17 @@ import { ID } from '@schema/common'; // Fix import path to point to common.js
 
 // --- Actions Schema Definitions ---
 
-export const ActionBattleSchema = z.object({
+export const ActionsBattleSchema = z.object({
   // Allow string OR number for ID
   group: z.array(z.object({ id: ID })).default([]),
   uuid: z.string().optional()
 });
 
-export const ActionDialogueSchema = z.object({
+export const ActionsDialogueSchema = z.object({
   scriptId: z.string().default('error_missing_id')
 });
 
-export const ActionTeleportSchema = z.object({
+export const ActionsTeleportSchema = z.object({
   // 跨地图传送：需要 mapId 和 entryId
   mapId: z.string().optional(),
   entryId: z.string().optional(),
@@ -43,14 +43,12 @@ export const Actions = {
    * @param {string} [uuid] - 实体唯一ID
    */
   Battle(group, uuid) {
-    if (!ActionBattleSchema) return { group: [], uuid: undefined };
-
-    const result = ActionBattleSchema.safeParse({ group, uuid });
+    const result = ActionsBattleSchema.safeParse({ group, uuid });
     if (result.success) {
       return result.data;
     } else {
       console.error('[Actions] Battle validation failed', result.error);
-      return { group: [], uuid: undefined };
+      return ActionsBattleSchema.parse({});
     }
   },
 
@@ -59,36 +57,28 @@ export const Actions = {
    * @param {string} scriptId - 对话脚本ID
    */
   Dialogue(scriptId) {
-    if (!ActionDialogueSchema) return { scriptId: 'error' };
-
-    const result = ActionDialogueSchema.safeParse({ scriptId });
+    const result = ActionsDialogueSchema.safeParse({ scriptId });
     if (result.success) {
       return result.data;
     } else {
       console.error('[Actions] Dialogue validation failed', result.error);
-      return { scriptId: 'error' };
+      return ActionsDialogueSchema.parse({ scriptId: 'error' });
     }
   },
 
   /**
    * 传送行为组件
-   * @param {string} [mapId] - 目标地图ID（跨地图传送）
-   * @param {string} [entryId] - 目标入口ID（跨地图传送）
-   * @param {string} [destinationId] - 目标目的地实体ID（同地图传送）
-   * @param {number} [targetX] - 目标X坐标（同地图传送，直接坐标）
-   * @param {number} [targetY] - 目标Y坐标（同地图传送，直接坐标）
    */
   Teleport(mapId, entryId, destinationId, targetX, targetY) {
-    if (!ActionTeleportSchema) return { mapId: undefined, entryId: undefined, destinationId: undefined, targetX: undefined, targetY: undefined };
-
-    const result = ActionTeleportSchema.safeParse({ mapId, entryId, destinationId, targetX, targetY });
+    const input = { mapId, entryId, destinationId, targetX, targetY };
+    const result = ActionsTeleportSchema.safeParse(input);
     if (result.success) {
       return result.data;
     } else {
       console.error('[Actions] Teleport validation failed', result.error);
-      console.error('[Actions] Invalid params:', { mapId, entryId, destinationId, targetX, targetY });
-      // 返回一个无效配置，TeleportExecuteSystem 会记录错误但不会执行传送
-      return { mapId: undefined, entryId: undefined, destinationId: undefined, targetX: undefined, targetY: undefined };
+      console.error('[Actions] Invalid params:', input);
+      // 返回一个空对象，TeleportExecuteSystem 会记录错误但不会执行传送
+      return input;
     }
   }
 }
