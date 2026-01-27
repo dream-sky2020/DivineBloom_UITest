@@ -6,9 +6,7 @@ import {
   Timer, TimerSchema,
   Inspector, EDITOR_INSPECTOR_FIELDS,
   Commands,
-  MousePosition,
-  Party, PartySchema,
-  Inventory, InventorySchema 
+  MousePosition
 } from '@components'
 
 // --- Schema Definition ---
@@ -23,9 +21,7 @@ export const GlobalEntitySchema = z.object({
     inputState: z.object({
         lastPressed: z.record(z.string(), z.boolean()).default({})
     }).optional().default({ lastPressed: {} }),
-    timer: TimerSchema.optional().default({ totalTime: 0, running: true }),
-    party: PartySchema.optional(),
-    inventory: InventorySchema.optional()
+    timer: TimerSchema.optional().default({ totalTime: 0, running: true })
 });
 
 // --- Entity Definition ---
@@ -50,7 +46,7 @@ export const GlobalEntity = {
             return null;
         }
 
-        const { pendingBattleResult, camera: cameraData, inputState, timer: timerData, party: partyData, inventory: invData } = result.data;
+        const { pendingBattleResult, camera: cameraData, inputState, timer: timerData } = result.data;
 
         const existing = world.with('globalManager').first;
         if (existing) {
@@ -65,8 +61,6 @@ export const GlobalEntity = {
             camera: Camera.create(cameraData || {}),
             inputState: inputState,
             timer: Timer.create(timerData),
-            party: Party.create(partyData),
-            inventory: Inventory.create(invData),
             mousePosition: MousePosition.create(),
             commands: Commands.create()
         };
@@ -93,8 +87,6 @@ export const GlobalEntity = {
         if (entity.camera) data.camera = { ...entity.camera };
         if (entity.inputState) data.inputState = entity.inputState;
         if (entity.timer) data.timer = { ...entity.timer };
-        if (entity.party) data.party = entity.party;
-        if (entity.inventory) data.inventory = entity.inventory;
         return data;
     }
 }

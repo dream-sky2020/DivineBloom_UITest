@@ -54,14 +54,6 @@ export {
     BattleResultSchema
 } from '@components';
 
-export {
-    PartySchema
-} from '@components';
-
-export {
-    InventorySchema
-} from '@components';
-
 // Entity Definition Schemas
 export {
     PortalEntitySchema
