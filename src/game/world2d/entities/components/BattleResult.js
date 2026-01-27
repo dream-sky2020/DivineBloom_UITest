@@ -28,3 +28,13 @@ export const BattleResult = {
         };
     }
 }
+
+/**
+ * 编辑器属性字段
+ */
+export const BATTLE_RESULT_INSPECTOR_FIELDS = [
+    { path: 'battleResult.uuid', label: '来源实体 UUID', type: 'text', group: '战斗结果' },
+    { path: 'battleResult.result.win', label: '胜利', type: 'checkbox', group: '战斗结果' },
+    { path: 'battleResult.result.fled', label: '逃跑', type: 'checkbox', group: '战斗结果' },
+    { path: 'battleResult.result.exp', label: '获得经验', type: 'number', group: '战斗结果' }
+];

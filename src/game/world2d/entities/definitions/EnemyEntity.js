@@ -2,12 +2,12 @@ import { z } from 'zod'
 import { ID } from '@schema/common'
 import { world } from '@world2d/world'
 import { DetectArea, Trigger, DetectInput, Detectable } from '@world2d/entities/components/Triggers'
-import { Sprite } from '@world2d/entities/components/Sprite'
+import { Sprite, SPRITE_INSPECTOR_FIELDS } from '@world2d/entities/components/Sprite'
 import { Animation } from '@world2d/entities/components/Animation'
 import { Physics } from '@world2d/entities/components/Physics'
 import { AI } from '@world2d/entities/components/AI'
 import { Actions } from '@world2d/entities/components/Actions'
-import { Inspector, EDITOR_INSPECTOR_FIELDS, SPRITE_INSPECTOR_FIELDS } from '@world2d/entities/components/Inspector'
+import { Inspector, EDITOR_INSPECTOR_FIELDS } from '@world2d/entities/components/Inspector'
 
 // --- Schema Definition ---
 

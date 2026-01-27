@@ -46,3 +46,20 @@ export const Sprite = {
     }
   }
 };
+
+/**
+ * 精灵通用属性字段，用于编辑器 Inspector 面板
+ */
+export const SPRITE_INSPECTOR_FIELDS = [
+    { path: 'sprite.visible', label: '显示精灵', type: 'checkbox', group: '精灵 (Sprite)' },
+    { path: 'sprite.scale', label: '精灵缩放', type: 'number', props: { step: 0.1, min: 0 }, group: '精灵 (Sprite)' },
+    { path: 'sprite.tint', label: '精灵颜色', type: 'color', group: '精灵 (Sprite)' },
+    { path: 'sprite.opacity', label: '不透明度', type: 'number', props: { step: 0.1, min: 0, max: 1 }, group: '精灵 (Sprite)' },
+    { path: 'sprite.brightness', label: '亮度', type: 'number', props: { step: 0.1, min: 0 }, group: '精灵 (Sprite)' },
+    { path: 'sprite.contrast', label: '对比度', type: 'number', props: { step: 0.1, min: 0 }, group: '精灵 (Sprite)' },
+    { path: 'sprite.offsetX', label: '偏移 X', type: 'number', group: '精灵 (Sprite)' },
+    { path: 'sprite.offsetY', label: '偏移 Y', type: 'number', group: '精灵 (Sprite)' },
+    { path: 'sprite.rotation', label: '旋转', type: 'number', tip: '弧度值', props: { step: 0.1 }, group: '精灵 (Sprite)' },
+    { path: 'sprite.flipX', label: '水平翻转', type: 'checkbox', group: '精灵 (Sprite)' },
+    { path: 'sprite.flipY', label: '垂直翻转', type: 'checkbox', group: '精灵 (Sprite)' }
+];

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { world } from '@world2d/world'
-import { Sprite } from '@world2d/entities/components/Sprite'
-import { Inspector, EDITOR_INSPECTOR_FIELDS, SPRITE_INSPECTOR_FIELDS } from '@world2d/entities/components/Inspector'
+import { Sprite, SPRITE_INSPECTOR_FIELDS } from '@world2d/entities/components/Sprite'
+import { Inspector, EDITOR_INSPECTOR_FIELDS } from '@world2d/entities/components/Inspector'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('BackgroundEntity')

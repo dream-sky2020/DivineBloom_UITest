@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { world } from '@world2d/world';
-import { BattleResultSchema } from '@world2d/entities/components/BattleResult';
+import { BattleResultSchema, BATTLE_RESULT_INSPECTOR_FIELDS } from '@world2d/entities/components/BattleResult';
 import { Camera } from '@world2d/entities/components/Camera';
 import { Timer, TimerSchema } from '@world2d/entities/components/Timer';
 import { Inspector, EDITOR_INSPECTOR_FIELDS } from '@world2d/entities/components/Inspector';
@@ -36,6 +36,7 @@ const INSPECTOR_FIELDS = [
     { path: 'camera.lerp', label: '相机平滑系数', type: 'number', tip: '0-1 之间，1 为即时跟随', props: { step: 0.01, min: 0, max: 1 }, group: '相机设置' },
     { path: 'mousePosition.worldX', label: '鼠标 X (世界)', type: 'number', tip: '鼠标在游戏世界中的 X 坐标', props: { readonly: true }, group: '调试信息' },
     { path: 'mousePosition.worldY', label: '鼠标 Y (世界)', type: 'number', tip: '鼠标在游戏世界中的 Y 坐标', props: { readonly: true }, group: '调试信息' },
+    ...BATTLE_RESULT_INSPECTOR_FIELDS,
     ...EDITOR_INSPECTOR_FIELDS
 ];
 
