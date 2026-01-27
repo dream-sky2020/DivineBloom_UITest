@@ -5,18 +5,13 @@ import { skillsDb } from '@schema/skills';
 import { itemsDb } from '@schema/items';
 import { useInventoryStore } from './inventory';
 import { usePartyStore } from './party';
-import { getEnemyAction } from '@/game/battle/ai';
-import { calculateDamage, applyDamage, applyHeal } from '@/game/battle/damageSystem';
-import { processEffect, processTurnStatuses } from '@/game/battle/effectSystem';
-import { applyStatus, removeStatus, checkCrowdControl } from '@/game/battle/statusSystem';
-import { resolveTargets, findPartyMember, getValidTargetIds } from '@/game/battle/targetSystem';
-import { resolveChainSequence, resolveRandomSequence, canUseSkill, paySkillCost, processPassiveTrigger, filterExclusiveSkills } from '@/game/battle/skillSystem';
-import { calculateAtbTick } from '@/game/battle/timeSystem';
-import { calculateDrops, mergeDrops } from '@/game/battle/lootSystem';
-import { getUnitDisplayData } from '@/game/battle/displaySystem';
+
+// --- Battle System Facade Integration ---
+import { battleFacade } from '@/game/battle';
+// ----------------------------------------
 
 // ECS Integration
-import { world2d, world, BattleResult } from '@world2d'; // ✅ 使用统一接口（保留 world 用于 ECS 操作）
+import { world2d, world } from '@world2d';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('BattleStore');
@@ -40,9 +35,16 @@ export const useBattleStore = defineStore('battle', () => {
     const pendingAction = ref(null); // { type, id, targetType, data }
     const validTargetIds = ref([]);
 
+    // --- Register Callbacks to Facade ---
+    battleFacade.registerCallbacks({
+        log: (key, params) => log(key, params),
+        onDamage: (data) => {
+            // Future: Trigger UI floating text here
+        }
+    });
+
     // --- Getters ---
     const activeCharacter = computed(() => {
-        // Return activeUnit if it is a player character
         if (activeUnit.value && activeUnit.value.isPlayer) {
             return activeUnit.value;
         }
@@ -54,7 +56,7 @@ export const useBattleStore = defineStore('battle', () => {
     });
 
     const enemiesDisplay = computed(() => {
-        return enemies.value.map(enemy => getUnitDisplayData(enemy, {
+        return enemies.value.map(enemy => battleFacade.getUnitDisplayData(enemy, {
             activeUnit: activeUnit.value,
             validTargetIds: validTargetIds.value
         }));
@@ -62,18 +64,17 @@ export const useBattleStore = defineStore('battle', () => {
 
     const partySlotsDisplay = computed(() => {
         return partySlots.value.map(slot => ({
-            front: getUnitDisplayData(slot.front, {
+            front: battleFacade.getUnitDisplayData(slot.front, {
                 activeUnit: activeUnit.value,
                 validTargetIds: validTargetIds.value
             }),
-            back: getUnitDisplayData(slot.back, {
+            back: battleFacade.getUnitDisplayData(slot.back, {
                 activeUnit: activeUnit.value,
                 validTargetIds: validTargetIds.value
             })
         }));
     });
 
-    // Get Battle Items (Consumables only)
     const battleItems = computed(() => {
         return inventoryStore.getAllItems.filter(item => item.type === 'itemTypes.consumable');
     });
@@ -84,13 +85,13 @@ export const useBattleStore = defineStore('battle', () => {
         if (!activeCharacter.value) return false;
         const skill = skillsDb[skillId];
         if (!skill) return false;
-        return canUseSkill(activeCharacter.value, skill, getContext());
+        return battleFacade.canUseSkill(activeCharacter.value, skill, getContext());
     };
 
     const setPendingAction = (action) => {
         pendingAction.value = action;
         if (action && action.targetType) {
-            validTargetIds.value = getValidTargetIds({
+            validTargetIds.value = battleFacade.target.getValidTargetIds({
                 partySlots: partySlots.value,
                 enemies: enemies.value,
                 actor: activeUnit.value
@@ -110,10 +111,8 @@ export const useBattleStore = defineStore('battle', () => {
             newLevel = boostLevel.value + delta;
         }
 
-        const maxBoost = 3; // Max BP usage per turn constraint
+        const maxBoost = 3; 
         const currentEnergy = activeUnit.value.energy || 0;
-
-        // Clamp between 0 and min(currentEnergy, maxBoost)
         newLevel = Math.max(0, Math.min(newLevel, currentEnergy, maxBoost));
         boostLevel.value = newLevel;
     };
@@ -124,6 +123,7 @@ export const useBattleStore = defineStore('battle', () => {
         performSwitch,
         partySlots: partySlots.value,
         enemies: enemies.value,
+        turnCount: turnCount.value,
         // Item Cost Support
         checkItem: (itemId, amount) => {
             const item = inventoryStore.inventoryState.find(i => i.id === itemId);
@@ -134,95 +134,12 @@ export const useBattleStore = defineStore('battle', () => {
         },
         // Passive Effect Executor
         executeEffect: (effect, target, actor, skill) => {
-            processEffect(effect, target, actor, skill, getContext(), true);
+            battleFacade.effect.processEffect(effect, target, actor, skill, getContext(), true);
         }
     });
 
     // Helper to find any party member
-    const findPartyMemberWrapper = (id) => findPartyMember(partySlots.value, id);
-
-
-    const generateUUID = () => 'u' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-
-    const createUnit = (dbId, isPlayer = false) => {
-        const data = charactersDb[dbId];
-        if (!data) return null;
-
-        // 获取基础属性
-        const maxHp = data.maxHp || data.hp;
-        const maxMp = data.maxMp || data.mp;
-
-        return {
-            ...data,
-            uuid: data.uuid || generateUUID(),
-            // 运行时 HP/MP：优先使用 data 中定义的 currentHp (用于开场不满血)，否则为满值
-            currentHp: data.currentHp !== undefined ? data.currentHp : data.hp,
-            maxHp: maxHp,
-            currentMp: data.currentMp !== undefined ? data.currentMp : data.mp,
-            maxMp: maxMp,
-
-            // 基础战斗属性
-            atk: data.atk || 50,
-            def: data.def || 30,
-            mag: data.mag || 10,
-            spd: data.spd || 10,
-
-            // 技能：合并初始技能并过滤
-            skills: filterExclusiveSkills([...(data.skills || []), ...(data.fixedPassiveSkills || [])]),
-
-            // 状态：优先使用 data 中定义的初始状态 (用于开场带 Buff/Debuff)
-            statusEffects: [...(data.statusEffects || [])],
-
-            // 运行时状态
-            isDefending: data.isDefending || false,
-            atb: data.atb || 0,
-            energy: data.energy || 0, // Energy Points (BP)
-            isPlayer: isPlayer,
-            actionCount: data.actionCount || 0
-        };
-    };
-
-    const hydrateUnit = (state, isPlayer) => {
-        if (!state) return null;
-
-        // 对于玩家角色，合并已装备和固定技能
-        let battleSkills = state.skills || [];
-        if (isPlayer) {
-            const equippedActive = (state.equippedActiveSkills || []).filter(id => id !== null);
-            const equippedPassive = (state.equippedPassiveSkills || []).filter(id => id !== null);
-            const fixedPassive = state.fixedPassiveSkills || [];
-            battleSkills = [...equippedActive, ...equippedPassive, ...fixedPassive];
-            battleSkills = filterExclusiveSkills([...new Set(battleSkills)]);
-        }
-
-        const maxHp = state.maxHp || state.hp;
-        const maxMp = state.maxMp || state.mp;
-
-        return {
-            ...state,
-            uuid: state.uuid || generateUUID(),
-            skills: battleSkills,
-
-            // 运行时属性：优先保留 state 中的值（用于存档加载/持久化），否则从基础属性初始化
-            currentHp: state.currentHp !== undefined ? state.currentHp : state.hp,
-            maxHp: maxHp,
-            currentMp: state.currentMp !== undefined ? state.currentMp : state.mp,
-            maxMp: maxMp,
-
-            atk: state.atk || 50,
-            def: state.def || 30,
-            mag: state.mag || 10,
-            spd: state.spd || 10,
-
-            // 状态
-            statusEffects: state.statusEffects ? [...state.statusEffects] : [],
-            isDefending: state.isDefending || false,
-            atb: state.atb || 0,
-            energy: state.energy || 0,
-            isPlayer: isPlayer,
-            actionCount: state.actionCount || 0
-        };
-    };
+    const findPartyMemberWrapper = (id) => battleFacade.target.findPartyMember(partySlots.value, id);
 
     // Initialize Battle
     const initBattle = (enemyList, enemyUuid = null) => {
@@ -238,29 +155,27 @@ export const useBattleStore = defineStore('battle', () => {
         // Setup Enemies
         if (enemyList) {
             enemies.value = enemyList.map(e => {
-                // Try to hydrate from DB if ID exists
                 if (e.id && charactersDb[e.id]) {
-                    const base = createUnit(e.id, false);
-                    // Merge overrides (like currentHp) from the passed object
+                    const base = battleFacade.createUnit(e.id, false);
                     return { ...base, ...e, atb: 0, isPlayer: false, actionCount: 0 };
                 }
                 return { ...e, atb: 0, isPlayer: false, actionCount: 0 };
             });
         } else {
-            // Default Mock Enemies - Loaded from charactersDb using helper
+            // Default Mock Enemies
             enemies.value = [
-                createUnit('character_emperor_shenwu', false),
-                createUnit('character_shahryar', false),
-                createUnit('character_hefietian', false),
-                createUnit('character_yibitian', false)
+                battleFacade.createUnit('character_emperor_shenwu', false),
+                battleFacade.createUnit('character_shahryar', false),
+                battleFacade.createUnit('character_hefietian', false),
+                battleFacade.createUnit('character_yibitian', false)
             ].filter(e => e !== null);
         }
 
-        // Setup Party (Load from PartyStore)
+        // Setup Party
         partyStore.initParty();
         partySlots.value = partyStore.formation.map(slot => ({
-            front: hydrateUnit(partyStore.getCharacterState(slot.front), true),
-            back: hydrateUnit(partyStore.getCharacterState(slot.back), true)
+            front: battleFacade.hydrateUnit(partyStore.getCharacterState(slot.front), true),
+            back: battleFacade.hydrateUnit(partyStore.getCharacterState(slot.back), true)
         }));
 
         battleState.value = 'active';
@@ -269,7 +184,7 @@ export const useBattleStore = defineStore('battle', () => {
         // Process Battle Start Passives
         const context = getContext();
         [...partySlots.value.map(s => s.front), ...partySlots.value.map(s => s.back), ...enemies.value].forEach(unit => {
-            if (unit) processPassiveTrigger(unit, 'battle_start', context);
+            if (unit) battleFacade.skill.processPassiveTrigger(unit, 'battle_start', context);
         });
     };
 
@@ -279,11 +194,8 @@ export const useBattleStore = defineStore('battle', () => {
 
         const MAX_ATB = 100;
         const MAX_BP = 6;
-        // Back row also cycles at 100 now to generate Energy
-
         const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
 
-        // Collect all active units with metadata to avoid repeated lookups
         const unitEntries = [];
         enemies.value.forEach(e => {
             if (!isDead(e)) unitEntries.push({ unit: e, isBackRow: false });
@@ -293,13 +205,9 @@ export const useBattleStore = defineStore('battle', () => {
             if (slot.back && !isDead(slot.back)) unitEntries.push({ unit: slot.back, isBackRow: true });
         });
 
-        // Increment ATB
         for (const { unit, isBackRow } of unitEntries) {
+            const tick = battleFacade.time.calculateAtbTick(unit, dt);
 
-            // Calculate tick using TimeSystem
-            const tick = calculateAtbTick(unit, dt);
-
-            // Update ATB (Cap for front row only)
             if (isBackRow) {
                 unit.atb = (unit.atb || 0) + tick;
             } else {
@@ -308,11 +216,9 @@ export const useBattleStore = defineStore('battle', () => {
 
             if (unit.atb >= MAX_ATB) {
                 if (isBackRow) {
-                    // Back Row Logic: Reset ATB (keep overflow), Add 2 Energy
                     unit.atb -= MAX_ATB;
                     unit.energy = Math.min(MAX_BP, (unit.energy || 0) + 2);
                 } else if (!atbPaused.value) {
-                    // Front Row Logic: Turn Ready, Add 1 Energy
                     unit.atb = MAX_ATB;
                     unit.energy = Math.min(MAX_BP, (unit.energy || 0) + 1);
                     startTurn(unit);
@@ -325,96 +231,76 @@ export const useBattleStore = defineStore('battle', () => {
     const startTurn = (unit) => {
         atbPaused.value = true;
         activeUnit.value = unit;
-        unit.isDefending = false; // Reset Defend at start of turn
-        boostLevel.value = 0; // Reset Boost Level on new turn
+        unit.isDefending = false;
+        boostLevel.value = 0;
 
         const context = getContext();
         const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
 
-        // Process Turn Start Passives (e.g. Mana Regen)
-        processPassiveTrigger(unit, 'turn_start', context);
+        battleFacade.skill.processPassiveTrigger(unit, 'turn_start', context);
+        battleFacade.effect.processTurnStatuses(unit, context);
 
-        // Process Turn Start Statuses (DoT, HoT)
-        processTurnStatuses(unit, context);
-
-        // Check if unit died from status
         if (isDead(unit)) {
             endTurn(unit);
             return;
         }
 
-        // Check Crowd Control (Stun/Freeze)
-        const cannotMove = checkCrowdControl(unit);
+        const cannotMove = battleFacade.status.checkCrowdControl(unit);
         if (cannotMove) {
             log('battle.cannotMove', { name: unit.name });
-
-            // Process CC Skip Passives (e.g. Heroic Will)
-            processPassiveTrigger(unit, 'on_cc_skip', context);
-
-            setTimeout(() => {
-                endTurn(unit);
-            }, 1000);
+            battleFacade.skill.processPassiveTrigger(unit, 'on_cc_skip', context);
+            setTimeout(() => endTurn(unit), 1000);
             return;
         }
 
         if (!unit.isPlayer) {
-            // Enemy Logic
             processEnemyTurn(unit);
         } else {
-            // Player Logic: Waiting for UI input
             waitingForInput.value = true;
-            // UI will see isPlayerTurn = true
         }
     };
 
     const endTurn = (unit) => {
-        // Set to negative value to provide a visual "cooldown" where the bar stays empty for a bit
         unit.atb = -25;
         activeUnit.value = null;
         atbPaused.value = false;
         waitingForInput.value = false;
-        boostLevel.value = 0; // Ensure boost is reset
+        boostLevel.value = 0;
         checkBattleStatus();
     };
 
     const processEnemyTurn = async (enemy) => {
         const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
 
-        // Delay for dramatic effect
         setTimeout(() => {
             if (isDead(enemy)) {
                 endTurn(enemy);
                 return;
             }
 
-            // Increment Action Count
             if (typeof enemy.actionCount === 'undefined') enemy.actionCount = 0;
             enemy.actionCount++;
 
-            // Context
             const context = {
                 actor: enemy,
                 party: partySlots.value,
                 enemies: enemies.value,
-                turnCount: turnCount.value
+                turnCount: turnCount.value,
+                log // important for logging actions
             };
 
-            const action = getEnemyAction(enemy.id, context);
+            const action = battleFacade.getEnemyAction(enemy.id, context);
 
             if (!action || action.type === 'wait') {
                 endTurn(enemy);
                 return;
             }
 
-            // Simple Enemy AI Energy Usage (Optional: For now enemies don't use BP or just reset)
-            // But if we want consistent data structure, we can consume it if they have it.
-            // For now, let's just execute.
-            const result = executeBattleAction(enemy, action);
+            // Using Facade to execute action
+            // Note: Enemy actions typically don't use manual boost, so no energyMult override
+            const result = battleFacade.executeAction(enemy, action, getContext());
 
             if (result && result.consumeTurn === false) {
-                // If turn is not consumed (e.g. Free Action), act again immediately
-                // To prevent infinite loops with free actions, we might want a safety check,
-                // but for now, we trust the AI/Data design.
                 processEnemyTurn(enemy);
             } else {
                 endTurn(enemy);
@@ -422,305 +308,111 @@ export const useBattleStore = defineStore('battle', () => {
         }, 1000);
     };
 
-    const executeBattleAction = (actor, action) => {
-        const context = getContext();
-        let targetType = 'single';
-        let effects = [];
-        let skillData = null;
-        let consumeTurn = true; // Default to consuming turn
-
-        // --- Energy System Consumption ---
-        let energyMult = 1.0;
-        if ((actor.energy || 0) > 0) {
-            energyMult = 1.0 + (actor.energy * 0.5);
-            // Optionally log for enemies if they use it
-            if (actor.isPlayer) { // Should not happen here usually but safety check
-                log('battle.energyConsume', { name: actor.name, energy: actor.energy });
-            }
-            actor.energy = 0;
-        }
-        const actionContext = { ...context, energyMult };
-
-        // 1. Prepare Action Data
-        if (action.type === 'custom_skill') {
-            targetType = action.targetType || 'single';
-            effects = action.effects || [];
-            if (action.consumeTurn === false) consumeTurn = false;
-
-            // Custom Log
-            if (action.logKey) {
-                // Determine target name for log if possible
-                let targetName = '';
-                if (action.targetId) {
-                    // Try to find target name in both lists (we don't know who it is yet contextually)
-                    // But we can use the resolveTargets to find it properly later, 
-                    // or just quick lookup.
-                    // Let's defer target name logging or do a quick search.
-                    const t = findPartyMemberWrapper(action.targetId) || enemies.value.find(e => e.uuid === action.targetId || e.id === action.targetId);
-                    if (t) targetName = t.name;
-                }
-                log(action.logKey, { name: actor.name, target: targetName });
-            }
-
-        } else if (action.type === 'skill') {
-            skillData = skillsDb[action.skillId];
-            if (!skillData) return { consumeTurn: false }; // Fail safe
-
-            targetType = skillData.targetType || 'single';
-            effects = skillData.effects || [];
-            if (skillData.consumeTurn === false) consumeTurn = false;
-
-            log('battle.useSkill', { user: actor.name, skill: skillData.name });
-
-        } else if (action.type === 'attack') {
-            targetType = 'enemy';
-            effects = [{ type: 'damage', value: 1, scaling: 'atk' }];
-            // Start log is handled below when targets are found for "Attacks X"
-            // or we can log generic "Attacks!" here.
-            // Existing logic logged "Attacks X"
-        }
-
-        // Override targetType if specified in action (AI overrides DB)
-        if (action.targetType) targetType = action.targetType;
-
-        // 2. Resolve Targets (Context Aware)
-        const targets = resolveTargets({
-            partySlots: partySlots.value,
-            enemies: enemies.value,
-            actor: actor,
-            targetId: action.targetId
-        }, targetType);
-
-        // Attack specific log
-        if (action.type === 'attack' && targets.length > 0) {
-            // If multiple targets, maybe just log first?
-            log('battle.attacks', { attacker: actor.name, target: targets[0].name });
-        }
-
-        // 3. Apply Effects
-        targets.forEach(target => {
-            let lastResult = 0;
-            effects.forEach(eff => {
-                lastResult = processEffect(eff, target, actor, skillData, actionContext, false, lastResult);
-            });
-        });
-
-        return { consumeTurn };
-    };
-
     // Player Actions
     const playerAction = async (actionType, payload = null) => {
         if (!activeUnit.value || !activeUnit.value.isPlayer) return;
 
-        waitingForInput.value = false; // Hide UI immediately
+        waitingForInput.value = false;
         const actor = activeUnit.value;
-        let consumeTurn = true; // Default true
+        let consumeTurn = true;
+        let actionExecuted = false;
 
-        // Calculate Energy Multiplier from Manual Boost Level
+        // Calculate Energy Multiplier
         let energyMult = 1.0;
         let consumedEnergy = 0;
         if (boostLevel.value > 0) {
-            energyMult = 1.0 + (boostLevel.value * 0.5); // Example scaling
+            energyMult = 1.0 + (boostLevel.value * 0.5);
             consumedEnergy = boostLevel.value;
             log('battle.energyConsume', { name: actor.name, energy: consumedEnergy });
         }
 
-        // Context with energy multiplier
-        const actionContext = { ...getContext(), energyMult };
+        const context = { ...getContext(), energyMult };
 
-        // Normalize payload
-        let targetId = null;
-        let skillId = null;
-        let itemId = null;
-
+        // Normalize payload to Standard Action Format
+        let action = { type: actionType };
+        
         if (typeof payload === 'object' && payload !== null) {
-            targetId = payload.targetId;
-            skillId = payload.skillId;
-            itemId = payload.itemId;
+            action = { ...action, ...payload };
         } else {
-            skillId = payload; // Legacy support
+            action.skillId = payload; // legacy support
         }
 
-        let actionDone = true;
-
+        // Special handling before execution
         if (actionType === 'item') {
-            if (!itemId) return;
-
-            // Consume Item
-            inventoryStore.removeItem(itemId, 1);
-            const item = itemsDb[itemId];
+            if (!action.itemId) return;
+            inventoryStore.removeItem(action.itemId, 1);
+            const item = itemsDb[action.itemId];
             if (item && item.consumeTurn === false) consumeTurn = false;
-
+            
             log('battle.useItem', { user: actor.name, item: item.name });
-
-            // Centralized Item Logic
-            // For items, we might not use energy multiplier, or do we?
-            // "When character attacks or uses skill, consume energy"
-            // Items are not explicitly mentioned but typically consumables don't scale with BP.
-            // Let's assume NO for items for now unless requested.
-            handleItemEffect(itemId, targetId, actor);
+            battleFacade.handleItemEffect(action.itemId, action.targetId, actor, context);
+            actionExecuted = true;
 
         } else if (actionType === 'skill') {
-            const skill = skillsDb[skillId];
-            if (skill) {
-                // Check Usability
-                if (!canUseSkill(actor, skill, getContext())) {
-                    log('battle.notEnoughMp'); // or generic "cannot use"
-                    return; // Don't end turn
-                }
-
-                if (skill.consumeTurn === false) consumeTurn = false;
-
-                // Pay Cost
-                paySkillCost(actor, skill, getContext());
-
-                log('battle.useSkill', { user: actor.name, skill: skill.name });
-
-                // Deduct Energy
-                if (consumedEnergy > 0) {
-                    actor.energy = Math.max(0, (actor.energy || 0) - consumedEnergy);
-                }
-
-                // Skill Logic
-                if (skill.effects) {
-                    if (skill.chain) {
-                        // Chain Logic via SkillSystem
-                        const initialTarget = enemies.value.find(e => e.uuid === targetId || e.id === targetId);
-                        const hits = resolveChainSequence(skill, initialTarget, enemies.value);
-
-                        hits.forEach(({ target, multiplier, hitIndex }) => {
-                            // Log each hit
-                            // Note: We need a way to accumulate damage for the log if needed, 
-                            // but resolveChainSequence doesn't execute the damage, just tells us who and how much mult.
-
-                            let damageDealt = 0;
-                            skill.effects.forEach(eff => {
-                                const finalEffect = { ...eff };
-                                if (finalEffect.type === 'damage') {
-                                    finalEffect.value *= multiplier;
-                                }
-                                const val = processEffect(finalEffect, target, actor, skill, actionContext, true);
-                                if (finalEffect.type === 'damage') damageDealt += val;
-                            });
-
-                            log('battle.chainHit', { count: hitIndex, target: target.name, amount: damageDealt });
-                        });
-
-                    } else if (skill.randomHits) {
-                        // Random Sequence Logic
-                        const hits = resolveRandomSequence(skill, enemies.value);
-
-                        hits.forEach(({ target, hitIndex }) => {
-                            let damageDealt = 0;
-                            skill.effects.forEach(eff => {
-                                const val = processEffect(eff, target, actor, skill, actionContext, true);
-                                if (eff.type === 'damage') damageDealt += val;
-                            });
-
-                            // Use specific log key for random hits
-                            log('battle.randomHit', { count: hitIndex, target: target.name, amount: damageDealt });
-                        });
-
-                    } else {
-                        // Generic Effect Processing
-                        // Resolve Targets via TargetSystem
-                        const targets = resolveTargets({
-                            partySlots: partySlots.value,
-                            enemies: enemies.value,
-                            actor: actor,
-                            targetId: targetId
-                        }, skill.targetType);
-
-                        // Apply Effects
-                        targets.forEach(target => {
-                            let lastResult = 0;
-                            skill.effects.forEach(effect => {
-                                lastResult = processEffect(effect, target, actor, skill, actionContext, false, lastResult);
-                            });
-                        });
-                    }
-                }
+            const skill = skillsDb[action.skillId];
+            if (!battleFacade.canUseSkill(actor, skill, getContext())) {
+                log('battle.notEnoughMp');
+                return; 
             }
-        } else if (actionType === 'attack') {
-            log('battle.attackStart', { attacker: actor.name });
-
+            // Pay Cost
+            battleFacade.skill.paySkillCost(actor, skill, getContext());
+            
             // Deduct Energy
+             if (consumedEnergy > 0) {
+                actor.energy = Math.max(0, (actor.energy || 0) - consumedEnergy);
+            }
+            
+            const result = battleFacade.executeAction(actor, action, context);
+            consumeTurn = result.consumeTurn;
+            actionExecuted = true;
+
+        } else if (actionType === 'attack') {
             if (consumedEnergy > 0) {
                 actor.energy = Math.max(0, (actor.energy || 0) - consumedEnergy);
             }
+            const result = battleFacade.executeAction(actor, action, context);
+            consumeTurn = result.consumeTurn;
+            actionExecuted = true;
 
-            // Resolve Target
-            const targets = resolveTargets({
-                partySlots: partySlots.value,
-                enemies: enemies.value,
-                actor: actor,
-                targetId: targetId
-            }, 'enemy'); // Attack is typically single enemy
-
-            if (targets.length > 0) {
-                const target = targets[0];
-                const dmg = calculateDamage(actor, target, null, null, energyMult); // Pass Multiplier
-                applyDamage(target, dmg, actionContext);
-            }
         } else if (actionType === 'defend') {
             actor.isDefending = true;
             log('battle.defending', { name: actor.name });
+            actionExecuted = true;
+
         } else if (actionType === 'switch') {
-            // Find slot index for this actor
             const slotIndex = partySlots.value.findIndex(s => s.front && s.front.id === actor.id);
             if (slotIndex !== -1) {
                 const slot = partySlots.value[slotIndex];
                 if (slot && slot.back && slot.back.currentHp > 0) {
                     performSwitch(slotIndex);
+                    actionExecuted = true;
                 } else {
                     log('battle.cannotSwitch');
-                    return; // Don't end turn
+                    return;
                 }
             }
+
         } else if (actionType === 'skip') {
-            // Skip Logic: Charge Energy
             actor.energy = Math.min(6, (actor.energy || 0) + 1);
             log('battle.skipTurn', { name: actor.name });
-            // Optionally log energy gain?
+            actionExecuted = true;
+
         } else if (actionType === 'reorganize') {
             log('battle.reorganize', { name: actor.name });
+            actionExecuted = true;
+
         } else if (actionType === 'run') {
             runAway();
             return;
         }
 
-        if (actionDone) {
+        if (actionExecuted) {
             if (consumeTurn) {
                 endTurn(actor);
             } else {
-                // Return control to player if turn not consumed
                 waitingForInput.value = true;
             }
         }
-    };
-
-
-    const handleItemEffect = (itemId, targetId, actor) => {
-        const item = itemsDb[itemId];
-        if (!item || !item.effects) return;
-
-        // Resolve Targets using TargetSystem
-        // Note: items usually map to generic target types. 
-        // We assume item.targetType matches what resolveTargets expects.
-
-        const targets = resolveTargets({
-            partySlots: partySlots.value,
-            enemies: enemies.value,
-            actor: actor,
-            targetId: targetId
-        }, item.targetType);
-
-        // Apply all effects to all targets
-        targets.forEach(target => {
-            item.effects.forEach(effect => {
-                processEffect(effect, target, actor, null, getContext());
-            });
-        });
     };
 
     const performSwitch = (slotIndex) => {
@@ -730,26 +422,18 @@ export const useBattleStore = defineStore('battle', () => {
             slot.front = slot.back;
             slot.back = temp;
 
-            // Switching in clears defense
             if (slot.front) slot.front.isDefending = false;
-            // Initialize ATB for new char (maybe partial?)
             if (slot.front.atb === undefined) slot.front.atb = 0;
-            slot.front.isPlayer = true; // Ensure flag
+            slot.front.isPlayer = true;
 
             log('battle.switchIn', { name: slot.front.name });
         }
     };
 
-    /**
-     * Notify ECS of battle result
-     * @param {'victory'|'defeat'|'flee'} resultType 
-     * @param {Array} drops - Optional drops for victory
-     */
     const notifyECS = (resultType, drops = []) => {
         if (!triggeredEnemyUuid.value) return;
 
         try {
-            // Find global entity
             const globalEntity = world.with('globalManager').first;
 
             if (globalEntity) {
@@ -757,18 +441,13 @@ export const useBattleStore = defineStore('battle', () => {
                     win: resultType === 'victory',
                     fled: resultType === 'flee',
                     drops: drops,
-                    exp: 0     // TODO: Collect actual exp
+                    exp: 0
                 };
-
                 logger.info('Setting BattleResult on GlobalEntity:', triggeredEnemyUuid.value, resultData);
-
-                // 直接添加 BattleResult 组件
-                // 如果已存在会覆盖，这正是我们想要的（最新的结果覆盖旧的）
                 world.addComponent(globalEntity, 'battleResult', {
                     uuid: triggeredEnemyUuid.value,
                     result: resultData
                 });
-
             } else {
                 logger.warn('GlobalEntity not found, cannot push battle result!');
             }
@@ -786,19 +465,15 @@ export const useBattleStore = defineStore('battle', () => {
             lastBattleResult.value = { result: 'victory', enemyUuid: triggeredEnemyUuid.value };
             log('battle.victory');
 
-            // --- Loot Calculation ---
             const allDrops = []
             enemies.value.forEach(enemy => {
-                // Use original DB data for drops if available to avoid runtime mutations affecting it
-                // But calculateDrops handles the structure from DB or runtime if structure matches
-                const drops = calculateDrops(enemy)
+                const drops = battleFacade.calculateDrops(enemy)
                 if (drops.length > 0) {
                     allDrops.push(drops)
                 }
             })
-            const finalDrops = mergeDrops(allDrops)
+            const finalDrops = battleFacade.loot.mergeDrops(allDrops)
 
-            // Add to Inventory Store
             finalDrops.forEach(drop => {
                 inventoryStore.addItem(drop.itemId, drop.qty)
                 const item = itemsDb[drop.itemId]
@@ -807,12 +482,8 @@ export const useBattleStore = defineStore('battle', () => {
                 }
             })
 
-            // Sync state back to PartyStore
             partyStore.updatePartyAfterBattle(partySlots.value);
-
-            // Notify ECS with drops
             notifyECS('victory', finalDrops);
-
             return true;
         }
 
@@ -824,10 +495,7 @@ export const useBattleStore = defineStore('battle', () => {
             battleState.value = 'defeat';
             lastBattleResult.value = { result: 'defeat', enemyUuid: triggeredEnemyUuid.value };
             log('battle.defeat');
-
-            // Notify ECS
             notifyECS('defeat');
-
             return true;
         }
         return false;
@@ -837,8 +505,6 @@ export const useBattleStore = defineStore('battle', () => {
         battleState.value = 'flee';
         lastBattleResult.value = { result: 'flee', enemyUuid: triggeredEnemyUuid.value };
         log('battle.runAway');
-
-        // Notify ECS
         notifyECS('flee');
     };
 
@@ -849,7 +515,6 @@ export const useBattleStore = defineStore('battle', () => {
         activeUnit.value = null;
         atbPaused.value = false;
         enemies.value = [];
-        // Party slots are references to PartyStore, so just clear the array
         partySlots.value = [];
     };
 
@@ -858,7 +523,6 @@ export const useBattleStore = defineStore('battle', () => {
     };
 
     const log = (keyOrMsg, params = {}) => {
-
         if (typeof keyOrMsg === 'string') {
             const hasParams = params && Object.keys(params).length > 0;
             if (!hasParams && (keyOrMsg.includes(' ') || /[\u4e00-\u9fa5]/.test(keyOrMsg))) {
