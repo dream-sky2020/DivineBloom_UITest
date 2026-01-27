@@ -35,7 +35,34 @@ const INSPECTOR_FIELDS = [
   { path: 'position.y', label: '坐标 Y', type: 'number', group: '基本属性' },
   { path: 'detectArea.size.w', label: '触发宽度', type: 'number', group: '触发区域' },
   { path: 'detectArea.size.h', label: '触发高度', type: 'number', group: '触发区域' },
-  { path: 'isForced', label: '强制传送', type: 'checkbox', tip: '勾选则触碰即走，不勾选需按交互键', group: '交互逻辑' },
+  { 
+    path: 'isForced', 
+    label: '强制传送', 
+    type: 'checkbox', 
+    tip: '勾选则触碰即走，不勾选需按交互键', 
+    group: '交互逻辑',
+    onUpdate: (entity, newValue) => {
+      // 同步 Trigger 规则
+      entity.trigger.rules = newValue 
+        ? [{ type: 'onStay' }] 
+        : [{ type: 'onPress', requireArea: true }];
+      
+      entity.trigger.defaultCooldown = newValue ? 0 : 0.8;
+      
+      // 同步探测区域目标和颜色
+      entity.detectArea.target = newValue ? 'teleportable' : 'player';
+      entity.detectArea.debugColor = newValue 
+        ? 'rgba(168, 85, 247, 0.8)' 
+        : 'rgba(249, 115, 22, 0.8)';
+      
+      // 处理交互输入组件
+      if (newValue) {
+        if (entity.detectInput) world.removeComponent(entity, 'detectInput');
+      } else if (!entity.detectInput) {
+        world.addComponent(entity, 'detectInput', DetectInput({ keys: ['Interact'] }));
+      }
+    }
+  },
   { path: 'actionTeleport.mapId', label: '目标地图', type: 'text', group: '目标位置' },
   { path: 'actionTeleport.entryId', label: '入口 ID', type: 'text', group: '目标位置' },
   { path: 'actionTeleport.destinationId', label: '同图目的地', type: 'text', group: '目标位置' },

@@ -30,7 +30,7 @@ export const DetectInputSystem = {
       const input = entity.detectInput
 
       // 检查 'Interact' 键
-      if (input.keys.includes('Interact')) {
+      if (input && input.keys && input.keys.includes('Interact')) {
         const wantsToInteract = player.playerIntent.wantsToInteract
         const wasPressed = !!globalEntity.inputState.lastPressed['Interact']
 

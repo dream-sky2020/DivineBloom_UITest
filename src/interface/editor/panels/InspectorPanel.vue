@@ -369,8 +369,18 @@ const saveGroupEdit = (fields) => {
   if (!localEntityState.value) return;
   
   fields.forEach(field => {
-    const draftVal = getNestedValue(groupDraftData.value, field.path);
-    setNestedValue(localEntityState.value, field.path, draftVal);
+    const draftVal = getNestedValue(groupDraftData.value, field.path, null, field);
+    const oldVal = getNestedValue(localEntityState.value, field.path, null, field);
+    
+    if (draftVal !== oldVal || !field.path) {
+      if (field.path) {
+        setNestedValue(localEntityState.value, field.path, draftVal, field);
+      }
+      
+      if (field.onUpdate) {
+        field.onUpdate(localEntityState.value, draftVal, oldVal);
+      }
+    }
   });
   
   activeEditingGroup.value = null;
@@ -455,22 +465,37 @@ const syncLegacyInteraction = () => {
  * @param {Object} obj 目标对象
  * @param {string} path 属性路径
  * @param {number} [_trigger] 额外的响应式触发器 (如 lastUpdate)
+ * @param {Object} [field] 字段定义对象，支持自定义 getValue
  */
-const getNestedValue = (obj, path, _trigger) => {
-  if (!obj || !path) return undefined;
-  // 如果 obj 是 ref，需要取其 value
+const getNestedValue = (obj, path, _trigger, field) => {
+  if (!obj) return undefined;
   const targetObj = obj.value || obj;
+
+  if (field?.getValue) return field.getValue(targetObj);
+  if (!path) return undefined;
+
   return path.split('.').reduce((prev, curr) => prev ? prev[curr] : undefined, targetObj);
 }
 
 /**
  * 设置嵌套对象属性
+ * @param {Object} obj 目标对象
+ * @param {string} path 属性路径
+ * @param {any} value 值
+ * @param {Object} [field] 字段定义对象，支持自定义 setValue
  */
-const setNestedValue = (obj, path, value) => {
-  if (!obj || !path) return;
+const setNestedValue = (obj, path, value, field) => {
+  if (!obj) return;
+  const targetRoot = obj.value || obj;
+
+  if (field?.setValue) {
+    field.setValue(targetRoot, value);
+    return;
+  }
+
+  if (!path) return;
   const parts = path.split('.');
   const last = parts.pop();
-  const targetRoot = obj.value || obj; // 处理可能是 ref 的情况
   const target = parts.reduce((prev, curr) => {
     if (!prev[curr]) prev[curr] = {};
     return prev[curr];
