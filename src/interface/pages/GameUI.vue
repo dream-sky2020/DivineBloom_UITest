@@ -5,7 +5,7 @@
       <!-- Left Sidebar -->
       <div 
         class="sidebar-container left-sidebar" 
-        v-if="isEditMode"
+        v-if="shouldShowSidebars"
         :class="{ 'is-collapsed': isLeftCollapsed }"
         :style="sidebarStyles.left"
       >
@@ -51,7 +51,7 @@
             <div class="grid-overlay" v-show="showGrid"></div>
 
             <!-- Layer 2: System UI (Top Level) -->
-            <div class="system-layer" :class="{ 'pass-through': currentSystem === 'world-map' }">
+            <div class="system-layer" :class="{ 'pass-through': currentSystem === 'world-map' || (currentSystem === 'battle' && isEditMode) }">
               <transition name="fade">
                 <component 
                   :is="activeSystemComponent" 
@@ -68,7 +68,7 @@
       <!-- Right Sidebar -->
       <div 
         class="sidebar-container right-sidebar" 
-        v-if="isEditMode"
+        v-if="shouldShowSidebars"
         :class="{ 'is-collapsed': isRightCollapsed }"
         :style="sidebarStyles.right"
       >
@@ -128,7 +128,7 @@
         
         <div class="dev-grid">
           <div class="dev-card">
-            <h3 v-t="'dev.systemSwitcher'"></h3>
+            <h3 v-t="'dev.uiSwitcher'"></h3>
             <div class="btn-group">
               <button 
                 :class="{ active: currentSystem === 'main-menu' }" 
@@ -182,7 +182,10 @@
                <!-- 全局通用操作 -->
                <button @click="logState" v-t="'dev.actions.logState'"></button>
                <button @click="toggleEditMode" :class="{ active: isEditMode }">
-                 {{ isEditMode ? '关闭编辑器 (Ctrl+E)' : '开启编辑器 (Ctrl+E)' }}
+                 {{ isEditMode ? '关闭编辑模式 (Ctrl+E)' : '开启编辑模式 (Ctrl+E)' }}
+               </button>
+               <button @click="toggleSidebars" :class="{ active: showSidebars }">
+                 {{ showSidebars ? '隐藏侧边栏' : '显示侧边栏' }}
                </button>
                <button @click="editorManager.resetToWorkspace('world-editor')">
                  🔄 重置编辑器布局
@@ -190,8 +193,8 @@
                
                <!-- 大地图专属操作 -->
                <template v-if="currentSystem === 'world-map'">
-                 <button @click="togglePause" :class="{ warn: gameManager.state.isPaused }">
-                   {{ gameManager.state.isPaused ? '恢复运行' : '暂停运行' }}
+                <button @click="togglePause" :class="{ warn: world2d.state.isPaused }">
+                  {{ world2d.state.isPaused ? '恢复运行' : '暂停运行' }}
                  </button>
                  <button 
                    @click="exportScene" 
@@ -256,9 +259,8 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGameStore } from '@/stores/game';
-import { gameManager } from '@world2d/GameManager';
+import { world2d } from '@world2d'; // ✅ 使用统一接口
 import { editorManager } from '@/game/editor/core/EditorCore';
-import { ScenarioLoader } from '@world2d/ScenarioLoader';
 import { createLogger } from '@/utils/logger';
 
 import MainMenuSystem from '@/interface/pages/systems/MainMenuSystem.vue';
@@ -303,17 +305,15 @@ const openContextMenu = (e, items) => {
 
 // Provide context menu to children
 import { provide } from 'vue';
-import { world } from '@world2d/world';
-import { getSystem } from '@world2d/SystemRegistry';
-import { entityTemplateRegistry } from '@world2d/entities/internal/EntityTemplateRegistry';
 import { toRaw } from 'vue';
+import { getSystem } from '@world2d'; // ✅ 导入 getSystem
 provide('editorContextMenu', { openContextMenu, closeContextMenu });
 
 const logger = createLogger('GameUI');
 const { locale } = useI18n();
 const gameStore = useGameStore();
 const settingsStore = gameStore.settings;
-const currentSystem = ref(gameManager.state.system); // Initialize from GameManager
+const currentSystem = ref(world2d.state.system); // ✅ 使用统一接口
 const gameCanvas = ref(null);
 const showDevTools = ref(false);
 
@@ -324,13 +324,26 @@ const rightSidebarWidth = ref(DEFAULT_SIDEBAR_WIDTH);
 const isLeftCollapsed = ref(false);
 const isRightCollapsed = ref(false);
 const resizingSidebar = ref(null); // 'left' or 'right'
+const showSidebars = ref(false); // 手动控制侧边栏显示
 
 // Reactive Edit Mode State
 const isEditMode = computed(() => editorManager.editMode);
 
+// Determine if sidebars should be visible
+const shouldShowSidebars = computed(() => {
+  // 如果手动开启了侧边栏，则显示
+  if (showSidebars.value) return true;
+  
+  // 如果在编辑模式下，则显示
+  if (isEditMode.value) return true;
+  
+  // 某些系统默认不显示侧边栏
+  return false;
+});
+
 const canvasContainerStyle = computed(() => {
-  const left = isEditMode.value ? (isLeftCollapsed.value ? 40 : leftSidebarWidth.value) : 0;
-  const right = isEditMode.value ? (isRightCollapsed.value ? 40 : rightSidebarWidth.value) : 0;
+  const left = shouldShowSidebars.value ? (isLeftCollapsed.value ? 40 : leftSidebarWidth.value) : 0;
+  const right = shouldShowSidebars.value ? (isRightCollapsed.value ? 40 : rightSidebarWidth.value) : 0;
   
   return {
     left: `${left}px`,
@@ -403,17 +416,20 @@ const toggleCollapse = (side) => {
 };
 
 // Sync with GameManager state
-watch(() => gameManager.state.system, (newSystem) => {
+watch(() => world2d.state.system, (newSystem) => {
   if (newSystem && currentSystem.value !== newSystem) {
     currentSystem.value = newSystem;
+    nextTick(resizeCanvas);
   }
 });
 
 // Watch for edit mode changes to resize canvas
 watch(isEditMode, (newVal) => {
   if (newVal) {
+    // 开启编辑模式时，自动展开侧边栏
     isLeftCollapsed.value = false;
     isRightCollapsed.value = false;
+    showSidebars.value = true;
   }
   // Wait for DOM updates
   setTimeout(resizeCanvas, 0);
@@ -435,6 +451,9 @@ const activeSystemComponent = computed(() => {
 
 // Determine if we should show the background grid
 const showGrid = computed(() => {
+  // Always show grid if in Edit Mode
+  if (isEditMode.value) return true;
+
   // Hide grid for opaque full-screen systems to prevent "white line" artifacts at edges
   const opaqueSystems = [
     'main-menu', 
@@ -449,8 +468,19 @@ const showGrid = computed(() => {
 
 // Control Canvas Opacity based on current system
 const canvasStyle = computed(() => {
-  // When in World Map, canvas is fully visible
-  if (currentSystem.value === 'world-map') {
+  // Systems that should show the ECS scene in the background
+  const showBackgroundSystems = [
+    'main-menu',
+    'world-map', 
+    'battle', 
+    'shop', 
+    'list-menu', 
+    'encyclopedia', 
+    'dialogue', 
+    'dev-tools'
+  ];
+
+  if (showBackgroundSystems.includes(currentSystem.value)) {
     return { 
       opacity: 1,
       visibility: 'visible'
@@ -469,7 +499,7 @@ const handleSystemChange = (systemId) => {
   // Update local state (for immediate feedback if needed)
   currentSystem.value = systemId;
   // Also update GameManager state to keep them in sync
-  gameManager.state.system = systemId;
+  world2d.state.system = systemId;
 };
 
 // Canvas Resizing Logic
@@ -513,24 +543,62 @@ const handleKeyDown = (e) => {
   if (e.ctrlKey && e.shiftKey && e.key === 'D') {
     e.preventDefault();
     if (currentSystem.value === 'dev-tools') {
-      // If already in dev-tools, go back to main menu
-      currentSystem.value = 'main-menu';
-      gameManager.state.system = 'main-menu';
+      // If already in dev-tools, go back to world-map or last system
+      const returnTo = ['world-map', 'battle', 'shop', 'encyclopedia'].includes(currentSystem.value) 
+        ? currentSystem.value : 'world-map';
+      currentSystem.value = returnTo;
+      world2d.state.system = returnTo;
     } else {
       // Switch to dev-tools
       currentSystem.value = 'dev-tools';
-      gameManager.state.system = 'dev-tools';
+      world2d.state.system = 'dev-tools';
     }
     logger.info('Dev Tools system toggled:', currentSystem.value);
   }
-  // Keep the overlay dev tools for quick access
+
+  // ` or ~ key: Quick toggle dev-tools (terminal console)
+  // 波浪号键快速打开终端
+  if ((e.key === '`' || e.key === '~') && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+    // 避免在输入框中触发
+    const activeElement = document.activeElement;
+    const isInputActive = activeElement && (
+      activeElement.tagName === 'INPUT' || 
+      activeElement.tagName === 'TEXTAREA' ||
+      activeElement.isContentEditable
+    );
+    
+    if (!isInputActive) {
+      e.preventDefault();
+      if (currentSystem.value === 'dev-tools') {
+        // If already in dev-tools, go back
+        currentSystem.value = 'world-map';
+        world2d.state.system = 'world-map';
+      } else {
+        // Switch to dev-tools
+        currentSystem.value = 'dev-tools';
+        world2d.state.system = 'dev-tools';
+      }
+      logger.info('Dev Tools quick toggle via ~ key:', currentSystem.value);
+    }
+  }
+
+  // Escape: Close Dev Tools and return to previous system
+  if (e.key === 'Escape') {
+    if (currentSystem.value === 'dev-tools') {
+      e.preventDefault();
+      currentSystem.value = 'world-map';
+      world2d.state.system = 'world-map';
+      logger.info('Dev Tools closed via Escape');
+    } else if (showDevTools.value) {
+      e.preventDefault();
+      showDevTools.value = false;
+    }
+  }
+
+  // Keep the overlay dev tools for quick access (legacy)
   if (e.ctrlKey && e.shiftKey && e.key === 'X') {
     e.preventDefault();
     showDevTools.value = !showDevTools.value;
-  }
-  // Escape: Close Dev Tools overlay
-  if (e.key === 'Escape' && showDevTools.value) {
-    showDevTools.value = false;
   }
 };
 
@@ -541,7 +609,7 @@ onMounted(() => {
   setTimeout(resizeCanvas, 0);
 
   if (gameCanvas.value) {
-    gameManager.init(gameCanvas.value);
+    world2d.init(gameCanvas.value);
   }
 
   // 设置右键点击回调（统一在 EditorInteractionSystem 中处理）
@@ -563,20 +631,25 @@ const logState = () => {
 };
 
 const toggleEditMode = () => {
-  gameManager.toggleEditMode();
+  world2d.toggleEditMode();
+};
+
+const toggleSidebars = () => {
+  showSidebars.value = !showSidebars.value;
+  // 切换侧边栏后，重新调整 canvas 大小
+  nextTick(resizeCanvas);
 };
 
 const togglePause = () => {
-  if (gameManager.state.isPaused) {
-    gameManager.resume();
+  if (world2d.state.isPaused) {
+    world2d.resume();
   } else {
-    gameManager.pause();
+    world2d.pause();
   }
 };
 
 const exportScene = () => {
-  const mapId = gameManager.currentScene.value?.mapData?.id || 'unknown';
-  const bundle = ScenarioLoader.exportScene(gameManager.engine, mapId);
+  const bundle = world2d.exportCurrentScene();
   
   const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -607,7 +680,8 @@ const handleEmptyRightClick = (mouseInfo) => {
   const worldX = Math.round(mouseInfo.worldX);
   const worldY = Math.round(mouseInfo.worldY);
 
-  // 获取所有实体模板
+  // ✅ 延迟获取（避免循环依赖）
+  const entityTemplateRegistry = world2d.getEntityTemplateRegistry();
   const templates = entityTemplateRegistry.getAll();
 
   // 构建右键菜单
@@ -675,6 +749,10 @@ const handleEmptyRightClick = (mouseInfo) => {
 // 在指定位置创建实体
 const createEntityAtPosition = (templateId, x, y) => {
   try {
+    // ✅ 延迟获取（避免循环依赖）
+    const world = world2d.getWorld();
+    const entityTemplateRegistry = world2d.getEntityTemplateRegistry();
+    
     // 通过命令系统创建实体
     const globalEntity = world.with('commands').first;
     if (globalEntity) {
@@ -773,6 +851,9 @@ const deleteEntity = (entity) => {
   if (confirm(`确定要删除实体 "${name}" 吗？`)) {
     // 使用 toRaw 获取原始实体对象
     const rawEntity = toRaw(entity);
+    
+    // ✅ 延迟获取（避免循环依赖）
+    const world = world2d.getWorld();
     
     // 发送删除命令
     const globalEntity = world.with('commands').first;

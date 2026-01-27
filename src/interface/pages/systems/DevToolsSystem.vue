@@ -1,246 +1,231 @@
 <template>
-  <div class="dev-tools-system">
+  <div class="dev-tools-overlay">
     <div class="dev-tools-container">
+      
+      <!-- 头部 -->
       <div class="dev-tools-header">
-        <h1>🛠️ 开发工具</h1>
-        <button @click="$emit('change-system', 'main-menu')" class="btn-back">
-          返回主菜单
-        </button>
-      </div>
-
-      <div class="tabs">
-        <button 
-          v-for="tab in tabs" 
-          :key="tab.id"
-          @click="currentTab = tab.id"
-          :class="{ active: currentTab === tab.id }"
-          class="tab-button"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
-
-      <div class="tab-content">
-        <DataValidator v-if="currentTab === 'validator'" />
-        <div v-else-if="currentTab === 'info'" class="info-panel">
-          <h2>📝 使用说明</h2>
-          <p>这是游戏开发工具集，用于验证和调试游戏数据。</p>
-          
-          <h3>数据验证器</h3>
-          <ul>
-            <li>点击"开始验证"按钮验证所有游戏数据</li>
-            <li>自动检查角色、技能、物品和状态数据是否符合 Schema 定义</li>
-            <li>检查全局 ID 重复、跨实体引用有效性（如技能消耗的物品是否存在）</li>
-            <li>显示详细的错误路径、错误类型和修复建议</li>
-          </ul>
-
-          <h3>快捷键</h3>
-          <ul>
-            <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>: 快速切换到开发工具</li>
-            <li>通过下方 Developer Dashboard 的按钮也可以打开</li>
-          </ul>
-
-          <h3>其他功能</h3>
-          <ul>
-            <li>使用 Developer Dashboard 切换不同的游戏界面</li>
-            <li>测试各个系统的功能和数据</li>
-            <li>调试游戏逻辑和数据流</li>
-          </ul>
+        <h1 class="dev-tools-title">
+          <span class="icon">🛠️</span>
+          <span v-t="'dev.devTools.title'"></span>
+        </h1>
+        <div class="tabs-group">
+          <button 
+            v-for="tab in tabs" 
+            :key="tab.id"
+            @click="currentTab = tab.id"
+            :class="['tab-btn', { active: currentTab === tab.id }]"
+          >
+            {{ tab.label }}
+          </button>
         </div>
       </div>
+
+      <!-- 标签内容 -->
+      <div class="tab-content">
+        <!-- 终端标签页 -->
+        <div v-if="currentTab === 'terminal'" class="terminal-tab">
+          <CommandConsole />
+        </div>
+
+        <!-- 验证器标签页 -->
+        <div v-else-if="currentTab === 'validator'" class="validator-tab">
+          <DataValidator />
+        </div>
+
+        <!-- 系统切换标签页 -->
+        <div v-else-if="currentTab === 'systems'" class="system-switcher-tab">
+          <div class="system-section">
+            <h3 v-t="'dev.uiSwitcher'"></h3>
+            <div class="system-buttons">
+              <button 
+                v-for="sys in gameSystems" 
+                :key="sys.id"
+                @click="switchSystem(sys.id)"
+                :class="['system-button', { active: currentSystem === sys.id }]"
+              >
+                <span class="status-indicator" :class="{ active: currentSystem === sys.id }"></span>
+                {{ sys.label }}
+                <span class="button-label">{{ sys.description }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="system-section">
+            <h3 v-t="'dev.debugActions'"></h3>
+            <div class="debug-actions">
+              <button @click="toggleEditMode" :class="['debug-button', { active: isEditMode }]">
+                {{ isEditMode ? '关闭编辑器 (Ctrl+E)' : '开启编辑器 (Ctrl+E)' }}
+              </button>
+              <button 
+                v-if="currentSystem === 'world-map'" 
+                @click="togglePause" 
+                :class="['debug-button', { warn: world2d.state.isPaused }]"
+              >
+                {{ world2d.state.isPaused ? '恢复运行' : '暂停运行' }}
+              </button>
+              <button 
+                v-if="currentSystem === 'world-map'"
+                @click="exportScene" 
+                class="debug-button"
+              >
+                {{ isEditMode ? '📥 导出场景布局' : '📸 捕捉运行快照' }}
+              </button>
+              <button @click="logState" class="debug-button">
+                打印状态到控制台
+              </button>
+              <button @click="addGold" class="debug-button">
+                添加 1000 金币
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 说明标签页 -->
+        <div v-else-if="currentTab === 'info'" class="info-tab">
+          <div class="info-section">
+            <h3>📝 开发者工具说明</h3>
+            <p>这是游戏的开发者工具集，提供命令行终端、数据验证、系统切换等调试功能。</p>
+          </div>
+
+          <div class="info-section">
+            <h4>🖥️ 终端</h4>
+            <p>提供命令行界面，可以执行各种开发调试命令：</p>
+            <ul>
+              <li><code>help</code> - 显示所有可用命令</li>
+              <li><code>gold [数量]</code> - 添加金币</li>
+              <li><code>spawn [实体ID]</code> - 在玩家位置生成实体</li>
+              <li><code>sys [系统名]</code> - 切换到指定系统</li>
+              <li><code>tp [x] [y]</code> - 传送玩家到指定坐标</li>
+              <li><code>state</code> - 显示当前游戏状态</li>
+              <li><code>pause/resume</code> - 暂停/恢复游戏</li>
+              <li><code>edit</code> - 切换编辑器模式</li>
+            </ul>
+            <p>支持方向键↑↓浏览历史命令，Tab键自动补全。</p>
+          </div>
+
+          <div class="info-section">
+            <h4>🔍 数据验证器</h4>
+            <ul>
+              <li>点击"开始验证"按钮验证所有游戏数据</li>
+              <li>自动检查角色、技能、物品和状态数据是否符合 Schema 定义</li>
+              <li>检查全局 ID 重复、跨实体引用有效性</li>
+              <li>显示详细的错误路径、错误类型和修复建议</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <h4>🎮 系统切换</h4>
+            <p>快速切换不同的游戏系统界面，并提供便捷的调试操作：</p>
+            <ul>
+              <li>一键切换主菜单、世界地图、战斗、商店、图鉴等系统</li>
+              <li>开启/关闭编辑器模式</li>
+              <li>暂停/恢复游戏运行</li>
+              <li>导出场景数据</li>
+              <li>添加测试资源</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <h4>⌨️ 快捷键</h4>
+            <ul>
+              <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd> - 打开/关闭开发工具</li>
+              <li><kbd>`</kbd> 或 <kbd>~</kbd> - 快速打开终端（游戏中）</li>
+              <li><kbd>Ctrl</kbd> + <kbd>E</kbd> - 切换编辑器模式</li>
+              <li><kbd>Esc</kbd> - 关闭开发工具</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <h4>💡 提示</h4>
+            <ul>
+              <li>开发工具界面会在游戏画面上叠加显示，不会遮挡背景</li>
+              <li>玩家可以在游戏过程中随时打开终端输入命令</li>
+              <li>使用命令行可以快速测试游戏功能，验证数据，定位 Bug</li>
+              <li>所有调试操作都不会保存到存档，重启游戏即可恢复</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useGameStore } from '@/stores/game';
+import { world2d } from '@world2d'; // ✅ 使用统一接口
+import { editorManager } from '@/game/editor/core/EditorCore';
+import CommandConsole from '@/interface/dev/CommandConsole.vue';
 import DataValidator from '@/interface/dev/DataValidator.vue';
 
 defineEmits(['change-system']);
 
-const currentTab = ref('validator');
+const { t } = useI18n();
+const gameStore = useGameStore();
 
-const tabs = [
-  { id: 'validator', label: '🔍 数据验证' },
-  { id: 'info', label: 'ℹ️ 说明' }
-];
+const currentTab = ref('terminal');
+const currentSystem = computed(() => world2d.state.system);
+const isEditMode = computed(() => editorManager.editMode);
+
+const tabs = computed(() => [
+  { id: 'terminal', label: t('dev.devTools.tabs.terminal') },
+  { id: 'validator', label: t('dev.devTools.tabs.validator') },
+  { id: 'systems', label: t('dev.devTools.tabs.systems') },
+  { id: 'info', label: t('dev.devTools.tabs.info') }
+]);
+
+const gameSystems = computed(() => [
+  { id: 'main-menu', label: t('dev.systems.mainMenu'), description: '开始画面' },
+  { id: 'world-map', label: t('dev.systems.worldMap'), description: '2D 开放世界' },
+  { id: 'battle', label: t('dev.systems.battle'), description: '战斗系统' },
+  { id: 'shop', label: t('dev.systems.shop'), description: '购物界面' },
+  { id: 'encyclopedia', label: t('dev.systems.encyclopedia'), description: '图鉴系统' },
+  { id: 'list-menu', label: t('dev.systems.listMenu'), description: '菜单列表' }
+]);
+
+const switchSystem = (systemId) => {
+  world2d.state.system = systemId;
+};
+
+const toggleEditMode = () => {
+  world2d.toggleEditMode();
+};
+
+const togglePause = () => {
+  if (world2d.state.isPaused) {
+    world2d.resume();
+  } else {
+    world2d.pause();
+  }
+};
+
+const exportScene = () => {
+  // ✅ 使用统一 API 导出场景
+  const bundle = world2d.exportCurrentScene();
+  
+  const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${mapId}_scene_export_${new Date().getTime()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+const logState = () => {
+  console.log('=== 游戏状态 ===');
+  console.log('当前系统:', world2d.state.system);
+  console.log('暂停状态:', world2d.state.isPaused);
+  console.log('编辑模式:', editorManager.editMode);
+  console.log('游戏商店:', gameStore);
+  console.log('================');
+};
+
+const addGold = () => {
+  gameStore.world2d.inventory.gold += 1000;
+};
 </script>
 
-<style scoped>
-.dev-tools-system {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.dev-tools-container {
-  width: 100%;
-  max-width: 1400px;
-  height: 90vh;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.dev-tools-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 25px 30px;
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  color: white;
-  border-bottom: 3px solid #1a252f;
-}
-
-.dev-tools-header h1 {
-  margin: 0;
-  font-size: 28px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.btn-back {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  transition: all 0.3s;
-  box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
-}
-
-.btn-back:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.5);
-}
-
-.btn-back:active {
-  transform: translateY(0);
-}
-
-.tabs {
-  display: flex;
-  background: #ecf0f1;
-  border-bottom: 2px solid #bdc3c7;
-  padding: 0 10px;
-}
-
-.tab-button {
-  padding: 15px 30px;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: all 0.3s;
-  color: #34495e;
-  margin: 0 5px;
-  border-radius: 8px 8px 0 0;
-}
-
-.tab-button:hover {
-  background: #d5dbdb;
-  color: #2c3e50;
-}
-
-.tab-button.active {
-  background: white;
-  border-bottom-color: #3498db;
-  color: #3498db;
-}
-
-.tab-content {
-  flex: 1;
-  overflow: auto;
-  padding: 30px;
-  background: #f8f9fa;
-}
-
-.info-panel {
-  max-width: 900px;
-  margin: 0 auto;
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.info-panel h2 {
-  color: #2c3e50;
-  border-bottom: 3px solid #3498db;
-  padding-bottom: 12px;
-  margin-bottom: 20px;
-  font-size: 24px;
-}
-
-.info-panel h3 {
-  color: #2c3e50;
-  margin-top: 30px;
-  margin-bottom: 15px;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.info-panel p {
-  color: #2c3e50;
-  line-height: 1.8;
-  font-size: 16px;
-}
-
-.info-panel ul {
-  line-height: 2;
-  color: #2c3e50;
-  padding-left: 20px;
-}
-
-.info-panel li {
-  margin-bottom: 8px;
-  color: #34495e;
-}
-
-.info-panel kbd {
-  display: inline-block;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, #f4f4f4 0%, #e8e8e8 100%);
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9em;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: #333;
-  font-weight: bold;
-}
-
-/* 滚动条美化 */
-.tab-content::-webkit-scrollbar {
-  width: 10px;
-}
-
-.tab-content::-webkit-scrollbar-track {
-  background: #ecf0f1;
-  border-radius: 10px;
-}
-
-.tab-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  border-radius: 10px;
-}
-
-.tab-content::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
-}
-</style>
+<style scoped src="@styles/pages/systems/DevToolsSystem.css"></style>

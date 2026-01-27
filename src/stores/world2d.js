@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { MapSaveStateSchema } from '@schema/save';
-import { ScenarioLoader } from '@world2d/ScenarioLoader';
+import { world2d } from '@world2d'; // ✅ 使用统一接口
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('World2dStore');
@@ -20,8 +20,12 @@ export const useWorld2dStore = defineStore('world2d', () => {
     const saveState = (sceneInstance) => {
         if (!sceneInstance) return;
 
-        // 使用 ScenarioLoader 统一导出格式，从场景实例中获取引擎
-        const bundle = ScenarioLoader.exportScene(sceneInstance.engine || {}, currentMapId.value);
+        // ✅ 使用统一 API 导出场景
+        const bundle = world2d.exportCurrentScene();
+        if (!bundle) {
+            logger.warn('Failed to export scene');
+            return;
+        }
 
         // Update current runtime state
         currentMapState.value = bundle;

@@ -2,8 +2,8 @@
     width: 100%;
     height: 100%;
     margin: 0;
-    /* Opaque dark blue */
-    background: #1e1b4b;
+    /* Semi-transparent background to see the World2D scene */
+    background: transparent;
     display: flex;
     flex-direction: column;
     overflow: hidden;

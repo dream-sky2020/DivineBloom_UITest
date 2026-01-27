@@ -33,19 +33,19 @@ export const SystemSpecs = {
         workspace: 'world-editor'
     },
     'battle': {
-        capabilities: [Capabilities.ENTITY_INSPECTION, Capabilities.SCENE_TREE, Capabilities.BATTLE_LOG],
+        capabilities: [Capabilities.ECS_EDITING, Capabilities.ENTITY_INSPECTION, Capabilities.SCENE_TREE, Capabilities.BATTLE_LOG],
         workspace: 'battle-inspector'
     },
     'shop': {
-        capabilities: [Capabilities.ENTITY_INSPECTION, Capabilities.BATTLE_LOG],
+        capabilities: [Capabilities.ECS_EDITING, Capabilities.ENTITY_INSPECTION, Capabilities.SCENE_TREE, Capabilities.BATTLE_LOG],
         workspace: 'world-editor'
     },
     'list-menu': {
-        capabilities: [Capabilities.ENTITY_INSPECTION, Capabilities.BATTLE_LOG],
+        capabilities: [Capabilities.ECS_EDITING, Capabilities.ENTITY_INSPECTION, Capabilities.SCENE_TREE, Capabilities.BATTLE_LOG],
         workspace: 'world-editor'
     },
     'encyclopedia': {
-        capabilities: [Capabilities.ENTITY_INSPECTION, Capabilities.BATTLE_LOG],
+        capabilities: [Capabilities.ECS_EDITING, Capabilities.ENTITY_INSPECTION, Capabilities.SCENE_TREE, Capabilities.BATTLE_LOG],
         workspace: 'world-editor'
     },
     'dev-tools': {

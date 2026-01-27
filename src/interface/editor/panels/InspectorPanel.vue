@@ -309,9 +309,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, toRaw, computed, watch } from 'vue'
-import { world } from '@world2d/world'
+import { world2d } from '@world2d' // ✅ 使用统一接口
 import { editorManager } from '@/game/editor/core/EditorCore'
 import EditorPanel from '../components/EditorPanel.vue'
+
+// ✅ 延迟获取函数（避免循环依赖）
+const getWorld = () => world2d.getWorld()
 
 // 属性编辑同步
 const localEntityState = ref(null)
@@ -418,14 +421,14 @@ const confirmDelete = () => {
     const rawEntity = toRaw(entity);
     
     // 发送命令
-    const globalEntity = world.with('commands').first;
+    const globalEntity = getWorld().with('commands').first;
     if (globalEntity) {
       globalEntity.commands.queue.push({
         type: 'DELETE_ENTITY',
         payload: { entity: rawEntity }
       });
     } else {
-      world.remove(rawEntity);
+      getWorld().remove(rawEntity);
     }
     editorManager.selectedEntity = null;
   }

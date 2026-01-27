@@ -30,7 +30,7 @@ export const InputSenseSystem = {
       if (!entity.rawInput) {
         world.addComponent(entity, 'rawInput', {
           axes: { x: 0, y: 0 },
-          buttons: { interact: false, run: false, menu: false, cancel: false }
+          buttons: { interact: false, run: false, menu: false, cancel: false, shop: false }
         })
       }
 
@@ -41,7 +41,7 @@ export const InputSenseSystem = {
           console.error(`[InputSenseSystem] Invalid rawInput structure on Entity ${entity.id || 'N/A'}`);
           // Re-init
           raw.axes = { x: 0, y: 0 };
-          raw.buttons = { interact: false, run: false, menu: false, cancel: false };
+          raw.buttons = { interact: false, run: false, menu: false, cancel: false, shop: false };
       }
 
       const keys = input // 假设 input 提供了类似 phaser/custom 的接口
@@ -62,8 +62,9 @@ export const InputSenseSystem = {
               // Buttons
               raw.buttons.run = keys.isDown('ShiftLeft') || keys.isDown('ShiftRight')
               raw.buttons.interact = keys.isDown('Space') || keys.isDown('KeyE') || keys.isDown('Enter')
-              raw.buttons.menu = keys.isDown('Escape')
+              raw.buttons.menu = keys.isDown('KeyM')
               raw.buttons.cancel = keys.isDown('Escape') || keys.isDown('Backspace')
+              raw.buttons.shop = keys.isDown('KeyP') // Let's use P for Shop
           } else {
               // Maybe accessing raw properties? Or input interface changed?
               // console.warn('[InputSenseSystem] Input interface mismatch: isDown not found');

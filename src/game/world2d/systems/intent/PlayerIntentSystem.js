@@ -36,7 +36,8 @@ export const PlayerIntentSystem = {
                     move: { x: 0, y: 0 },
                     wantsToRun: false,
                     wantsToInteract: false,
-                    wantsToOpenMenu: false
+                    wantsToOpenMenu: false,
+                    wantsToOpenShop: false
                 })
             }
 
@@ -73,6 +74,7 @@ export const PlayerIntentSystem = {
             intent.wantsToRun = !!raw.buttons.run
             intent.wantsToInteract = !!raw.buttons.interact
             intent.wantsToOpenMenu = !!raw.buttons.menu
+            intent.wantsToOpenShop = !!raw.buttons.shop
 
             // Debug Log (Optional)
             if (intent.wantsToInteract) {

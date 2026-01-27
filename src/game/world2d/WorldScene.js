@@ -22,9 +22,10 @@ export class WorldScene {
      * @param {Function} [onSwitchMap]
      * @param {Function} [onInteract]
      * @param {Function} [onOpenMenu]
+     * @param {Function} [onOpenShop]
      * @param {Object} [stateProvider]
      */
-    constructor(engine, onEncounter, initialState = null, mapData = null, entryId = 'default', onSwitchMap = null, onInteract = null, onOpenMenu = null, stateProvider = null) {
+    constructor(engine, onEncounter, initialState = null, mapData = null, entryId = 'default', onSwitchMap = null, onInteract = null, onOpenMenu = null, onOpenShop = null, stateProvider = null) {
         // Clear ECS world on scene init to prevent stale entities
         clearWorld()
 
@@ -33,6 +34,7 @@ export class WorldScene {
         this.onSwitchMap = onSwitchMap
         this.onInteract = onInteract
         this.onOpenMenu = onOpenMenu
+        this.onOpenShop = onOpenShop
         this.stateProvider = stateProvider || {}
 
         this.mapData = mapData || {}
@@ -234,6 +236,7 @@ export class WorldScene {
             onSwitchMap: null,
             onInteract: this.onInteract,
             onOpenMenu: this.onOpenMenu,
+            onOpenShop: this.onOpenShop,
             gameManager: this.stateProvider.gameManager // 传入 gameManager
         }, this.mapData)
 

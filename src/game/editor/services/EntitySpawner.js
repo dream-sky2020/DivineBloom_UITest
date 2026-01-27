@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue';
-import { entityTemplateRegistry } from '@world2d/entities/internal/EntityTemplateRegistry';
-import { world } from '@world2d/world';
+import { world2d } from '@world2d'; // ✅ 使用统一接口
 import { editorManager } from '@/game/editor/core/EditorCore';
 import { createLogger } from '@/utils/logger';
 
@@ -16,8 +15,13 @@ export class EntitySpawner {
 
         this.activeCategory = ref('all');
 
-        // 定义响应式计算属性
-        this.allTemplates = computed(() => entityTemplateRegistry.getAll());
+        // ✅ 延迟获取内部对象（避免循环依赖）
+        // 使用 getter 在访问时才获取
+        this.allTemplates = computed(() => {
+            const registry = world2d.getEntityTemplateRegistry();
+            return registry.getAll();
+        });
+        
         this.filteredTemplates = computed(() => {
             const templates = this.allTemplates.value;
             if (this.activeCategory.value === 'all') {
@@ -32,6 +36,10 @@ export class EntitySpawner {
      */
     createEntity(template) {
         try {
+            // ✅ 在方法中获取内部对象（避免循环依赖）
+            const world = world2d.getWorld();
+            const entityTemplateRegistry = world2d.getEntityTemplateRegistry();
+
             // 获取场景中心位置作为默认生成位置
             const camera = world.with('camera').first?.camera;
             const centerX = camera?.x || 960;

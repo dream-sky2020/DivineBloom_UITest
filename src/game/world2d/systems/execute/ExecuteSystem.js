@@ -47,11 +47,19 @@ export const ExecuteSystem = {
 
     // 3. 处理全局玩家意图 (Player Intent)
     const playerEntity = world.with('player', 'playerIntent').first;
-    if (playerEntity && playerEntity.playerIntent.wantsToOpenMenu) {
-       if (callbacks.onOpenMenu) {
-           callbacks.onOpenMenu();
-           playerEntity.playerIntent.wantsToOpenMenu = false;
-       }
+    if (playerEntity) {
+      if (playerEntity.playerIntent.wantsToOpenMenu) {
+         if (callbacks.onOpenMenu) {
+             callbacks.onOpenMenu();
+             playerEntity.playerIntent.wantsToOpenMenu = false;
+         }
+      }
+      if (playerEntity.playerIntent.wantsToOpenShop) {
+         if (callbacks.onOpenShop) {
+             callbacks.onOpenShop();
+             playerEntity.playerIntent.wantsToOpenShop = false;
+         }
+      }
     }
 
     // 4. 处理 Legacy/UI Events (EventQueue) - 保持兼容性

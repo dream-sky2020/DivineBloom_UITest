@@ -60,16 +60,17 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, inject, toRaw } from 'vue'
-import { world } from '@world2d/world'
-import { gameManager } from '@world2d/GameManager'
+import { world2d } from '@world2d' // ✅ 使用统一接口
 import { editorManager } from '@/game/editor/core/EditorCore'
-import { ScenarioLoader } from '@world2d/ScenarioLoader'
 import EditorPanel from '../components/EditorPanel.vue'
+
+// ✅ 延迟获取函数（避免循环依赖）
+const getWorld = () => world2d.getWorld()
 
 const { openContextMenu } = inject('editorContextMenu');
 
 const entities = ref([])
-const mapId = computed(() => gameManager.currentScene.value?.mapData?.id || '')
+const mapId = computed(() => world2d.currentScene.value?.mapData?.id || '')
 const selectedEntity = computed(() => editorManager.selectedEntity)
 
 const sortedEntities = computed(() => {
@@ -119,7 +120,7 @@ const confirmDelete = (entity) => {
     const rawEntity = toRaw(entity);
     
     // 发送命令给 ExecuteSystem
-    const globalEntity = world.with('commands').first;
+    const globalEntity = getWorld().with('commands').first;
     if (globalEntity) {
       globalEntity.commands.queue.push({
         type: 'DELETE_ENTITY',
@@ -127,7 +128,7 @@ const confirmDelete = (entity) => {
       });
     } else {
       // 降级方案（如果全局实体还没初始化）
-      world.remove(rawEntity);
+      getWorld().remove(rawEntity);
     }
 
     if (editorManager.selectedEntity === entity) {
@@ -137,9 +138,14 @@ const confirmDelete = (entity) => {
 }
 
 const handleExport = () => {
-  const mapId = gameManager.currentScene.value?.mapData?.id || 'unknown';
-  const bundle = ScenarioLoader.exportScene(gameManager.engine, mapId);
+  // ✅ 使用统一 API 导出场景
+  const bundle = world2d.exportCurrentScene();
+  if (!bundle) {
+    console.error('Failed to export scene');
+    return;
+  }
   
+  const mapId = world2d.currentScene.value?.mapData?.id || 'unknown';
   const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -152,7 +158,7 @@ const handleExport = () => {
 let rafId = 0
 const syncData = () => {
   const allEntities = []
-  for (const entity of world) {
+  for (const entity of getWorld()) {
     allEntities.push(entity)
   }
   entities.value = allEntities

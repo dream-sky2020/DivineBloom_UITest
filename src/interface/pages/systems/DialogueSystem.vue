@@ -56,14 +56,13 @@ const handleOverlayClick = () => {
 }
 
 .dialogue-box {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.75);
   border: 2px solid #94a3b8;
   border-radius: 8px;
   padding: 24px;
   width: 90%;
   max-width: 800px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px);
   animation: slideUp 0.3s ease-out;
   display: flex;
   flex-direction: column;

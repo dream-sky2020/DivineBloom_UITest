@@ -56,8 +56,7 @@
 import { computed, ref, inject } from 'vue'
 import { schemasManager } from '@/schemas/SchemasManager'
 import { useGameStore } from '@/stores/game'
-import { ScenarioLoader } from '@world2d/ScenarioLoader'
-import { gameManager } from '@world2d/GameManager'
+import { world2d } from '@world2d' // ✅ 使用统一接口
 import { editorManager } from '@/game/editor/core/EditorCore'
 import { createLogger } from '@/utils/logger'
 import EditorPanel from '../components/EditorPanel.vue'
@@ -91,8 +90,8 @@ const confirmResetMap = (mapId) => {
   if (confirm(`确定要重置场景 "${mapId}" 的所有修改吗？此操作不可撤销。`)) {
     delete worldStore.worldStates[mapId];
     if (currentMapId.value === mapId) {
-      // 如果重置的是当前场景，重新加载
-      gameManager.loadMap(mapId);
+      // ✅ 使用统一 API 重新加载
+      world2d.loadMap(mapId);
     }
     logger.info('Map state reset:', mapId);
   }
@@ -106,12 +105,12 @@ const switchMap = async (mapId) => {
     loadingMapId.value = mapId
     
     // 1. 保存当前地图状态
-    if (gameManager.currentScene.value) {
-      worldStore.saveState(gameManager.currentScene.value)
+    if (world2d.currentScene.value) {
+      worldStore.saveState(world2d.currentScene.value)
     }
     
-    // 2. 切换场景 (使用 loadMap 强制加载新地图)
-    await gameManager.loadMap(mapId)
+    // 2. ✅ 使用统一 API 切换场景
+    await world2d.loadMap(mapId)
   } catch (error) {
     logger.error('Failed to switch map:', error)
     alert(`切换地图失败: ${error.message}`)
@@ -122,7 +121,9 @@ const switchMap = async (mapId) => {
 }
 
 const handleExportProject = async () => {
-  const bundle = await ScenarioLoader.exportProject(gameManager.engine, worldStore.worldStates, schemasManager.mapLoaders)
+  // ✅ 使用兼容接口获取 ScenarioLoader（高级功能）
+  const ScenarioLoader = world2d.getScenarioLoader()
+  const bundle = await ScenarioLoader.exportProject(world2d.engine, worldStore.worldStates, schemasManager.mapLoaders)
   const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -140,6 +141,8 @@ const handleImportProject = (event) => {
   reader.onload = (e) => {
     try {
       const bundle = JSON.parse(e.target.result)
+      // ✅ 使用兼容接口获取 ScenarioLoader
+      const ScenarioLoader = world2d.getScenarioLoader()
       const newStates = ScenarioLoader.importProject(bundle)
       worldStore.bulkUpdateStates(newStates)
       alert('场景导入成功！请重新加载或切换地图。')

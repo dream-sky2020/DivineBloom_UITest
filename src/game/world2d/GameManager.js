@@ -196,6 +196,7 @@ class GameManager {
             (targetMapId) => { worldStore.currentMapId = targetMapId },
             this._onInteract.bind(this),
             () => { this.state.system = 'list-menu' }, // onOpenMenu
+            () => { this.state.system = 'shop' }, // onOpenShop
             { worldStore, sceneManager: this.sceneManager, gameManager: this }
         )
 
@@ -283,8 +284,9 @@ class GameManager {
         // 全局暂停只影响非场景逻辑（如果有的话）
         // 场景内部现在会根据 this.state.isPaused 自行处理逻辑更新与编辑器更新的隔离
 
-        // Only update WorldScene if we are in Map Mode
-        if (this.state.system === 'world-map') {
+        // Update WorldScene in Map, Battle, Shop or List Menu Mode
+        if (this.state.system === 'world-map' || this.state.system === 'battle' || 
+            this.state.system === 'shop' || this.state.system === 'list-menu') {
             if (this.currentScene.value) {
                 this.currentScene.value.update(dt)
             }

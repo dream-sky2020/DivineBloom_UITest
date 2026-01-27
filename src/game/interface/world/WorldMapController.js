@@ -1,7 +1,6 @@
 import { ref } from 'vue';
-import { gameManager } from '@world2d/GameManager';
+import { world2d } from '@world2d'; // ✅ 使用统一接口
 import { useGameStore } from '@/stores/game';
-import { world } from '@world2d/world';
 
 export class WorldMapController {
     constructor() {
@@ -17,52 +16,30 @@ export class WorldMapController {
      * UI 同步循环
      */
     syncUI = () => {
-        const scene = gameManager.currentScene.value;
-        const engine = gameManager.engine;
-
-        if (!scene || !engine) {
+        // ✅ 使用统一的 API 获取调试信息
+        const debugInfo = world2d.getDebugInfo();
+        
+        if (!world2d.currentScene.value || !world2d.engine) {
             this.uiRafId = requestAnimationFrame(this.syncUI);
             return;
         }
-        
-        const player = scene.player;
-        if (!player) {
-            this.uiRafId = requestAnimationFrame(this.syncUI);
-            return;
-        }
-        
-        // 计算追击中的敌人数量
-        let chasingCount = 0;
-        if (scene.gameEntities) {
-            const entities = scene.gameEntities;
-            for (let i = 0; i < entities.length; i++) {
-                const e = entities[i];
-                if (e.entity && e.entity.aiState && e.entity.aiState.state === 'chase') {
-                    chasingCount++;
-                }
-            }
-        }
-
-        // 从全局实体获取鼠标位置
-        const globalEntity = world.with('globalManager', 'mousePosition').first;
-        const mouseX = globalEntity?.mousePosition?.worldX || 0;
-        const mouseY = globalEntity?.mousePosition?.worldY || 0;
 
         // 更新响应式状态
         this.debugInfo.value = {
-            x: player.position ? player.position.x : 0,
-            y: player.position ? player.position.y : 0,
-            mouseX: mouseX,
-            mouseY: mouseY,
-            lastInput: engine.input.lastInput,
-            chasingCount
+            x: debugInfo.playerX,
+            y: debugInfo.playerY,
+            mouseX: debugInfo.mouseWorldX,
+            mouseY: debugInfo.mouseWorldY,
+            lastInput: debugInfo.lastInput,
+            chasingCount: debugInfo.chasingCount
         };
         
         this.uiRafId = requestAnimationFrame(this.syncUI);
     };
 
     async start() {
-        await gameManager.startWorldMap();
+        // ✅ 使用统一的 API 启动世界地图
+        await world2d.startWorldMap();
         this.syncUI();
     }
 
@@ -71,8 +48,8 @@ export class WorldMapController {
             cancelAnimationFrame(this.uiRafId);
         }
         // 离开时保存状态
-        if (gameManager.currentScene.value) {
-            this.worldStore.saveState(gameManager.currentScene.value);
+        if (world2d.currentScene.value) {
+            this.worldStore.saveState(world2d.currentScene.value);
         }
     }
 
