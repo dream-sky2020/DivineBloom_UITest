@@ -87,10 +87,10 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import GameDataGrid from '@/interface/ui/GameDataGrid.vue';
 import GameIcon from '@/interface/ui/GameIcon.vue';
-import { useInventoryStore } from '@/stores/inventory';
+import { usePartyStore } from '@/stores/party';
 
 const { t, locale } = useI18n();
-const store = useInventoryStore();
+const store = usePartyStore();
 
 const getLocalizedText = (input) => {
   if (!input) return '';

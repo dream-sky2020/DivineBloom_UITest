@@ -18,6 +18,15 @@ import * as DisplaySystem from './displaySystem'
 import * as AI from './ai'
 import * as UnitSystem from './unitSystem' // New
 import * as ActionSystem from './actionSystem' // New
+import * as InitSystem from './initSystem' // New
+import * as PlayerActionSystem from './PlayerActionSystem'
+import * as AdjustBoostSystem from './AdjustBoostSystem'
+import * as SetPendingActionSystem from './SetPendingAction'
+import * as StartTurnAction from './StartTurnAction'
+import * as EndTurnSystem from './EndTurnSystem'
+import * as ProcessEnemyTurnSystem from './ProcessEnemyTurnSystem'
+import * as UpdateATBSystem from './UpdateATBSystem'
+import * as CheckBattleStatusSystem from './CheckBattleStatusSystem'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('BattleFacade')
@@ -51,6 +60,15 @@ class BattleFacade {
         this.ai = AI
         this.unit = UnitSystem
         this.action = ActionSystem
+        this.init = InitSystem
+        this.playerAction = PlayerActionSystem
+        this.adjustBoost = AdjustBoostSystem
+        this.setPending = SetPendingActionSystem
+        this.startTurn = StartTurnAction
+        this.endTurn = EndTurnSystem
+        this.processEnemy = ProcessEnemyTurnSystem
+        this.updateATB = UpdateATBSystem
+        this.checkStatus = CheckBattleStatusSystem
     }
 
     // ==================== 回调管理 ====================
@@ -178,6 +196,20 @@ class BattleFacade {
      */
     getEnemyAction(enemyId, context) {
         return this.ai.getEnemyAction(enemyId, context)
+    }
+
+    /**
+     * 初始化战斗单位（包括敌人和玩家队伍）
+     */
+    setupBattle(options) {
+        return this.init.setupBattle(this, options);
+    }
+
+    /**
+     * 战斗开始时的统一处理
+     */
+    onBattleStart(allUnits, context) {
+        return this.init.onBattleStart(this, allUnits, context);
     }
 }
 

@@ -1,16 +1,19 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { charactersDb } from '@schema/characters';
 import { skillsDb } from '@schema/skills';
+import { itemsDb } from '@schema/items';
+
+function getAllDefinedItems(count = 10) {
+  return Object.keys(itemsDb).map(id => ({
+    id,
+    count
+  }));
+}
 
 export const usePartyStore = defineStore('party', () => {
-    // 存储队伍成员的运行时状态
-    // Key: Character ID, Value: Object { currentHp, currentMp, ... }
+    // --- Party State ---
     const members = ref({});
-    
-    // 简单的队伍编队 (Slot mapping)
-    // 0: { front: 'character_flame_swordsman', back: 'character_tempest_mage' }
-    // ...
     const formation = ref([
         { front: 'character_flame_swordsman', back: 'character_tempest_mage' },
         { front: 'character_holy_brawler', back: 'character_blaze_gunner' },
@@ -18,16 +21,19 @@ export const usePartyStore = defineStore('party', () => {
         { front: 'character_jia_baoyu', back: null }
     ]);
 
+    // --- Inventory State ---
+    const inventoryState = ref(getAllDefinedItems());
+
+    // --- Common Actions (Reset, Serialize, Load) ---
     const reset = () => {
         members.value = {};
-        // Reset formation to default or empty? Let's keep default structure but maybe clear chars?
-        // For now reset to default formation
         formation.value = [
             { front: 'character_flame_swordsman', back: 'character_tempest_mage' },
             { front: 'character_holy_brawler', back: 'character_blaze_gunner' },
             { front: 'character_don_quixote', back: 'character_scheherazade' },
             { front: 'character_jia_baoyu', back: null }
         ];
+        inventoryState.value = getAllDefinedItems();
     };
 
     const serialize = () => {
@@ -40,9 +46,62 @@ export const usePartyStore = defineStore('party', () => {
     const loadState = (data) => {
         if (data.members) members.value = data.members;
         if (data.formation) formation.value = data.formation;
+        if (data.inventory) inventoryState.value = data.inventory;
     };
 
-    // 初始化队伍（如果尚未初始化）
+    // --- Inventory Actions & Getters ---
+    function addItem(itemId, amount = 1) {
+        const existingItem = inventoryState.value.find(item => item.id === itemId);
+        if (existingItem) {
+            existingItem.count += amount;
+        } else {
+            inventoryState.value.push({ id: itemId, count: amount });
+        }
+    }
+
+    function removeItem(itemId, amount = 1) {
+        const index = inventoryState.value.findIndex(item => item.id === itemId);
+        if (index !== -1) {
+            const item = inventoryState.value[index];
+            if (item.count > amount) {
+                item.count -= amount;
+            } else {
+                inventoryState.value.splice(index, 1);
+            }
+        }
+    }
+
+    const getAllItems = computed(() => {
+        return inventoryState.value.map(slot => {
+            const dbItem = itemsDb[slot.id];
+            if (!dbItem) return null;
+
+            return {
+                ...dbItem,
+                count: slot.count,
+                footerRight: `x${slot.count}`,
+                category: mapTypeToCategory(dbItem.type)
+            };
+        }).filter(item => item !== null);
+    });
+
+    function mapTypeToCategory(type) {
+        if (type === 'itemTypes.consumable' || type === 'Consumable') return 'Consumables';
+        if (type === 'itemTypes.weapon' || type === 'Weapon') return 'Weapons';
+        if (type === 'itemTypes.armor' || type === 'Armor') return 'Armor';
+        if (type === 'itemTypes.accessory' || type === 'Accessory') return 'Accessories';
+        if (type === 'itemTypes.material' || type === 'Material') return 'Materials';
+        if (type === 'itemTypes.ammo' || type === 'Ammo') return 'Ammo';
+        if (type === 'itemTypes.keyItem' || type === 'Key Item') return 'Key Items';
+        return 'Others';
+    }
+
+    function getItemsByCategory(category) {
+        if (category === 'All') return getAllItems.value;
+        return getAllItems.value.filter(item => item.category === category);
+    }
+
+    // --- Party Actions & Getters ---
     const initParty = () => {
         if (Object.keys(members.value).length > 0) return;
 
@@ -261,6 +320,7 @@ export const usePartyStore = defineStore('party', () => {
     };
 
     return {
+        // Party State
         members,
         formation,
         initParty,
@@ -270,6 +330,15 @@ export const usePartyStore = defineStore('party', () => {
         equipSkillToSlot,
         unequipSkill,
         unequipSkillFromSlot,
+
+        // Inventory State & Actions
+        inventoryState,
+        addItem,
+        removeItem,
+        getAllItems,
+        getItemsByCategory,
+
+        // Common
         reset,
         serialize,
         loadState

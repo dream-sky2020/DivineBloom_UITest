@@ -1,7 +1,6 @@
 // src/stores/game.js
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useInventoryStore } from './inventory';
 import { usePartyStore } from './party';
 import { useQuestStore } from './quest';
 import { useWorld2dStore } from './world2d';
@@ -15,7 +14,6 @@ const logger = createLogger('GameStore');
 
 export const useGameStore = defineStore('game', () => {
     // 引用所有子 Store
-    const inventory = useInventoryStore();
     const party = usePartyStore();
     const quest = useQuestStore();
     const world2d = useWorld2dStore();
@@ -66,7 +64,7 @@ export const useGameStore = defineStore('game', () => {
                 slotId
             },
             data: {
-                inventory: inventory.serialize(),
+                inventory: party.inventoryState,
                 party: party.serialize(),
                 quest: quest.serialize(),
                 world: world2d.serialize(),
@@ -106,8 +104,8 @@ export const useGameStore = defineStore('game', () => {
             saveSlotId.value = slotId;
 
             // 3. 恢复各模块数据
-            if (saveData.data.inventory) inventory.loadState(saveData.data.inventory);
             if (saveData.data.party) party.loadState(saveData.data.party);
+            if (saveData.data.inventory) party.loadState({ inventory: saveData.data.inventory });
             if (saveData.data.quest) quest.loadState(saveData.data.quest);
             if (saveData.data.world) world2d.loadState(saveData.data.world);
 
@@ -128,7 +126,6 @@ export const useGameStore = defineStore('game', () => {
         stopGameTimer();
         isGameRunning.value = false;
 
-        inventory.reset();
         party.reset();
         quest.reset();
         world2d.reset();
@@ -162,7 +159,6 @@ export const useGameStore = defineStore('game', () => {
         saveSlotId,
 
         // Child Stores (如果希望通过 gameStore 访问)
-        inventory,
         party,
         quest,
         world2d,

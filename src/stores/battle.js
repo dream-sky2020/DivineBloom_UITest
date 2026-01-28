@@ -1,9 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { charactersDb } from '@schema/characters';
 import { skillsDb } from '@schema/skills';
 import { itemsDb } from '@schema/items';
-import { useInventoryStore } from './inventory';
 import { usePartyStore } from './party';
 
 // --- Battle System Facade Integration ---
@@ -17,7 +15,6 @@ import { createLogger } from '@/utils/logger';
 const logger = createLogger('BattleStore');
 
 export const useBattleStore = defineStore('battle', () => {
-    const inventoryStore = useInventoryStore();
     const partyStore = usePartyStore();
 
     // --- State ---
@@ -76,7 +73,7 @@ export const useBattleStore = defineStore('battle', () => {
     });
 
     const battleItems = computed(() => {
-        return inventoryStore.getAllItems.filter(item => item.type === 'itemTypes.consumable');
+        return partyStore.getAllItems.filter(item => item.type === 'itemTypes.consumable');
     });
 
     // --- Actions ---
@@ -90,31 +87,15 @@ export const useBattleStore = defineStore('battle', () => {
 
     const setPendingAction = (action) => {
         pendingAction.value = action;
-        if (action && action.targetType) {
-            validTargetIds.value = battleFacade.target.getValidTargetIds({
-                partySlots: partySlots.value,
-                enemies: enemies.value,
-                actor: activeUnit.value
-            }, action.targetType);
-        } else {
-            validTargetIds.value = [];
-        }
+        validTargetIds.value = battleFacade.setPending.getValidTargetIds(battleFacade, action, {
+            partySlots: partySlots.value,
+            enemies: enemies.value,
+            actor: activeUnit.value
+        });
     };
 
     const adjustBoost = (delta) => {
-        if (!activeUnit.value || !activeUnit.value.isPlayer) return;
-
-        let newLevel;
-        if (delta === 'reset') {
-            newLevel = 0;
-        } else {
-            newLevel = boostLevel.value + delta;
-        }
-
-        const maxBoost = 3; 
-        const currentEnergy = activeUnit.value.energy || 0;
-        newLevel = Math.max(0, Math.min(newLevel, currentEnergy, maxBoost));
-        boostLevel.value = newLevel;
+        boostLevel.value = battleFacade.adjustBoost.calculateBoostLevel(delta, boostLevel.value, activeUnit.value);
     };
 
     // Build Context for Mechanics
@@ -126,11 +107,11 @@ export const useBattleStore = defineStore('battle', () => {
         turnCount: turnCount.value,
         // Item Cost Support
         checkItem: (itemId, amount) => {
-            const item = inventoryStore.inventoryState.find(i => i.id === itemId);
+            const item = partyStore.inventoryState.find(i => i.id === itemId);
             return item && item.count >= amount;
         },
         consumeItem: (itemId, amount) => {
-            inventoryStore.removeItem(itemId, amount);
+            partyStore.removeItem(itemId, amount);
         },
         // Passive Effect Executor
         executeEffect: (effect, target, actor, skill) => {
@@ -152,80 +133,44 @@ export const useBattleStore = defineStore('battle', () => {
         triggeredEnemyUuid.value = enemyUuid;
         lastBattleResult.value = null;
 
-        // Setup Enemies
-        if (enemyList) {
-            enemies.value = enemyList.map(e => {
-                if (e.id && charactersDb[e.id]) {
-                    const base = battleFacade.createUnit(e.id, false);
-                    return { ...base, ...e, atb: 0, isPlayer: false, actionCount: 0 };
-                }
-                return { ...e, atb: 0, isPlayer: false, actionCount: 0 };
-            });
-        } else {
-            // Default Mock Enemies
-            enemies.value = [
-                battleFacade.createUnit('character_emperor_shenwu', false),
-                battleFacade.createUnit('character_shahryar', false),
-                battleFacade.createUnit('character_hefietian', false),
-                battleFacade.createUnit('character_yibitian', false)
-            ].filter(e => e !== null);
-        }
-
-        // Setup Party
+        // Setup Party Base State
         partyStore.initParty();
-        partySlots.value = partyStore.formation.map(slot => ({
-            front: battleFacade.hydrateUnit(partyStore.getCharacterState(slot.front), true),
-            back: battleFacade.hydrateUnit(partyStore.getCharacterState(slot.back), true)
-        }));
 
-        battleState.value = 'active';
-        log('battle.started');
-
-        // Process Battle Start Passives
-        const context = getContext();
-        [...partySlots.value.map(s => s.front), ...partySlots.value.map(s => s.back), ...enemies.value].forEach(unit => {
-            if (unit) battleFacade.skill.processPassiveTrigger(unit, 'battle_start', context);
+        // Use Facade to setup units
+        const { enemies: newEnemies, partySlots: newPartySlots } = battleFacade.setupBattle({
+            enemyList,
+            partyFormation: partyStore.formation,
+            getCharacterState: (id) => partyStore.getCharacterState(id)
         });
+
+        enemies.value = newEnemies;
+        partySlots.value = newPartySlots;
+        battleState.value = 'active';
+
+        // Process Battle Start (Log & Passives)
+        const allUnits = [
+            ...partySlots.value.map(s => s.front),
+            ...partySlots.value.map(s => s.back),
+            ...enemies.value
+        ];
+        battleFacade.onBattleStart(allUnits, getContext());
     };
 
     // ATB Tick
     const updateATB = (dt) => {
-        if (battleState.value !== 'active' || atbPaused.value) return;
-
-        const MAX_ATB = 100;
-        const MAX_BP = 6;
-        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
-
-        const unitEntries = [];
-        enemies.value.forEach(e => {
-            if (!isDead(e)) unitEntries.push({ unit: e, isBackRow: false });
-        });
-        partySlots.value.forEach(slot => {
-            if (slot.front && !isDead(slot.front)) unitEntries.push({ unit: slot.front, isBackRow: false });
-            if (slot.back && !isDead(slot.back)) unitEntries.push({ unit: slot.back, isBackRow: true });
-        });
-
-        for (const { unit, isBackRow } of unitEntries) {
-            const tick = battleFacade.time.calculateAtbTick(unit, dt);
-
-            if (isBackRow) {
-                unit.atb = (unit.atb || 0) + tick;
-            } else {
-                unit.atb = Math.min(MAX_ATB, (unit.atb || 0) + tick);
+        battleFacade.updateATB.updateATB(
+            battleFacade,
+            dt,
+            {
+                enemies: enemies.value,
+                partySlots: partySlots.value,
+                atbPaused: atbPaused.value,
+                battleState: battleState.value
+            },
+            {
+                onStartTurn: (u) => startTurn(u)
             }
-
-            if (unit.atb >= MAX_ATB) {
-                if (isBackRow) {
-                    unit.atb -= MAX_ATB;
-                    unit.energy = Math.min(MAX_BP, (unit.energy || 0) + 2);
-                } else if (!atbPaused.value) {
-                    unit.atb = MAX_ATB;
-                    unit.energy = Math.min(MAX_BP, (unit.energy || 0) + 1);
-                    startTurn(unit);
-                    return;
-                }
-            }
-        }
+        );
     };
 
     const startTurn = (unit) => {
@@ -234,78 +179,46 @@ export const useBattleStore = defineStore('battle', () => {
         unit.isDefending = false;
         boostLevel.value = 0;
 
-        const context = getContext();
-        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
-
-        battleFacade.skill.processPassiveTrigger(unit, 'turn_start', context);
-        battleFacade.effect.processTurnStatuses(unit, context);
-
-        if (isDead(unit)) {
-            endTurn(unit);
-            return;
-        }
-
-        const cannotMove = battleFacade.status.checkCrowdControl(unit);
-        if (cannotMove) {
-            log('battle.cannotMove', { name: unit.name });
-            battleFacade.skill.processPassiveTrigger(unit, 'on_cc_skip', context);
-            setTimeout(() => endTurn(unit), 1000);
-            return;
-        }
-
-        if (!unit.isPlayer) {
-            processEnemyTurn(unit);
-        } else {
-            waitingForInput.value = true;
-        }
+        battleFacade.startTurn.startTurn(
+            battleFacade,
+            unit,
+            { context: getContext() },
+            {
+                onLog: log,
+                onEndTurn: (u) => endTurn(u),
+                onProcessEnemyTurn: (u) => processEnemyTurn(u),
+                onWaitInput: () => { waitingForInput.value = true; }
+            }
+        );
     };
 
     const endTurn = (unit) => {
-        unit.atb = -25;
         activeUnit.value = null;
         atbPaused.value = false;
         waitingForInput.value = false;
         boostLevel.value = 0;
-        checkBattleStatus();
+
+        battleFacade.endTurn.endTurn(unit, {
+            onCheckStatus: () => checkBattleStatus()
+        });
     };
 
     const processEnemyTurn = async (enemy) => {
-        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
-
-        setTimeout(() => {
-            if (isDead(enemy)) {
-                endTurn(enemy);
-                return;
-            }
-
-            if (typeof enemy.actionCount === 'undefined') enemy.actionCount = 0;
-            enemy.actionCount++;
-
-            const context = {
-                actor: enemy,
-                party: partySlots.value,
+        battleFacade.processEnemy.processEnemyTurn(
+            battleFacade,
+            enemy,
+            {
+                partySlots: partySlots.value,
                 enemies: enemies.value,
                 turnCount: turnCount.value,
-                log // important for logging actions
-            };
-
-            const action = battleFacade.getEnemyAction(enemy.id, context);
-
-            if (!action || action.type === 'wait') {
-                endTurn(enemy);
-                return;
+                context: getContext()
+            },
+            {
+                onLog: log,
+                onEndTurn: (u) => endTurn(u),
+                onReProcess: (u) => processEnemyTurn(u)
             }
-
-            // Using Facade to execute action
-            // Note: Enemy actions typically don't use manual boost, so no energyMult override
-            const result = battleFacade.executeAction(enemy, action, getContext());
-
-            if (result && result.consumeTurn === false) {
-                processEnemyTurn(enemy);
-            } else {
-                endTurn(enemy);
-            }
-        }, 1000);
+        );
     };
 
     // Player Actions
@@ -313,106 +226,29 @@ export const useBattleStore = defineStore('battle', () => {
         if (!activeUnit.value || !activeUnit.value.isPlayer) return;
 
         waitingForInput.value = false;
-        const actor = activeUnit.value;
-        let consumeTurn = true;
-        let actionExecuted = false;
-
-        // Calculate Energy Multiplier
-        let energyMult = 1.0;
-        let consumedEnergy = 0;
-        if (boostLevel.value > 0) {
-            energyMult = 1.0 + (boostLevel.value * 0.5);
-            consumedEnergy = boostLevel.value;
-            log('battle.energyConsume', { name: actor.name, energy: consumedEnergy });
-        }
-
-        const context = { ...getContext(), energyMult };
-
-        // Normalize payload to Standard Action Format
-        let action = { type: actionType };
         
-        if (typeof payload === 'object' && payload !== null) {
-            action = { ...action, ...payload };
-        } else {
-            action.skillId = payload; // legacy support
-        }
-
-        // Special handling before execution
-        if (actionType === 'item') {
-            if (!action.itemId) return;
-            inventoryStore.removeItem(action.itemId, 1);
-            const item = itemsDb[action.itemId];
-            if (item && item.consumeTurn === false) consumeTurn = false;
-            
-            log('battle.useItem', { user: actor.name, item: item.name });
-            battleFacade.handleItemEffect(action.itemId, action.targetId, actor, context);
-            actionExecuted = true;
-
-        } else if (actionType === 'skill') {
-            const skill = skillsDb[action.skillId];
-            if (!battleFacade.canUseSkill(actor, skill, getContext())) {
-                log('battle.notEnoughMp');
-                return; 
+        await battleFacade.playerAction.executePlayerAction(
+            battleFacade,
+            actionType,
+            payload,
+            { 
+                actor: activeUnit.value, 
+                boostLevel: boostLevel.value, 
+                partySlots: partySlots.value 
+            },
+            { 
+                context: getContext(), 
+                skillsDb, 
+                itemsDb 
+            },
+            {
+                log,
+                onRunAway: () => runAway(),
+                onEndTurn: (u) => endTurn(u),
+                onPerformSwitch: (idx) => performSwitch(idx),
+                onWaitInput: () => { waitingForInput.value = true; }
             }
-            // Pay Cost
-            battleFacade.skill.paySkillCost(actor, skill, getContext());
-            
-            // Deduct Energy
-             if (consumedEnergy > 0) {
-                actor.energy = Math.max(0, (actor.energy || 0) - consumedEnergy);
-            }
-            
-            const result = battleFacade.executeAction(actor, action, context);
-            consumeTurn = result.consumeTurn;
-            actionExecuted = true;
-
-        } else if (actionType === 'attack') {
-            if (consumedEnergy > 0) {
-                actor.energy = Math.max(0, (actor.energy || 0) - consumedEnergy);
-            }
-            const result = battleFacade.executeAction(actor, action, context);
-            consumeTurn = result.consumeTurn;
-            actionExecuted = true;
-
-        } else if (actionType === 'defend') {
-            actor.isDefending = true;
-            log('battle.defending', { name: actor.name });
-            actionExecuted = true;
-
-        } else if (actionType === 'switch') {
-            const slotIndex = partySlots.value.findIndex(s => s.front && s.front.id === actor.id);
-            if (slotIndex !== -1) {
-                const slot = partySlots.value[slotIndex];
-                if (slot && slot.back && slot.back.currentHp > 0) {
-                    performSwitch(slotIndex);
-                    actionExecuted = true;
-                } else {
-                    log('battle.cannotSwitch');
-                    return;
-                }
-            }
-
-        } else if (actionType === 'skip') {
-            actor.energy = Math.min(6, (actor.energy || 0) + 1);
-            log('battle.skipTurn', { name: actor.name });
-            actionExecuted = true;
-
-        } else if (actionType === 'reorganize') {
-            log('battle.reorganize', { name: actor.name });
-            actionExecuted = true;
-
-        } else if (actionType === 'run') {
-            runAway();
-            return;
-        }
-
-        if (actionExecuted) {
-            if (consumeTurn) {
-                endTurn(actor);
-            } else {
-                waitingForInput.value = true;
-            }
-        }
+        );
     };
 
     const performSwitch = (slotIndex) => {
@@ -457,48 +293,29 @@ export const useBattleStore = defineStore('battle', () => {
     };
 
     const checkBattleStatus = () => {
-        const isDead = (u) => u && u.statusEffects && u.statusEffects.some(s => s.id === 'status_dead');
-
-        const allEnemiesDead = enemies.value.every(e => isDead(e));
-        if (allEnemiesDead) {
-            battleState.value = 'victory';
-            lastBattleResult.value = { result: 'victory', enemyUuid: triggeredEnemyUuid.value };
-            log('battle.victory');
-
-            const allDrops = []
-            enemies.value.forEach(enemy => {
-                const drops = battleFacade.calculateDrops(enemy)
-                if (drops.length > 0) {
-                    allDrops.push(drops)
-                }
-            })
-            const finalDrops = battleFacade.loot.mergeDrops(allDrops)
-
-            finalDrops.forEach(drop => {
-                inventoryStore.addItem(drop.itemId, drop.qty)
-                const item = itemsDb[drop.itemId]
-                if (item) {
-                    log('battle.foundLoot', { item: item.name, qty: drop.qty })
-                }
-            })
-
-            partyStore.updatePartyAfterBattle(partySlots.value);
-            notifyECS('victory', finalDrops);
-            return true;
-        }
-
-        const allPlayersDead = partySlots.value.every(s =>
-            (!s.front || isDead(s.front)) &&
-            (!s.back || isDead(s.back))
+        return battleFacade.checkStatus.checkBattleStatus(
+            battleFacade,
+            {
+                enemies: enemies.value,
+                partySlots: partySlots.value,
+                triggeredEnemyUuid: triggeredEnemyUuid.value
+            },
+            { itemsDb },
+            {
+                onLog: log,
+                onVictory: (uuid) => {
+                    battleState.value = 'victory';
+                    lastBattleResult.value = { result: 'victory', enemyUuid: uuid };
+                },
+                onDefeat: (uuid) => {
+                    battleState.value = 'defeat';
+                    lastBattleResult.value = { result: 'defeat', enemyUuid: uuid };
+                },
+                onAddLoot: (itemId, qty) => partyStore.addItem(itemId, qty),
+                onUpdateParty: (slots) => partyStore.updatePartyAfterBattle(slots),
+                onNotifyECS: (res, drops) => notifyECS(res, drops)
+            }
         );
-        if (allPlayersDead) {
-            battleState.value = 'defeat';
-            lastBattleResult.value = { result: 'defeat', enemyUuid: triggeredEnemyUuid.value };
-            log('battle.defeat');
-            notifyECS('defeat');
-            return true;
-        }
-        return false;
     };
 
     const runAway = () => {
